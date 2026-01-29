@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('phone')->nullable()->after('type');
             $table->string('role')->nullable()->after('phone');
             $table->string('status')->nullable()->comment('0 = Inactive, 1 = Active')->after('role');
-            $table->string('website_domain')->nullable()->after('status');
+            $table->enum('business_category', ['salon_beauty','home_services','health','fitness_gym','others',])->nullable()->after('status');
+            $table->string('website_domain')->nullable()->after('business_category');
             $table->string('address')->nullable()->after('website_domain');
             $table->string('platform_access')->nullable()->comment('0 = Disabled, 1 = Enabled')->after('address');
             $table->string('current_package')->nullable()->after('platform_access');
@@ -26,7 +27,7 @@ return new class extends Migration
             $table->string('package_end_date')->nullable()->after('package_start_date');
             $table->string('package_expire_date')->nullable()->after('package_end_date');
             $table->string('remaining_day')->nullable()->after('package_expire_date');
-            $table->string('package_status')->nullable()->after('remaining_day');
+            $table->string('package_status')->nullable()->comment('0 = Inactive, 1 = Active')->after('remaining_day');
 
         });
     }
