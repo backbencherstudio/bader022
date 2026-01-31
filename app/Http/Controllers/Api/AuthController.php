@@ -173,8 +173,9 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'required|string|max:20|unique:users,phone',
             'password' => 'required|string|min:6|confirmed',
-            'business_category' => 'required|string|in:Salon Beauty,Home Services,Health,Fitness Pro Gym,Others',
+            'business_category' => 'required|string|in:salon_beauty,home_services,health,fitness_gym,others',
         ]);
+
 
         if ($validator->fails()) {
             return response()->json([
@@ -187,6 +188,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
+            'type' => 2,
             'password' => Hash::make($request->password),
             'business_category' => $request->business_category,
         ]);
