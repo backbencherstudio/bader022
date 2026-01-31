@@ -38,6 +38,15 @@ class AuthController extends Controller
         }
 
         $user = Auth::guard('api')->user();
+        if ($user->type == 0) {
+            $role = 'User';
+        } elseif ($user->type == 1) {
+            $role = 'Admin';
+        } elseif ($user->type == 2) {
+            $role = 'Merchant';
+        } else {
+            return response()->json(['error' => 'Invalid user type'], 403);
+        }
 
         if ($user->jwt_token) {
             try {
@@ -50,7 +59,8 @@ class AuthController extends Controller
 
         return response()->json([
             'user' => $user,
-            'message' => 'User login successfully',
+            'user_type' => $role,
+            'message' => $role.' login successfully',
             'token' => $token,
         ]);
     }
