@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('phone')->nullable()->after('type');
             $table->string('role')->nullable()->after('phone');
             $table->string('status')->nullable()->comment('0 = Inactive, 1 = Active')->after('role');
-            $table->enum('business_category', ['salon_beauty','home_services','health','fitness_gym','others',])->nullable()->after('status');
+            $table->enum('business_category', ['salon_beauty','home_services','health','fitness_pro_gym','others',])->nullable()->after('status');
             $table->string('website_domain')->nullable()->after('business_category');
             $table->string('address')->nullable()->after('website_domain');
             $table->string('platform_access')->nullable()->comment('0 = Disabled, 1 = Enabled')->after('address');
@@ -31,7 +31,7 @@ return new class extends Migration
 
         });
     }
-   
+
     /**
      * Reverse the migrations.
      */

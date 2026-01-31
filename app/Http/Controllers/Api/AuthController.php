@@ -176,7 +176,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'required|string|max:20|unique:users,phone',
             'password' => 'required|string|min:6|confirmed',
-            'business_category' => 'required|string|in:salon_beauty,home_services,health,fitness_gym,others',
+            'business_category' => 'required|string|in:salon_beauty,home_services,health,fitness_pro_gym,others',
         ]);
 
 
