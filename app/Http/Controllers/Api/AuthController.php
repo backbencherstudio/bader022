@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+
 
 class AuthController extends Controller
 {
@@ -22,33 +25,6 @@ class AuthController extends Controller
             'status' => 'success',
             'admin' => $admins,
 
-        ]);
-
-    }
-
-    public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-
-        if (! $token = Auth::guard('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
-        }
-
-        $user = Auth::guard('api')->user();
-
-        if ($user->jwt_token) {
-            try {
-                JWTAuth::setToken($user->jwt_token)->invalidate();
-            } catch (\Exception $e) {
-            }
-        }
-
-        $user->update(['jwt_token' => $token]);
-
-        return response()->json([
-            'user' => $user,
-            'message' => 'User login successfully',
-            'token' => $token,
         ]);
     }
 
@@ -72,10 +48,10 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
 
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -127,9 +103,9 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -193,8 +169,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
             'role' => 'required|exists:roles,id',
@@ -213,9 +189,9 @@ class AuthController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $user->image = 'user/'.$imageName;
+            $user->image = 'user/' . $imageName;
         }
 
         $user->name = $request->name;
@@ -335,5 +311,108 @@ class AuthController extends Controller
             'status' => true,
             'message' => 'Password changed successfully',
         ], 200);
+    }
+
+    public function sendOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user->type == 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Admin cannot reset password via OTP. Please change password from dashboard.'
+            ], 403);
+        }
+
+        $otp = rand(100000, 999999);
+
+        DB::table('password_resets')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'otp'        => Hash::make($otp),
+                'expires_at' => now()->addMinutes(5),
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
+
+        Mail::raw(
+            "Your password reset OTP is: {$otp}. It will expire in 5 minutes.",
+            function ($message) use ($request) {
+                $message->to($request->email)
+                    ->subject('Password Reset OTP');
+            }
+        );
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP sent to your email successfully',
+        ]);
+    }
+
+
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:password_resets,email',
+            'otp' => 'required',
+        ]);
+
+        $record = DB::table('password_resets')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$record) {
+            return response()->json(['message' => 'OTP not found'], 404);
+        }
+
+        if (now()->gt($record->expires_at)) {
+            return response()->json(['message' => 'OTP expired'], 400);
+        }
+
+        if (!Hash::check($request->otp, $record->otp)) {
+            return response()->json(['message' => 'Invalid OTP'], 400);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP verified successfully',
+        ]);
+    }
+
+    public function resetPasswordWithOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $record = DB::table('password_resets')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$record || now()->gt($record->expires_at)) {
+            return response()->json(['message' => 'OTP expired or invalid'], 400);
+        }
+
+        if (!Hash::check($request->otp, $record->otp)) {
+            return response()->json(['message' => 'Invalid OTP'], 400);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        DB::table('password_resets')->where('email', $request->email)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Password reset successfully',
+        ]);
     }
 }

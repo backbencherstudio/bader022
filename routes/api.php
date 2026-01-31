@@ -144,8 +144,17 @@ Route::middleware(['auth:api', 'role'])->prefix('admin')->name('admin.')->group(
 
     });
 
+
 });
 
 // Shanto
 
 Route::middleware('auth:admin')->get('/user-data', [AuthController::class, 'apiData']);
+
+ //Any type user login....
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+
+Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
+
