@@ -156,6 +156,12 @@ class AuthController extends Controller
         ], 201);
     }
 
+    public function marchantregister(Request $request){
+
+    
+
+    }
+
     public function edit($id)
     {
 
@@ -313,7 +319,7 @@ class AuthController extends Controller
             'new_password' => 'required|string|min:6|confirmed',
         ]);
 
-        $admin = User::where('type', 1)->find($id);
+        $admin = User::find($id);
 
         if (! $admin) {
             return response()->json([
