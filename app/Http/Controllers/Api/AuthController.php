@@ -26,6 +26,33 @@ class AuthController extends Controller
             'admin' => $admins,
 
         ]);
+
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        if (! $token = Auth::guard('api')->attempt($credentials)) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
+        }
+
+        $user = Auth::guard('api')->user();
+
+        if ($user->jwt_token) {
+            try {
+                JWTAuth::setToken($user->jwt_token)->invalidate();
+            } catch (\Exception $e) {
+            }
+        }
+
+        $user->update(['jwt_token' => $token]);
+
+        return response()->json([
+            'user' => $user,
+            'message' => 'User login successfully',
+            'token' => $token,
+        ]);
     }
 
     public function register(Request $request)
@@ -132,10 +159,38 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function marchantregister(Request $request){
+    public function marchantregister(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|max:20|unique:users,phone',
+            'password' => 'required|string|min:6|confirmed',
+            'business_category' => 'required|string|in:salon_beauty,home_services,health,fitness_gym,others',
+        ]);
 
-    
 
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $merchant = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'type' => 2,
+            'password' => Hash::make($request->password),
+            'business_category' => $request->business_category,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Merchant registered successfully',
+            'data' => $merchant,
+        ], 201);
     }
 
     public function edit($id)
