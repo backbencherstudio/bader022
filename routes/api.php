@@ -21,6 +21,10 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/marchant/register', [AuthController::class, 'marchantregister'])->name('marchant.register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
+
 
 // google login api
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
@@ -105,20 +109,8 @@ Route::middleware(['auth:api', 'role'])->prefix('admin')->name('admin.')->group(
         Route::delete('delete/{id}', [FaqController::class, 'destroy'])->name('faq.destroy');
     });
 
-    // Hire
-    Route::prefix('hire')->group(function () {
-        Route::get('index', [HireController::class, 'index'])->name('hire.index');
-        Route::post('store', [HireController::class, 'store'])->name('hire.store');
-        Route::get('edit/{id}', [HireController::class, 'edit'])->name('hire.edit');
-        Route::post('update/{id}', [HireController::class, 'update'])->name('hire.update');
-        Route::delete('delete/{id}', [HireController::class, 'destroy'])->name('hire.destroy');
-    });
 
-    // About
-    Route::prefix('about')->group(function () {
-        Route::get('index', [AboutController::class, 'index'])->name('about.index');
-        Route::post('update', [AboutController::class, 'update'])->name('about.update');
-    });
+
 
     // setting
     Route::prefix('setting')->group(function () {
@@ -140,14 +132,5 @@ Route::middleware(['auth:api', 'role'])->prefix('admin')->name('admin.')->group(
 
 });
 
-// Shanto
 
-Route::middleware('auth:admin')->get('/user-data', [AuthController::class, 'apiData']);
-
- //Any type user login....
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-
-Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
-Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
-Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
 
