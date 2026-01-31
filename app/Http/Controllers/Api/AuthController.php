@@ -354,7 +354,6 @@ class AuthController extends Controller
         ]);
     }
 
-
     public function verifyOtp(Request $request)
     {
         $request->validate([
