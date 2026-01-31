@@ -26,7 +26,6 @@ class AuthController extends Controller
             'admin' => $admins,
 
         ]);
-
     }
 
     public function login(Request $request)
@@ -58,9 +57,12 @@ class AuthController extends Controller
         $user->update(['jwt_token' => $token]);
 
         return response()->json([
-            'user' => $user,
-            'user_type' => $role,
-            'message' => $role.' login successfully',
+            'success' => true,
+            'message' => $role . ' login successfully',
+            'data' => [
+                'user' => $user,
+                'user_type' => $role,
+            ],
             'token' => $token,
         ]);
     }
@@ -107,9 +109,9 @@ class AuthController extends Controller
         ]);
 
         return response()->json([
-            'user' => $user,
             'success' => true,
             'message' => 'User registered successfully',
+            'data' => $user,
             'token' => $token,
         ], 201);
     }
@@ -196,10 +198,17 @@ class AuthController extends Controller
             'business_category' => $request->business_category,
         ]);
 
+        $token = Auth::guard('api')->login($merchant);
+
+        $merchant->update([
+            'jwt_token' => $token,
+        ]);
+
         return response()->json([
-            'status' => true,
+            'success' => true,
             'message' => 'Merchant registered successfully',
             'data' => $merchant,
+            'token' => $token,
         ], 201);
     }
 
@@ -244,7 +253,7 @@ class AuthController extends Controller
             'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
-            'role' => 'required|exists:roles,id',
+            // 'role' => 'required|exists:roles,id',
         ]);
 
         if ($validator->fails()) {
@@ -269,7 +278,7 @@ class AuthController extends Controller
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->status = $request->status;
-        $user->role = $request->role;
+        // $user->role = $request->role;
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
@@ -281,14 +290,14 @@ class AuthController extends Controller
             ->where('guard_name', 'api')
             ->first();
 
-        if (! $role) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Role not found for this guard',
-            ], 422);
-        }
+        // if (! $role) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Role not found for this guard',
+        //     ], 422);
+        // }
 
-        $user->syncRoles([$role->name]);
+        // $user->syncRoles([$role->name]);
 
         return response()->json([
             'success' => true,
@@ -297,31 +306,31 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function delete($id)
-    {
+    // public function delete($id)
+    // {
 
-        $user = User::where('id', $id)->where('type', 1)->first();
+    //     $user = User::where('id', $id)->where('type', 1)->first();
 
-        if (! $user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Admin not found',
-            ], 404);
-        }
+    //     if (! $user) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Admin not found',
+    //         ], 404);
+    //     }
 
-        if ($user->image && file_exists(public_path($user->image))) {
-            unlink(public_path($user->image));
-        }
+    //     if ($user->image && file_exists(public_path($user->image))) {
+    //         unlink(public_path($user->image));
+    //     }
 
-        $user->syncRoles([]);
+    //     $user->syncRoles([]);
 
-        $user->delete();
+    //     $user->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Admin deleted successfully',
-        ], 200);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Admin deleted successfully',
+    //     ], 200);
+    // }
 
     public function logout()
     {
@@ -354,47 +363,63 @@ class AuthController extends Controller
 
     public function passwordchange(Request $request, $id)
     {
-
-        $request->validate([
-            'current_password' => 'required',
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
             'new_password' => 'required|string|min:6|confirmed',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         $admin = User::find($id);
 
         if (! $admin) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => 'Admin not found',
             ], 404);
         }
 
         if (! Hash::check($request->current_password, $admin->password)) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => 'Current password is incorrect',
             ], 400);
         }
+
         $admin->password = Hash::make($request->new_password);
         $admin->save();
 
         return response()->json([
-            'status' => true,
+            'success' => true,
             'message' => 'Password changed successfully',
         ], 200);
     }
 
     public function sendOtp(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' =>false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         $user = User::where('email', $request->email)->first();
 
         if ($user->type == 1) {
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => 'Admin cannot reset password via OTP. Please change password from dashboard.'
             ], 403);
         }
@@ -420,18 +445,25 @@ class AuthController extends Controller
         );
 
         return response()->json([
-            'status' => true,
+            'success' => true,
             'message' => 'OTP sent to your email successfully',
         ]);
     }
 
-
     public function verifyOtp(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:password_resets,email',
             'otp' => 'required',
         ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         $record = DB::table('password_resets')
             ->where('email', $request->email)
@@ -450,18 +482,26 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'status' => true,
+            'success' => true,
             'message' => 'OTP verified successfully',
         ]);
     }
 
     public function resetPasswordWithOtp(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
             'otp' => 'required',
             'password' => 'required|min:6|confirmed',
         ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         $record = DB::table('password_resets')
             ->where('email', $request->email)
@@ -482,7 +522,7 @@ class AuthController extends Controller
         DB::table('password_resets')->where('email', $request->email)->delete();
 
         return response()->json([
-            'status' => true,
+            'success' => true,
             'message' => 'Password reset successfully',
         ]);
     }
