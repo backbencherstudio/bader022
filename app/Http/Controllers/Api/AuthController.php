@@ -35,6 +35,15 @@ class AuthController extends Controller
         }
 
         $user = Auth::guard('api')->user();
+        if ($user->type == 0) {
+            $role = 'User';
+        } elseif ($user->type == 1) {
+            $role = 'Admin';
+        } elseif ($user->type == 2) {
+            $role = 'Merchant';
+        } else {
+            return response()->json(['error' => 'Invalid user type'], 403);
+        }
 
         if ($user->jwt_token) {
             try {
@@ -47,7 +56,8 @@ class AuthController extends Controller
 
         return response()->json([
             'user' => $user,
-            'message' => 'User login successfully',
+            'user_type' => $role,
+            'message' => $role.' login successfully',
             'token' => $token,
         ]);
     }
@@ -153,6 +163,38 @@ class AuthController extends Controller
             'message' => 'Admin registered successfully',
             'user' => $user,
             'token' => $token,
+        ], 201);
+    }
+
+    public function marchantregister(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|max:20|unique:users,phone',
+            'password' => 'required|string|min:6|confirmed',
+            'business_category' => 'required|string|in:Salon Beauty,Home Services,Health,Fitness Pro Gym,Others',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $merchant = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => Hash::make($request->password),
+            'business_category' => $request->business_category,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Merchant registered successfully',
+            'data' => $merchant,
         ], 201);
     }
 
@@ -313,7 +355,7 @@ class AuthController extends Controller
             'new_password' => 'required|string|min:6|confirmed',
         ]);
 
-        $admin = User::where('type', 1)->find($id);
+        $admin = User::find($id);
 
         if (! $admin) {
             return response()->json([

@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\AboutController;
-use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\FaqCategoryController;
@@ -15,19 +14,13 @@ use App\Http\Controllers\Admin\SubcategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
-
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
-// Admin Public Routes
-Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.login');
-Route::get('index', [CategoryController::class, 'index'])->name('admin.category.index');
 // user login
 Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/marchant/register', [AuthController::class, 'marchantregister'])->name('marchant.register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-// Route::middleware('auth:api')->post('/user/logout', [UserController::class, 'logout']);
-
-// Route::post('/admin/register', [AuthController::class, 'adminregister'])->name('register');
 
 // google login api
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
