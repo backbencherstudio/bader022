@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\SubcategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -127,6 +128,15 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::prefix('mail')->group(function () {
         Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
+    });
+
+    //.......Service
+    Route::prefix('service')->group(function () {
+        Route::get('index', [ServicesController::class, 'index'])->name('service.index');
+        Route::post('store', [ServicesController::class, 'store'])->name('service.store');
+        Route::get('show/{id}', [ServicesController::class, 'show'])->name('service.show');
+        Route::put('update/{id}', [ServicesController::class, 'update'])->name('service.update');
+        Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
     });
 
 
