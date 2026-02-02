@@ -14,7 +14,6 @@ class SliderController extends Controller
         $sliders = Slider::all();
         return response()->json($sliders);
 
-
     }
 
     public function store(Request $request)
