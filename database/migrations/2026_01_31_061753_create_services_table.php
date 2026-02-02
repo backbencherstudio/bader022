@@ -18,12 +18,12 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             $table->string('service_name');
-            $table->string('duration')->nullable();
+            $table->string('duration');
             $table->decimal('price', 10, 2);
             $table->text('description')->nullable();
-            $table->string('image')->nullable();
+            $table->string('image');
 
-            $table->boolean('status')->default(1); 
+            $table->boolean('status')->default(1);
 
             $table->timestamps();
         });

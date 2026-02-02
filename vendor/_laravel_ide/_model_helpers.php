@@ -1621,7 +1621,43 @@ namespace App\Models {
     /**
      * App\Models\MiniSite
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $cta_overlay_color
+     * @property string|null $cta_image
+     * @property string|null $cta_subtitle
+     * @property string|null $cta_title
+     * @property string|null $background_color
+     * @property string|null $about_description
+     * @property string|null $about_hero_image
+     * @property string|null $about_title
+     * @property string|null $hero_overlay_color
+     * @property string|null $hero_image
+     * @property string|null $cta_button_text
+     * @property string|null $hero_description
+     * @property string|null $hero_subtitle
+     * @property string|null $hero_title
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereHeroTitle($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereHeroSubtitle($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereHeroDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaButtonText($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereHeroImage($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereHeroOverlayColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereAboutTitle($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereAboutHeroImage($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereAboutDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereBackgroundColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaTitle($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaSubtitle($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaImage($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaOverlayColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite query()
@@ -2593,7 +2629,27 @@ namespace App\Models {
     /**
      * App\Models\Service
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property bool $status
+     * @property string|null $image
+     * @property string|null $description
+     * @property float $price
+     * @property string|null $duration
+     * @property string $service_name
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereServiceName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereDuration($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service wherePrice($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereImage($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereStatus($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service query()
