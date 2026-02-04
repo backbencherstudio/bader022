@@ -12,21 +12,22 @@ class BusinessHourController extends Controller
 {
     public function index()
     {
-        $businessHours = BusinessHour::all();
+        $user_id = auth()->id();
+        $businessHours = BusinessHour::where('user_id', $user_id)->get();
 
         return response()->json([
             'success' => true,
-            'date' => $businessHours
+            'data' => $businessHours
         ], 200);
     }
 
     public function store(Request $request)
     {
+        $user_id = auth()->id();
         $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
             'day' => 'required|string',
             'open_time' => 'nullable|date_format:H:i',
-            'close_time' => 'nullable|date_format:H:i',
+            'close_time' => 'nullable|date_format:H:i|after_or_equal:open_time',
             'is_closed' => 'boolean',
         ]);
 
@@ -37,8 +38,19 @@ class BusinessHourController extends Controller
             ], 422);
         }
 
+        $existingBusinessHour = BusinessHour::where('user_id', $user_id)
+            ->where('day', $request->day)
+            ->exists();
+
+        if ($existingBusinessHour) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You already have business hours set for this day.'
+            ], 400);
+        }
+
         $businessHours = BusinessHour::create([
-            'user_id' => $request->user_id,
+            'user_id' => $user_id,
             'day' => $request->day,
             'open_time' => $request->open_time,
             'close_time' => $request->close_time,
@@ -54,7 +66,10 @@ class BusinessHourController extends Controller
 
     public function show($id)
     {
-        $businessHour = BusinessHour::find($id);
+        $user_id = auth()->id();
+
+        $businessHour = BusinessHour::where('id', $id)
+            ->where('user_id', $user_id)->first();
 
         if (!$businessHour) {
             return response()->json([
@@ -71,7 +86,9 @@ class BusinessHourController extends Controller
 
     public function update(Request $request, $id)
     {
-        $businessHour = BusinessHour::find($id);
+
+        $businessHour = BusinessHour::where('id', $id)
+        ->where('user_id', auth()->id())->first();
 
         if (!$businessHour) {
             return response()->json([
@@ -80,10 +97,23 @@ class BusinessHourController extends Controller
             ], 404);
         }
 
+        if ($request->has('day') && $request->day != $businessHour->day) {
+            $existingBusinessHour = BusinessHour::where('user_id', auth()->id())
+                ->where('day', $request->day)
+                ->exists();
+
+            if ($existingBusinessHour) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You already have business hours set for this day.'
+                ], 400);
+            }
+        }
+
         $validator = Validator::make($request->all(), [
             'day' => 'sometimes|required|string',
             'open_time' => 'nullable|date_format:H:i',
-            'close_time' => 'nullable|date_format:H:i',
+            'close_time' => 'nullable|date_format:H:i|after_or_equal:open_time',
             'is_closed' => 'boolean',
         ]);
 
@@ -110,7 +140,9 @@ class BusinessHourController extends Controller
 
     public function destroy($id)
     {
-        $businessHour = BusinessHour::find($id);
+        $user_id = auth()->id();
+        $businessHour = BusinessHour::where('id',$id)
+        ->where('user_id', $user_id)->first();
 
         if (!$businessHour) {
             return response()->json([
@@ -120,7 +152,7 @@ class BusinessHourController extends Controller
         }
 
         $businessHour->delete();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Business hour deleted successfully'

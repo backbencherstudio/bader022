@@ -162,8 +162,8 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::prefix('businesshour')->group(function () {
         Route::get('index', [BusinessHourController::class, 'index'])->name('businesshour.index');
         Route::post('store', [BusinessHourController::class, 'store'])->name('businesshour.store');
-        Route::post('show/{id}', [BusinessHourController::class, 'show'])->name('businesshour.show');
+        Route::get('show/{id}', [BusinessHourController::class, 'show'])->name('businesshour.show');
         Route::put('update/{id}', [BusinessHourController::class, 'update'])->name('businesshour.update');
-        Route::get('delete/{id}', [BusinessHourController::class, 'destroy'])->name('businesshour.destroy');
+        Route::delete('delete/{id}', [BusinessHourController::class, 'destroy'])->name('businesshour.destroy');
     });
 });

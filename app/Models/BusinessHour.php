@@ -9,7 +9,7 @@ class BusinessHour extends Model
 {
     use HasFactory;
 
-    protected $fillabe = [
+    protected $fillable = [
         'user_id',
         'day',
         'open_time',
