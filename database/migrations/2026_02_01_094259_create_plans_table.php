@@ -16,7 +16,7 @@ return new class extends Migration
             $table->enum('name', ['Basic', 'Premium', 'Enterprise']);
             $table->decimal('price', 10, 2);
             $table->string('currency')->default('SAR');
-            $table->enum('Package', ['Free', 'Monthly', 'Annual']);
+            $table->enum('package', ['Free', 'Monthly', 'Annual']);
             $table->integer('day')->comment('Plan validity in days');
             $table->json('features')->nullable();
             $table->boolean('status')->default(1)->comment('1 = Active, 0 = Inactive');
