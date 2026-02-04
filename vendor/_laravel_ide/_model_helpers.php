@@ -1623,16 +1623,19 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $cta_padding
      * @property string|null $cta_overlay_color
      * @property string|null $cta_image
      * @property string|null $cta_subtitle
      * @property string|null $cta_title
+     * @property string|null $about_padding
      * @property string|null $background_color
      * @property string|null $about_description
      * @property string|null $about_hero_image
      * @property string|null $about_title
      * @property string|null $hero_overlay_color
      * @property string|null $hero_image
+     * @property string|null $cta_button_text_two
      * @property string|null $cta_button_text
      * @property string|null $hero_description
      * @property string|null $hero_subtitle
@@ -1646,16 +1649,19 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereHeroSubtitle($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereHeroDescription($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaButtonText($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaButtonTextTwo($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereHeroImage($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereHeroOverlayColor($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereAboutTitle($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereAboutHeroImage($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereAboutDescription($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereBackgroundColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereAboutPadding($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaTitle($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaSubtitle($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaImage($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaOverlayColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaPadding($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite newModelQuery()
@@ -2632,10 +2638,10 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property bool $status
-     * @property string|null $image
+     * @property string $image
      * @property string|null $description
      * @property float $price
-     * @property string|null $duration
+     * @property string $duration
      * @property string $service_name
      * @property int $user_id
      * @property int $id
