@@ -21,17 +21,15 @@ class MinisiteController extends Controller
             ], 401);
         }
 
-        // Check duplicate first
         $exists = MiniSite::where('user_id', $user->id)->exists();
 
         if ($exists) {
             return response()->json([
                 'status' => false,
                 'message' => 'Mini site already exists for this user',
-            ], 409); // 409 = Conflict (best for duplicate)
+            ], 409);
         }
 
-        // Validation
         $validator = Validator::make($request->all(), [
             'hero_title' => 'nullable|string|max:255',
             'hero_subtitle' => 'nullable|string|max:255',
@@ -63,11 +61,9 @@ class MinisiteController extends Controller
             ], 422);
         }
 
-        // Prepare data
         $data = $request->except(['hero_image', 'about_hero_image', 'cta_image']);
         $data['user_id'] = $user->id;
 
-        // Upload images
         if ($request->hasFile('hero_image')) {
             $data['hero_image'] = $request->file('hero_image')
                 ->store('mini-sites/hero', 'public');
@@ -90,5 +86,132 @@ class MinisiteController extends Controller
             'message' => 'Mini site created successfully',
             'data' => $miniSite,
         ], 201);
+    }
+
+    public function show()
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $miniSite = MiniSite::where('user_id', $user->id)->first();
+
+        if (! $miniSite) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Mini site not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $miniSite,
+        ], 200);
+    }
+
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $miniSite = MiniSite::where('user_id', $user->id)->first();
+
+        if (! $miniSite) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Mini site not found',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'hero_title' => 'nullable|string|max:255',
+            'hero_subtitle' => 'nullable|string|max:255',
+            'hero_description' => 'nullable|string',
+            'cta_button_text' => 'nullable|string|max:255',
+            'cta_button_text_two' => 'nullable|string|max:255',
+
+            'hero_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'about_hero_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'cta_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+
+            'hero_overlay_color' => 'nullable|string|max:50',
+            'about_title' => 'nullable|string|max:255',
+            'about_description' => 'nullable|string',
+            'background_color' => 'nullable|string|max:50',
+            'about_padding' => 'nullable|string',
+
+            'cta_title' => 'nullable|string|max:255',
+            'cta_subtitle' => 'nullable|string|max:255',
+            'cta_overlay_color' => 'nullable|string|max:50',
+            'cta_padding' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $data = $request->except(['hero_image', 'about_hero_image', 'cta_image']);
+
+        if ($request->hasFile('hero_image')) {
+            if ($miniSite->hero_image && file_exists(public_path($miniSite->hero_image))) {
+                unlink(public_path($miniSite->hero_image));
+            }
+
+            $file = $request->file('hero_image');
+            $name = time().'_hero.'.$file->getClientOriginalExtension();
+            $path = 'uploads/mini-sites/hero';
+
+            $file->move(public_path($path), $name);
+            $data['hero_image'] = $path.'/'.$name;
+        }
+
+        if ($request->hasFile('about_hero_image')) {
+            if ($miniSite->about_hero_image && file_exists(public_path($miniSite->about_hero_image))) {
+                unlink(public_path($miniSite->about_hero_image));
+            }
+
+            $file = $request->file('about_hero_image');
+            $name = time().'_about.'.$file->getClientOriginalExtension();
+            $path = 'uploads/mini-sites/about';
+
+            $file->move(public_path($path), $name);
+            $data['about_hero_image'] = $path.'/'.$name;
+        }
+
+        if ($request->hasFile('cta_image')) {
+            if ($miniSite->cta_image && file_exists(public_path($miniSite->cta_image))) {
+                unlink(public_path($miniSite->cta_image));
+            }
+
+            $file = $request->file('cta_image');
+            $name = time().'_cta.'.$file->getClientOriginalExtension();
+            $path = 'uploads/mini-sites/cta';
+
+            $file->move(public_path($path), $name);
+            $data['cta_image'] = $path.'/'.$name;
+        }
+
+        $miniSite->update($data);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Mini site updated successfully',
+            'data' => $miniSite,
+        ], 200);
     }
 }

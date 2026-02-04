@@ -115,9 +115,9 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
 
     Route::prefix('mini-sites')->group(function () {
-        Route::post('store', [MinisiteController::class, 'store'])->name('faq.store');
-        Route::get('edit/{id}', [MinisiteController::class, 'edit'])->name('faq.edit');
-        Route::post('update/{id}', [MinisiteController::class, 'update'])->name('faq.update');
+        Route::post('store', [MinisiteController::class, 'store'])->name('mini-sites.store');
+        Route::get('show', [MinisiteController::class, 'show'])->name('mini-sites.show');
+        Route::post('update', [MinisiteController::class, 'update'])->name('faq.update');
     });
 
 
