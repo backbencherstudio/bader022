@@ -664,12 +664,12 @@ namespace App\Models {
      * @property boolean $is_closed
      * @property \Illuminate\Support\Carbon|null $close_time
      * @property \Illuminate\Support\Carbon|null $open_time
-     * @property string $day
-     * @property int $user_id
+     * @property mixed $day
+     * @property int $merchant_store_setting_id
      * @property int $id
      * @property-read \App\Models\User $user
      * @method static \Illuminate\Database\Eloquent\Builder<BusinessHour>|BusinessHour whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<BusinessHour>|BusinessHour whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<BusinessHour>|BusinessHour whereMerchantStoreSettingId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<BusinessHour>|BusinessHour whereDay($value)
      * @method static \Illuminate\Database\Eloquent\Builder<BusinessHour>|BusinessHour whereOpenTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<BusinessHour>|BusinessHour whereCloseTime($value)
@@ -2991,10 +2991,12 @@ namespace App\Models {
      * @property mixed $package
      * @property string $currency
      * @property float $price
+     * @property string|null $title
      * @property mixed $name
      * @property int $id
      * @method static \Illuminate\Database\Eloquent\Builder<Plan>|Plan whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Plan>|Plan whereName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Plan>|Plan whereTitle($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Plan>|Plan wherePrice($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Plan>|Plan whereCurrency($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Plan>|Plan wherePackage($value)
