@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
             $table->enum('name', ['Basic', 'Premium', 'Enterprise']);
+            $table->string('title')->nullable();
             $table->decimal('price', 10, 2);
             $table->string('currency')->default('SAR');
             $table->enum('package', ['Free', 'Monthly', 'Annual']);

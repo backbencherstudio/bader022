@@ -10,11 +10,15 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
+use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\SubcategoryController;
 use App\Http\Controllers\Merchant\MinisiteController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Merchant\ServicesController;
+use App\Http\Controllers\Merchant\StaffController;
+use App\Http\Controllers\Merchant\BusinessHourController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -127,17 +131,46 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     // notification
     Route::prefix('notification')->group(function () {
         Route::post('/send-notification', [NotificationController::class, 'sendNotification'])->name('notification.store');
-
     });
 
     // mail
     Route::prefix('mail')->group(function () {
         Route::post('/send-email', [EmailController::class, 'sendEmail']);
-
     });
 
+    //.......Service
+    Route::prefix('service')->group(function () {
+        Route::get('index', [ServicesController::class, 'index'])->name('service.index');
+        Route::post('store', [ServicesController::class, 'store'])->name('service.store');
+        Route::get('show/{id}', [ServicesController::class, 'show'])->name('service.show');
+        Route::put('update/{id}', [ServicesController::class, 'update'])->name('service.update');
+        Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
+    });
 
+    //......Staff
+    Route::prefix('staff')->group(function () {
+        Route::get('index', [StaffController::class, 'index'])->name('staff.index');
+        Route::post('store', [StaffController::class, 'store'])->name('staff.store');
+        Route::get('show/{id}', [StaffController::class, 'show'])->name('staff.show');
+        Route::put('update/{id}', [StaffController::class, 'update'])->name('staff.update');
+        Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
+    });
+
+    //......Plan
+    Route::prefix('plan')->group(function () {
+        Route::get('index', [PlanController::class, 'index'])->name('plan.index');
+        Route::post('store', [PlanController::class, 'store'])->name('plan.store');
+        Route::get('show/{id}', [PlanController::class, 'show'])->name('plan.show');
+        Route::put('update/{id}', [PlanController::class, 'update'])->name('plan.update');
+        Route::delete('delete/{id}', [PlanController::class, 'destroy'])->name('plan.destroy');
+    });
+
+    //.......Business Hour
+    Route::prefix('businesshour')->group(function () {
+        Route::get('index', [BusinessHourController::class, 'index'])->name('businesshour.index');
+        Route::post('store', [BusinessHourController::class, 'store'])->name('businesshour.store');
+        Route::get('show/{id}', [BusinessHourController::class, 'show'])->name('businesshour.show');
+        Route::put('update/{id}', [BusinessHourController::class, 'update'])->name('businesshour.update');
+        Route::delete('delete/{id}', [BusinessHourController::class, 'destroy'])->name('businesshour.destroy');
+    });
 });
-
-
-
