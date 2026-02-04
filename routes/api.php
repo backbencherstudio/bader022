@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\SubcategoryController;
+use App\Http\Controllers\Merchant\MinisiteController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
@@ -111,6 +112,12 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('edit/{id}', [FaqController::class, 'edit'])->name('faq.edit');
         Route::post('update/{id}', [FaqController::class, 'update'])->name('faq.update');
         Route::delete('delete/{id}', [FaqController::class, 'destroy'])->name('faq.destroy');
+    });
+
+    Route::prefix('mini-sites')->group(function () {
+        Route::post('store', [MinisiteController::class, 'store'])->name('mini-sites.store');
+        Route::get('show', [MinisiteController::class, 'show'])->name('mini-sites.show');
+        Route::post('update', [MinisiteController::class, 'update'])->name('faq.update');
     });
 
 
