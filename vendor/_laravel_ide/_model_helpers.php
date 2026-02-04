@@ -4687,8 +4687,7 @@ namespace App\Models {
      * @property mixed $role
      * @property string $name
      * @property int $id
-     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Service> $services
-     * @property-read int|null $services_count
+     * @property-read \App\Models\Service $service
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereRole($value)
@@ -5368,6 +5367,8 @@ namespace App\Models {
      * @property string $email
      * @property string $name
      * @property int $id
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Service> $services
+     * @property-read int|null $services_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
      * @property-read int|null $tokens_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
