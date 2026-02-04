@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('staff_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('staff_id')->nullable()->constrained('staffs')->onDelete('cascade');
             $table->foreignId('service_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('customer_name');
             $table->string('email')->nullable();
@@ -28,11 +28,13 @@ return new class extends Migration
             $table->tinyInteger('payment_method')
                 ->nullable()
                 ->comment('credit_card=0, paypal=1, pay_at_store=2, cash=3');
-
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('bookings');

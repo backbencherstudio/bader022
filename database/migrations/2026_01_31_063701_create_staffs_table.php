@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('staffs', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->enum('role', ['staff', 'admin'])->default('staff');
             $table->string('image')->nullable();
+            $table->string('service_id');
             $table->tinyInteger('status')
                 ->default(1)
                 ->comment('1=Active, 0=Inactive');

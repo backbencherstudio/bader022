@@ -13,23 +13,24 @@ return new class extends Migration
     {
         Schema::create('mini_sites', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')
-                ->constrained()
-                ->onDelete('cascade');
+            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
             $table->string('hero_title')->nullable();
             $table->string('hero_subtitle')->nullable();
             $table->text('hero_description')->nullable();
             $table->string('cta_button_text')->nullable();
+            $table->string('cta_button_text_two')->nullable();
             $table->string('hero_image')->nullable();
             $table->string('hero_overlay_color')->nullable();
             $table->string('about_title')->nullable();
             $table->string('about_hero_image')->nullable();
             $table->text('about_description')->nullable();
             $table->string('background_color')->nullable();
+            $table->string('about_padding')->nullable();
             $table->string('cta_title')->nullable();
             $table->string('cta_subtitle')->nullable();
             $table->string('cta_image')->nullable();
             $table->string('cta_overlay_color')->nullable();
+            $table->string('cta_padding')->nullable();
             $table->timestamps();
         });
     }
