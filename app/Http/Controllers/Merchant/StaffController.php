@@ -11,10 +11,11 @@ class StaffController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Staff::orderBy('id', 'desc');
+
+        $query = Staff::where('user_id', auth()->id())->with('service')->orderBy('id', 'desc');
 
         if ($request->filled('name')) {
-            $query->where('name', 'like', '%' .$request->name . '%');
+            $query->where('name', 'like', '%' . $request->name . '%');
         }
 
         $staffs = $query->get();
@@ -42,6 +43,15 @@ class StaffController extends Controller
             ], 422);
         }
 
+        $userService = auth()->user()->services()->where('id', $request->service_id)->first();
+
+        if (!$userService) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The selected service does not belong to the authenticated user.'
+            ], 400);
+        }
+
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -52,6 +62,7 @@ class StaffController extends Controller
         }
 
         $staff = Staff::create([
+            'user_id' => auth()->id(),
             'name' => $request->name,
             'role' => $request->role,
             'service_id' => $request->service_id,
@@ -68,7 +79,7 @@ class StaffController extends Controller
 
     public function show($id)
     {
-        $staff = Staff::find($id);
+        $staff = Staff::where('id', $id)->where('user_id', auth()->id())->with('service')->first();
 
         if (!$staff) {
             return response()->json([
@@ -85,7 +96,7 @@ class StaffController extends Controller
 
     public function update(Request $request, $id)
     {
-        $staff = Staff::find($id);
+        $staff = Staff::where('id', $id)->where('user_id', auth()->id())->first();
 
         if (!$staff) {
             return response()->json([
@@ -107,6 +118,17 @@ class StaffController extends Controller
                 'success' => false,
                 'errors' => $validator->errors()
             ], 422);
+        }
+
+        if ($request->has('service_id')) {
+            $userService = auth()->user()->services()->where('id', $request->service_id)->first();
+
+            if (!$userService) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The selected service does not belong to the authenticated user.'
+                ], 404);
+            }
         }
 
         if ($request->hasFile('image')) {
@@ -139,7 +161,7 @@ class StaffController extends Controller
 
     public function destroy($id)
     {
-        $staff = Staff::find($id);
+        $staff = Staff::where('id', $id)->where('user_id', auth()->id())->first();
 
         if (!$staff) {
             return response()->json([
