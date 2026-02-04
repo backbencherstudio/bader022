@@ -38,7 +38,7 @@ class User extends Authenticatable implements JWTSubject
         'package_status',
         'jwt_token',
         'google_id',
-        'business_category'
+        'business_category',
     ];
 
     protected $hidden = [
@@ -63,5 +63,10 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function merchantStore()
+    {
+        return $this->hasOne(MerchantStoreSetting::class);
     }
 }
