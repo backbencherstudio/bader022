@@ -409,7 +409,7 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'success' =>false,
+                'success' => false,
                 'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422);
@@ -457,7 +457,7 @@ class AuthController extends Controller
             'otp' => 'required',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -495,7 +495,7 @@ class AuthController extends Controller
             'password' => 'required|min:6|confirmed',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -525,5 +525,75 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Password reset successfully',
         ]);
+    }
+
+    public function profileInfo()
+    {
+        $user = auth()->user();
+
+        return response()->json([
+            'success' => true,
+            'data' => $user->only(['name', 'image', 'email', 'phone', 'address'])
+        ], 200);
+    }
+
+    public function saveInfo(Request $request)
+    {
+        $user = auth()->user();
+
+        $validator = Validator::make($request->all(), [
+            'name'    => 'nullable|string|max:255',
+            'email'   => 'nullable|email|unique:users,email,' . $user->id,
+            'phone'   => 'nullable|string|max:20|unique:users,phone,' . $user->id,
+            'address' => 'nullable|string|max:255',
+            'image'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $data = [];
+
+        if ($request->filled('name')) {
+            $data['name'] = $request->name;
+        }
+
+        if ($request->filled('email')) {
+            $data['email'] = $request->email;
+        }
+
+        if ($request->filled('phone')) {
+            $data['phone'] = $request->phone;
+        }
+
+        if ($request->filled('address')) {
+            $data['address'] = $request->address;
+        }
+
+        if ($request->hasFile('image')) {
+            if ($user->image && file_exists(public_path($user->image))) {
+                unlink(public_path($user->image));
+            }
+
+            $imageName = time() . '_' . $request->image->getClientOriginalName();
+
+            $request->image->move(public_path('uploads/users'), $imageName);
+
+            $data['image'] = 'uploads/users/' . $imageName;
+        }
+
+        if (!empty($data)) {
+            $user->update($data);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Personal information updated successfully',
+            'data' => $user->fresh()->only(['name', 'image', 'phone', 'address', 'email'])
+        ], 200);
     }
 }

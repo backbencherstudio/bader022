@@ -16,6 +16,10 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('store_name');
             $table->string('business_logo')->nullable();
+<<<<<<< HEAD
+            $table->unsignedBigInteger('business_id')->nullable();
+=======
+>>>>>>> habib
             $table->enum('business_category', ['salon_beauty','home_services','health','fitness_pro_gym','others',])->nullable();
             $table->text('business_address')->nullable();
             $table->string('country', 100)->nullable();
