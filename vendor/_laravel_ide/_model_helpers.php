@@ -5363,9 +5363,11 @@ namespace App\Models {
      * @property string|null $image
      * @property mixed $role
      * @property string $name
+     * @property string $user_id
      * @property int $id
      * @property-read \App\Models\Service $service
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereUserId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereRole($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereImage($value)
