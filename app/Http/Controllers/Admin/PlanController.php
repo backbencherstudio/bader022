@@ -48,7 +48,7 @@ class PlanController extends Controller
             'package' => $request->package,
             'day' => $request->day,
             'features' => $request->features,
-            'status' => $request->status ?? 1,
+            'status' => 1,
         ]);
 
         return response()->json([
@@ -95,7 +95,7 @@ class PlanController extends Controller
             'day' => 'sometimes|required|integer',
             'features' => 'nullable|array',
             'features.*' => 'string',
-            'status' => 'nullable|boolean',
+
         ]);
 
         if ($validator->fails()) {
@@ -113,7 +113,7 @@ class PlanController extends Controller
             'package',
             'day',
             'features',
-            'status'
+          
         ]));
 
         $plan->save();
