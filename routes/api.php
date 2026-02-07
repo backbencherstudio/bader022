@@ -20,7 +20,6 @@ use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Merchant\BookingController;
 use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\Merchant\StaffController;
-use App\Http\Controllers\Merchant\BusinessHourController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
