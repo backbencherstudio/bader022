@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\AboutController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\FaqCategoryController;
@@ -8,16 +7,19 @@ use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\HireController;
 use App\Http\Controllers\Admin\PaymentHistoryController;
 use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
-use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\SubcategoryController;
-use App\Http\Controllers\Merchant\MinisiteController;
+use App\Http\Controllers\Merchant\SubscriptionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Merchant\BookingController;
+use App\Http\Controllers\Merchant\BusinessHourController;
+use App\Http\Controllers\Merchant\MerchantSettingController;
+use App\Http\Controllers\Merchant\MinisiteController;
 use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\Merchant\StaffController;
 use App\Http\Controllers\NotificationController;
@@ -30,7 +32,6 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
-
 
 // google login api
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
@@ -118,11 +119,25 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::post('update/{id}', [FaqController::class, 'update'])->name('faq.update');
         Route::delete('delete/{id}', [FaqController::class, 'destroy'])->name('faq.destroy');
     });
-
+    // mini-site
     Route::prefix('mini-sites')->group(function () {
         Route::post('store', [MinisiteController::class, 'store'])->name('mini-sites.store');
         Route::get('show', [MinisiteController::class, 'show'])->name('mini-sites.show');
-        Route::post('update', [MinisiteController::class, 'update'])->name('faq.update');
+        Route::post('update', [MinisiteController::class, 'update'])->name('mini-sites.update');
+    });
+    // merchant-setting
+    Route::prefix('merchant-setting')->group(function () {
+        Route::post('store', [MerchantSettingController::class, 'store'])->name('merchant.store');
+        Route::get('show', [MerchantSettingController::class, 'show'])->name('merchant.show');
+
+    });
+    // process SubscriptionController
+    Route::prefix('process')->group(function () {
+        Route::get('index', [SubscriptionController::class, 'index'])->name('process.index');
+        Route::post('store', [SubscriptionController::class, 'store'])->name('process.store');
+        Route::get('edit/{id}', [SubscriptionController::class, 'edit'])->name('process.edit');
+        Route::post('update/{id}', [SubscriptionController::class, 'update'])->name('process.update');
+        Route::delete('delete/{id}', [SubscriptionController::class, 'destroy'])->name('process.destroy');
     });
 
     // setting
@@ -141,6 +156,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
 
     //----- Merchant/Service
+    // .......Service
     Route::prefix('service')->group(function () {
         Route::get('index', [ServicesController::class, 'index'])->name('service.index');
         Route::post('store', [ServicesController::class, 'store'])->name('service.store');
@@ -150,6 +166,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
 
     //----- Merchant/Staff
+    // ......Staff
     Route::prefix('staff')->group(function () {
         Route::get('index', [StaffController::class, 'index'])->name('staff.index');
         Route::post('store', [StaffController::class, 'store'])->name('staff.store');
@@ -159,6 +176,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
 
     //----- Admin/Subscription/Plan
+    // ......Plan
     Route::prefix('plan')->group(function () {
         Route::get('index', [PlanController::class, 'index'])->name('plan.index');
         Route::post('store', [PlanController::class, 'store'])->name('plan.store');
@@ -180,4 +198,3 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
     });
 
-});

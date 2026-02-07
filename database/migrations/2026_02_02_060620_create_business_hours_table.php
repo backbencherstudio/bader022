@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('business_hours', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('day');
+            $table->foreignId('merchant_store_setting_id')
+                ->constrained('merchant_store_settings') 
+                ->onDelete('cascade');
+            $table->enum('day', ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']);
             $table->time('open_time')->nullable();
             $table->time('close_time')->nullable();
             $table->boolean('is_closed')->default(false);

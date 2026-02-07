@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Payment extends Model
 {
     protected $fillable = [
+<<<<<<< HEAD
         'user_id',
         'subscription_id',
         'amount',
@@ -25,4 +26,14 @@ class Payment extends Model
     {
         return $this->belongsTo(Subscription::class);
     }
+=======
+    'user_id',
+    'subscription_id',
+    'amount',
+    'currency',
+    'payment_method',
+    'transaction_id',
+    'status',
+];
+>>>>>>> habib
 }

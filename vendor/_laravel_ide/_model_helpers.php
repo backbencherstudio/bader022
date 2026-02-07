@@ -669,6 +669,8 @@ namespace App\Models {
      * @property int $merchant_store_setting_id
      * @property int $id
      * @property-read \App\Models\User $user
+     * @property-read \App\Models\MerchantSetting $merchantSetting
+     * @property-read \App\Models\MerchantSetting $store
      * @method static \Illuminate\Database\Eloquent\Builder<BusinessHour>|BusinessHour whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<BusinessHour>|BusinessHour whereMerchantStoreSettingId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<BusinessHour>|BusinessHour whereDay($value)
@@ -2291,6 +2293,7 @@ namespace App\Models {
     }
 
     /**
+<<<<<<< HEAD
      * App\Models\MerchantPayment
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
@@ -2626,6 +2629,9 @@ namespace App\Models {
 
     /**
      * App\Models\MerchantStoreSetting
+=======
+     * App\Models\MerchantSetting
+>>>>>>> habib
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
@@ -2641,6 +2647,7 @@ namespace App\Models {
      * @property int $user_id
      * @property int $id
      * @property-read \App\Models\User $user
+<<<<<<< HEAD
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantStoreSetting>|MerchantStoreSetting whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantStoreSetting>|MerchantStoreSetting whereUserId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantStoreSetting>|MerchantStoreSetting whereStoreName($value)
@@ -2657,6 +2664,26 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantStoreSetting>|MerchantStoreSetting newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantStoreSetting>|MerchantStoreSetting newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantStoreSetting>|MerchantStoreSetting query()
+=======
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BusinessHour> $businessHours
+     * @property-read int|null $businessHours_count
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereStoreName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereBusinessLogo($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereBusinessId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereBusinessCategory($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereBusinessAddress($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereCountry($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereCity($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereTimeZone($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereCurrency($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting whereUpdatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting newModelQuery()
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting newQuery()
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantSetting>|MerchantSetting query()
+>>>>>>> habib
      * @method static mixed select($columns)
      * @method static mixed selectSub($query, $as)
      * @method static mixed selectExpression($expression, $as)
@@ -2959,7 +2986,11 @@ namespace App\Models {
      * @method static mixed macroCall($method, $parameters)
      * @mixin \Illuminate\Database\Query\Builder
      */
+<<<<<<< HEAD
     class MerchantStoreSetting extends \Illuminate\Database\Eloquent\Model
+=======
+    class MerchantSetting extends \Illuminate\Database\Eloquent\Model
+>>>>>>> habib
     {
         //
     }
@@ -3333,8 +3364,11 @@ namespace App\Models {
      * @property int $subscription_id
      * @property int $user_id
      * @property int $id
+<<<<<<< HEAD
      * @property-read \App\Models\User $user
      * @property-read \App\Models\Subscription $subscription
+=======
+>>>>>>> habib
      * @method static \Illuminate\Database\Eloquent\Builder<Payment>|Payment whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Payment>|Payment whereUserId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Payment>|Payment whereSubscriptionId($value)
@@ -6360,7 +6394,10 @@ namespace App\Models {
      * @property int $plan_id
      * @property int $user_id
      * @property int $id
+<<<<<<< HEAD
      * @property-read \App\Models\Plan $plan
+=======
+>>>>>>> habib
      * @method static \Illuminate\Database\Eloquent\Builder<Subscription>|Subscription whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Subscription>|Subscription whereUserId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Subscription>|Subscription wherePlanId($value)
