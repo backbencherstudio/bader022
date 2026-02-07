@@ -124,7 +124,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show', [MerchantSettingController::class, 'show'])->name('merchant.show');
 
     });
-    // process
+    // process SubscriptionController
     Route::prefix('process')->group(function () {
         Route::get('index', [SubscriptionController::class, 'index'])->name('process.index');
         Route::post('store', [SubscriptionController::class, 'store'])->name('process.store');
@@ -175,5 +175,5 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::delete('delete/{id}', [PlanController::class, 'destroy'])->name('plan.destroy');
     });
 
-   
+
 });
