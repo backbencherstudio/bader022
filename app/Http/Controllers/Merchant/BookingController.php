@@ -24,7 +24,6 @@ class BookingController extends Controller
             'email' => 'required|email',
             'phone' => 'required|string|max:15',
             'date_time' => 'required|date_format:Y-m-d H:i:s',
-            'status' => 'required|in:pending,confirmed,canceled',
             'special_note' => 'nullable|string|max:255',
         ]);
 
@@ -66,7 +65,7 @@ class BookingController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'date_time' => $request->date_time,
-            'status' => $request->status,
+            'status' => 'pending',
             'special_note' => $request->special_note,
             'booking_by' => $user->type == 2 ? 'merchant' : 'user',
         ];

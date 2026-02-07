@@ -198,3 +198,4 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
     });
 
+});
