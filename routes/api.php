@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\Admin\SubcategoryController;
+use App\Http\Controllers\Admin\MerchantController;
 use App\Http\Controllers\Merchant\SubscriptionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
@@ -156,7 +157,6 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
 
     //----- Merchant/Service
-    // .......Service
     Route::prefix('service')->group(function () {
         Route::get('index', [ServicesController::class, 'index'])->name('service.index');
         Route::post('store', [ServicesController::class, 'store'])->name('service.store');
@@ -166,7 +166,6 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
 
     //----- Merchant/Staff
-    // ......Staff
     Route::prefix('staff')->group(function () {
         Route::get('index', [StaffController::class, 'index'])->name('staff.index');
         Route::post('store', [StaffController::class, 'store'])->name('staff.store');
@@ -176,7 +175,6 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
 
     //----- Admin/Subscription/Plan
-    // ......Plan
     Route::prefix('plan')->group(function () {
         Route::get('index', [PlanController::class, 'index'])->name('plan.index');
         Route::post('store', [PlanController::class, 'store'])->name('plan.store');
@@ -197,6 +195,13 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     //----- Merchant/Bookings
     Route::prefix('booking')->group(function() {
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
+    });
+
+    //----- Admin/Merchants
+    Route::prefix('merchant')->group(function () {
+        Route::get('index', [MerchantController::class, 'index'])->name('merchant.index');
+        Route::get('show/{id}', [MerchantController::class, 'show'])->name('merchant.show');
+        Route::put('update/{id}', [MerchantController::class, 'update'])->name('merchant.update');
     });
 
 });

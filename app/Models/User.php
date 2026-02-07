@@ -84,4 +84,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(MerchantStoreSetting::class);
     }
+
+    public function scopeMerchants($query)
+    {
+        return $query->where('type', 2);
+    }
 }
