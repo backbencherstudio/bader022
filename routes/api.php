@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\FaqCategoryController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\HireController;
+use App\Http\Controllers\Admin\PaymentHistoryController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Merchant\MinisiteController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Merchant\BookingController;
 use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\Merchant\StaffController;
 use App\Http\Controllers\Merchant\BusinessHourController;
@@ -45,6 +47,10 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::post('/logout/{id}', [AuthController::class, 'logout'])->name('logout');
     Route::get('/password/{id}', [AuthController::class, 'password'])->name('password');
     Route::post('/passwordchange/{id}', [AuthController::class, 'passwordchange'])->name('passwordchange');
+
+    //----- Show and Update Personal Information
+    Route::get('profile-info', [AuthController::class, 'profileInfo'])->name('profileInfo');
+    Route::post('saveinfo', [AuthController::class, 'saveInfo'])->name('saveInfo');
 
     // Role
     Route::prefix('role')->group(function () {
@@ -120,9 +126,6 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::post('update', [MinisiteController::class, 'update'])->name('faq.update');
     });
 
-
-
-
     // setting
     Route::prefix('setting')->group(function () {
         Route::get('index', [SettingController::class, 'index'])->name('setting.index');
@@ -138,7 +141,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::post('/send-email', [EmailController::class, 'sendEmail']);
     });
 
-    //.......Service
+    //----- Merchant/Service
     Route::prefix('service')->group(function () {
         Route::get('index', [ServicesController::class, 'index'])->name('service.index');
         Route::post('store', [ServicesController::class, 'store'])->name('service.store');
@@ -147,7 +150,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
     });
 
-    //......Staff
+    //----- Merchant/Staff
     Route::prefix('staff')->group(function () {
         Route::get('index', [StaffController::class, 'index'])->name('staff.index');
         Route::post('store', [StaffController::class, 'store'])->name('staff.store');
@@ -156,13 +159,26 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
     });
 
-    //......Plan
+    //----- Admin/Subscription/Plan
     Route::prefix('plan')->group(function () {
         Route::get('index', [PlanController::class, 'index'])->name('plan.index');
         Route::post('store', [PlanController::class, 'store'])->name('plan.store');
         Route::get('show/{id}', [PlanController::class, 'show'])->name('plan.show');
         Route::put('update/{id}', [PlanController::class, 'update'])->name('plan.update');
         Route::delete('delete/{id}', [PlanController::class, 'destroy'])->name('plan.destroy');
+    });
+
+    //----- Admin/Payments
+    Route::prefix('payment-history')->group(function() {
+        Route::get('index', [PaymentHistoryController::class, 'index'])->name('payment-history.index');
+        Route::get('show/{id}', [PaymentHistoryController::class, 'show'])->name('payment-history.show');
+        Route::post('{id}/sendEmail', [PaymentHistoryController::class, 'sendEmail'])->name('payment-history.sendEmail');
+        Route::patch('updateStatus/{id}', [PaymentHistoryController::class, 'updateStatus'])->name('payment-history.updateStatus');
+    });
+
+    //----- Merchant/Bookings
+    Route::prefix('booking')->group(function() {
+        Route::post('store', [BookingController::class, 'store'])->name('booking.store');
     });
 
 });
