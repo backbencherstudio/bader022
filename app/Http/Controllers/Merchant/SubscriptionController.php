@@ -42,17 +42,16 @@ public function store(Request $request)
     DB::beginTransaction();
 
     try {
-        // Create subscription
+
         $subscription = Subscription::create([
             'user_id'    => $user->id,
             'plan_id'    => $request->plan_id,
             'starts_at'  => Carbon::now(),
-            'ends_at'    => Carbon::now()->addMonth(), // adjust by plan duration
+            'ends_at'    => Carbon::now()->addMonth(),
             'status'     => 'active',
             'auto_renew' => $request->auto_renew ?? 0,
         ]);
 
-        // Create payment
         $payment = Payment::create([
             'user_id'         => $user->id,
             'subscription_id' => $subscription->id,

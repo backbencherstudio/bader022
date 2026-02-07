@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Subscription extends Model
 {
     protected $fillable = [
-<<<<<<< HEAD
         'user_id',
         'plan_id',
         'starts_at',
@@ -20,14 +19,5 @@ class Subscription extends Model
     {
         return $this->belongsTo(Plan::class);
     }
-    
-=======
-    'user_id',
-    'plan_id',
-    'starts_at',
-    'ends_at',
-    'status',
-    'auto_renew',
-];
->>>>>>> habib
+
 }
