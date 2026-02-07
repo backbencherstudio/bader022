@@ -150,6 +150,27 @@ class PlanController extends Controller
     }
 
 
+    public function updateStatus($id)
+    {
+        $plan = Plan::find($id);
+
+        if (!$plan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Plan not found'
+            ], 404);
+        }
+
+        $plan->status = $plan->status ? 0 : 1;
+        $plan->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Plan status updated successfully',
+            'data' => $plan
+        ], 200);
+    }
+
     public function destroy($id)
     {
         $plan = Plan::find($id);

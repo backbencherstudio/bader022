@@ -183,6 +183,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show/{id}', [PlanController::class, 'show'])->name('plan.show');
         Route::put('update/{id}', [PlanController::class, 'update'])->name('plan.update');
         Route::delete('delete/{id}', [PlanController::class, 'destroy'])->name('plan.destroy');
+        Route::patch('update-status/{id}', [PlanController::class, 'updateStatus'])->name('plan.updateStatus');
     });
 
     //----- Admin/Payments
