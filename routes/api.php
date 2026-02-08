@@ -192,9 +192,12 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::patch('updateStatus/{id}', [PaymentHistoryController::class, 'updateStatus'])->name('payment-history.updateStatus');
     });
 
-    //----- Merchant/Bookings
+    //----- Merchant/User Bookings
     Route::prefix('booking')->group(function() {
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
+        Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
+        Route::get('staff/{id}', [BookingController::class, 'getStaffByService'])->name('booking.getStaffByService');
+        Route::post('service-booking', [BookingController::class, 'bookingByUser'])->name('booking.bookingByUser');
     });
 
     //----- Admin/Merchants
