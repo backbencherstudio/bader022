@@ -4,7 +4,7 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\FaqCategoryController;
 use App\Http\Controllers\Admin\FaqController;
-use App\Http\Controllers\Admin\HireController;
+use App\Http\Controllers\Admin\MerchantController;
 use App\Http\Controllers\Admin\PaymentHistoryController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PlanController;
@@ -12,19 +12,19 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\Admin\SubcategoryController;
-use App\Http\Controllers\Admin\MerchantController;
-use App\Http\Controllers\Merchant\SubscriptionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Merchant\BookingController;
-use App\Http\Controllers\Merchant\BusinessHourController;
 use App\Http\Controllers\Merchant\MerchantSettingController;
 use App\Http\Controllers\Merchant\MinisiteController;
 use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\Merchant\StaffController;
+use App\Http\Controllers\Merchant\SubscriptionController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
+
 
 // user login
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -33,6 +33,8 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
+
+
 
 // google login api
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
@@ -49,7 +51,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::get('/password/{id}', [AuthController::class, 'password'])->name('password');
     Route::post('/passwordchange/{id}', [AuthController::class, 'passwordchange'])->name('passwordchange');
 
-    //----- Show and Update Personal Information
+    // ----- Show and Update Personal Information
     Route::get('profile-info', [AuthController::class, 'profileInfo'])->name('profileInfo');
     Route::post('saveinfo', [AuthController::class, 'saveInfo'])->name('saveInfo');
 
@@ -156,7 +158,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::post('/send-email', [EmailController::class, 'sendEmail']);
     });
 
-    //----- Merchant/Service
+    // ----- Merchant/Service
     Route::prefix('service')->group(function () {
         Route::get('index', [ServicesController::class, 'index'])->name('service.index');
         Route::post('store', [ServicesController::class, 'store'])->name('service.store');
@@ -165,7 +167,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
     });
 
-    //----- Merchant/Staff
+    // ----- Merchant/Staff
     Route::prefix('staff')->group(function () {
         Route::get('index', [StaffController::class, 'index'])->name('staff.index');
         Route::post('store', [StaffController::class, 'store'])->name('staff.store');
@@ -174,7 +176,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
     });
 
-    //----- Admin/Subscription/Plan
+    // ----- Admin/Subscription/Plan
     Route::prefix('plan')->group(function () {
         Route::get('index', [PlanController::class, 'index'])->name('plan.index');
         Route::post('store', [PlanController::class, 'store'])->name('plan.store');
@@ -184,20 +186,20 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::patch('update-status/{id}', [PlanController::class, 'updateStatus'])->name('plan.updateStatus');
     });
 
-    //----- Admin/Payments
-    Route::prefix('payment-history')->group(function() {
+    // ----- Admin/Payments
+    Route::prefix('payment-history')->group(function () {
         Route::get('index', [PaymentHistoryController::class, 'index'])->name('payment-history.index');
         Route::get('show/{id}', [PaymentHistoryController::class, 'show'])->name('payment-history.show');
         Route::post('{id}/sendEmail', [PaymentHistoryController::class, 'sendEmail'])->name('payment-history.sendEmail');
         Route::patch('updateStatus/{id}', [PaymentHistoryController::class, 'updateStatus'])->name('payment-history.updateStatus');
     });
 
-    //----- Merchant/Bookings
-    Route::prefix('booking')->group(function() {
+    // ----- Merchant/Bookings
+    Route::prefix('booking')->group(function () {
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
     });
 
-    //----- Admin/Merchants
+    // ----- Admin/Merchants
     Route::prefix('merchant')->group(function () {
         Route::get('index', [MerchantController::class, 'index'])->name('merchant.index');
         Route::get('show/{id}', [MerchantController::class, 'show'])->name('merchant.show');

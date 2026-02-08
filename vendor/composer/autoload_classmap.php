@@ -11,6 +11,7 @@ return array(
     'App\\Http\\Controllers\\Admin\\CategoryController' => $baseDir . '/app/Http/Controllers/Admin/CategoryController.php',
     'App\\Http\\Controllers\\Admin\\FaqCategoryController' => $baseDir . '/app/Http/Controllers/Admin/FaqCategoryController.php',
     'App\\Http\\Controllers\\Admin\\FaqController' => $baseDir . '/app/Http/Controllers/Admin/FaqController.php',
+    'App\\Http\\Controllers\\Admin\\MerchantController' => $baseDir . '/app/Http/Controllers/Admin/MerchantController.php',
     'App\\Http\\Controllers\\Admin\\PaymentHistoryController' => $baseDir . '/app/Http/Controllers/Admin/PaymentHistoryController.php',
     'App\\Http\\Controllers\\Admin\\PermissionController' => $baseDir . '/app/Http/Controllers/Admin/PermissionController.php',
     'App\\Http\\Controllers\\Admin\\PlanController' => $baseDir . '/app/Http/Controllers/Admin/PlanController.php',

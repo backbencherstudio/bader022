@@ -622,6 +622,7 @@ class ComposerStaticInit8aa4934c7d0098433825bea48f5aa226
         'App\\Http\\Controllers\\Admin\\CategoryController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/CategoryController.php',
         'App\\Http\\Controllers\\Admin\\FaqCategoryController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/FaqCategoryController.php',
         'App\\Http\\Controllers\\Admin\\FaqController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/FaqController.php',
+        'App\\Http\\Controllers\\Admin\\MerchantController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/MerchantController.php',
         'App\\Http\\Controllers\\Admin\\PaymentHistoryController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/PaymentHistoryController.php',
         'App\\Http\\Controllers\\Admin\\PermissionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/PermissionController.php',
         'App\\Http\\Controllers\\Admin\\PlanController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/PlanController.php',
