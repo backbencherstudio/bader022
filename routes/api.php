@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SubcategoryController;
+use App\Http\Controllers\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
@@ -141,13 +142,19 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show', [MerchantSettingController::class, 'show'])->name('merchant.show');
 
     });
-    // process SubscriptionController
+    // merchant subscription
     Route::prefix('process')->group(function () {
         Route::get('index', [SubscriptionController::class, 'index'])->name('process.index');
         Route::post('store', [SubscriptionController::class, 'store'])->name('process.store');
         Route::get('edit/{id}', [SubscriptionController::class, 'edit'])->name('process.edit');
         Route::post('update/{id}', [SubscriptionController::class, 'update'])->name('process.update');
         Route::delete('delete/{id}', [SubscriptionController::class, 'destroy'])->name('process.destroy');
+    });
+    // admin subscription
+    Route::prefix('subscription')->group(function () {
+        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('process.index');
+        Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('process.edit');
+        Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('process.update');
     });
 
     // setting
@@ -197,6 +204,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::prefix('payment-history')->group(function () {
         Route::get('index', [PaymentHistoryController::class, 'index'])->name('payment-history.index');
         Route::get('show/{id}', [PaymentHistoryController::class, 'show'])->name('payment-history.show');
+        Route::post('update/{id}', [PaymentHistoryController::class, 'update'])->name('payment-history.update');
         Route::post('{id}/sendEmail', [PaymentHistoryController::class, 'sendEmail'])->name('payment-history.sendEmail');
         Route::patch('updateStatus/{id}', [PaymentHistoryController::class, 'updateStatus'])->name('payment-history.updateStatus');
     });
