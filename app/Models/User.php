@@ -80,13 +80,13 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Subscription::class);
     }
 
-    public function storeSetting()
-    {
-        return $this->hasOne(MerchantStoreSetting::class);
-    }
-
     public function scopeMerchants($query)
     {
         return $query->where('type', 2);
+    }
+
+    public function merchantSetting()
+    {
+        return $this->hasOne(MerchantSetting::class);
     }
 }

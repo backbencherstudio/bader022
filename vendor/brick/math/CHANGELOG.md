@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.14.7](https://github.com/brick/math/releases/tag/0.14.7) - 2026-02-07
+
+✨ **New features**
+
+- `clamp()` is now available on the base `BigNumber` class
+
+👌 **Improvements**
+
+- Improved `@throws` exception documentation
+
 ## [0.14.6](https://github.com/brick/math/releases/tag/0.14.6) - 2026-02-05
 
 🗑️ **Deprecations**
