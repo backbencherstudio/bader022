@@ -3,84 +3,84 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Subscription;
 use App\Models\Payment;
+use App\Models\Subscription;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Carbon\Carbon;
+use Illuminate\Support\Str;
+
 
 class SubscriptionController extends Controller
 {
-public function store(Request $request)
-{
-    $user = Auth::user();
 
-    if (! $user) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Unauthorized',
-        ], 401);
-    }
 
-    $validator = Validator::make($request->all(), [
-        'plan_id'        => 'required|exists:plans,id',
-        'amount'         => 'required|numeric|min:0',
-        'payment_method' => 'required|in:Stripe,Paypal',
-        'transaction_id' => 'required|string|unique:payments,transaction_id',
-        'auto_renew'     => 'nullable|boolean',
-    ]);
+    public function store(Request $request)
+    {
+        $user = Auth::user();
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => false,
-            'errors' => $validator->errors(),
-        ], 422);
-    }
+        if (! $user) {
+            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
+        }
 
-    DB::beginTransaction();
-
-    try {
-
-        $subscription = Subscription::create([
-            'user_id'    => $user->id,
-            'plan_id'    => $request->plan_id,
-            'starts_at'  => Carbon::now(),
-            'ends_at'    => Carbon::now()->addMonth(),
-            'status'     => 'active',
-            'auto_renew' => $request->auto_renew ?? 0,
+        $validator = Validator::make($request->all(), [
+            'plan_id' => 'required|exists:plans,id',
+            'amount' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:Stripe,Paypal',
+            'auto_renew' => 'nullable|boolean',
         ]);
 
-        $payment = Payment::create([
-            'user_id'         => $user->id,
-            'subscription_id' => $subscription->id,
-            'amount'          => $request->amount,
-            'currency'        => 'SAR',
-            'payment_method'  => $request->payment_method,
-            'transaction_id'  => $request->transaction_id,
-            'status'          => 'pending',
-        ]);
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
+        }
 
-        DB::commit();
+        DB::beginTransaction();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Subscription created successfully',
-            'data' => [
-                'subscription' => $subscription,
-                'payment' => $payment,
-            ],
-        ], 201);
+        try {
 
-    } catch (\Exception $e) {
-        DB::rollBack();
+            $autoTransactionId = 'TRX-'.strtoupper(Str::random(10));
 
-        return response()->json([
-            'status' => false,
-            'message' => 'Something went wrong',
-            'error' => $e->getMessage(),
-        ], 500);
+            $subscription = Subscription::create([
+                'user_id' => $user->id,
+                'plan_id' => $request->plan_id,
+                'starts_at' => Carbon::now(),
+                'ends_at' => Carbon::now()->addMonth(),
+                'status' => 'active',
+                'auto_renew' => $request->auto_renew ?? 0,
+            ]);
+
+            $payment = Payment::create([
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'amount' => $request->amount,
+                'currency' => 'SAR',
+                'payment_method' => $request->payment_method,
+                'transaction_id' => $autoTransactionId,
+                'status' => 'pending',
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Subscription created successfully',
+                'data' => [
+                    'subscription' => $subscription,
+                    'payment' => $payment,
+                    'transaction_id' => $autoTransactionId,
+                ],
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
-}
 }

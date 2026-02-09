@@ -210,62 +210,62 @@ class AuthController extends Controller
     //         'token' => $token,
     //     ], 201);
     // }
-   public function marchantregister(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email',
-        'phone' => 'required|string|max:20|unique:users,phone',
-        'password' => 'required|string|min:6|confirmed',
-        'business_category' => 'required|in:salon_beauty,home_services,health,fitness_pro_gym,others',
-    ]);
+    public function marchantregister(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|max:20|unique:users,phone',
+            'password' => 'required|string|min:6|confirmed',
+            'business_category' => 'required|in:salon_beauty,home_services,health,fitness_pro_gym,others',
+        ]);
 
-    if ($validator->fails()) {
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Generate safe subdomain
+        $rawSubdomain = Str::before($request->email, '@');
+        $subdomain = Str::slug($rawSubdomain);
+
+        if (User::where('website_domain', $subdomain)->exists()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This subdomain is already taken.',
+            ], 422);
+        }
+
+        $merchant = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'type' => 2,
+            'password' => Hash::make($request->password),
+            'business_category' => $request->business_category,
+            'website_domain' => $subdomain,
+        ]);
+
+        $token = Auth::guard('api')->attempt([
+            'email' => $request->email,
+            'password' => $request->password,
+        ]);
+
+        $merchant->update([
+            'jwt_token' => $token,
+        ]);
+
         return response()->json([
-            'status' => false,
-            'errors' => $validator->errors(),
-        ], 422);
+            'data' => $merchant->makeHidden(['password', 'jwt_token']),
+            'success' => true,
+            'message' => 'Merchant registered successfully',
+            'domain' => $subdomain.'.devlaro.com',
+            'token' => $token,
+
+        ], 201);
     }
-
-    // Generate safe subdomain
-    $rawSubdomain = Str::before($request->email, '@');
-    $subdomain = Str::slug($rawSubdomain);
-
-    if (User::where('website_domain', $subdomain)->exists()) {
-        return response()->json([
-            'status' => false,
-            'message' => 'This subdomain is already taken.',
-        ], 422);
-    }
-
-    $merchant = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'phone' => $request->phone,
-        'type' => 2,
-        'password' => Hash::make($request->password),
-        'business_category' => $request->business_category,
-        'website_domain' => $subdomain,
-    ]);
-
-    $token = Auth::guard('api')->attempt([
-        'email' => $request->email,
-        'password' => $request->password,
-    ]);
-
-    $merchant->update([
-        'jwt_token' => $token,
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Merchant registered successfully',
-        'domain' => $subdomain . '.devlaro.com',
-        'token' => $token,
-        'data' => $merchant->makeHidden(['password', 'jwt_token']),
-    ], 201);
-}
-
 
     public function getStoreDetails($subdomain)
     {

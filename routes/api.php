@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SubcategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
@@ -54,6 +55,12 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     // ----- Show and Update Personal Information
     Route::get('profile-info', [AuthController::class, 'profileInfo'])->name('profileInfo');
     Route::post('saveinfo', [AuthController::class, 'saveInfo'])->name('saveInfo');
+
+    // dashboard
+   Route::get('dashboard-overview', [DashboardController::class, 'index'])->name('dashboard-overview');
+   Route::get('monthlypaymentCount', [DashboardController::class, 'monthlypaymentCount'])->name('monthlypaymentCount');
+   Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
+
 
     // Role
     Route::prefix('role')->group(function () {

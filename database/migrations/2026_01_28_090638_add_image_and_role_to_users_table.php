@@ -15,8 +15,8 @@ return new class extends Migration
             $table->string('image')->nullable()->after('password');
             $table->tinyInteger('type')->default(0)->comment('0 = User, 1 = Admin, 2 = Merchant')->after('image');
             $table->string('phone')->nullable()->after('type');
-            $table->string('role')->nullable()->after('phone');
-            $table->string('status')->nullable()->comment('0 = Inactive, 1 = Active')->after('role');
+            $table->string('package_status')->nullable()->comment('0 = Offline, 1 = Live')->after('phone');
+            $table->string('status')->nullable()->comment('0 = Inactive, 1 = Active')->after('package_status');
             $table->enum('business_category', ['salon_beauty','home_services','health','fitness_pro_gym','others',])->nullable()->after('status');
             $table->string('website_domain')->nullable()->after('business_category');
             $table->string('address')->nullable()->after('website_domain');

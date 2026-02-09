@@ -6707,6 +6707,9 @@ namespace App\Models {
      * @property int $user_id
      * @property int $id
      * @property-read \App\Models\Plan $plan
+     * @property-read \App\Models\User $user
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $payments
+     * @property-read int|null $payments_count
      * @method static \Illuminate\Database\Eloquent\Builder<Subscription>|Subscription whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Subscription>|Subscription whereUserId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Subscription>|Subscription wherePlanId($value)
@@ -7046,7 +7049,7 @@ namespace App\Models {
      * @property string|null $website_domain
      * @property mixed $business_category
      * @property string|null $status
-     * @property string|null $role
+     * @property mixed $plateform_status
      * @property string|null $phone
      * @property bool $type
      * @property string|null $image
@@ -7077,7 +7080,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereImage($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePhone($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRole($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePlateformStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereBusinessCategory($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereWebsiteDomain($value)
