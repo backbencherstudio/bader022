@@ -20,6 +20,7 @@ namespace App\Models {
      * @property int $user_id
      * @property int $id
      * @property-read \App\Models\MerchantPayment $payment
+     * @property-read \App\Models\Service $service
      * @method static \Illuminate\Database\Eloquent\Builder<Booking>|Booking whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Booking>|Booking whereUserId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Booking>|Booking whereStaffId($value)
@@ -4661,7 +4662,7 @@ namespace App\Models {
      * @property string $image
      * @property string|null $description
      * @property float $price
-     * @property string $duration
+     * @property integer $duration
      * @property string $service_name
      * @property int $user_id
      * @property int $id
