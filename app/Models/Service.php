@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Service extends Model
 {
-      protected $fillable = [
+    protected $fillable = [
         'user_id',
         'service_name',
         'duration',
@@ -14,6 +14,10 @@ class Service extends Model
         'description',
         'image',
         'status',
+    ];
+
+    protected $casts = [
+        'duration' => 'integer',
     ];
 
     public function user()
