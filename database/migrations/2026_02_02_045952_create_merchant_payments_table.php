@@ -14,23 +14,22 @@ return new class extends Migration
         Schema::create('merchant_payments', function (Blueprint $table) {
             $table->id();
 
-    // Explicitly reference bookings table
-    $table->foreignId('booking_id')
-          ->constrained('bookings')
-          ->cascadeOnDelete();
+            $table->foreignId('booking_id')
+                ->constrained('bookings')
+                ->cascadeOnDelete();
 
-    $table->foreignId('user_id')
-          ->constrained('users')
-          ->cascadeOnDelete();
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
-    $table->tinyInteger('payment_method')
-          ->comment('0=credit_card,1=paypal,2=pay_at_store,3=cash');
+            $table->tinyInteger('payment_method')
+                ->comment('0=credit_card,1=paypal,2=pay_at_store,3=cash');
 
-    $table->decimal('amount', 10, 2);
-    $table->string('transaction_id')->nullable();
-    $table->enum('payment_status', ['pending', 'success', 'failed', 'refunded'])
-          ->default('pending');
-    $table->timestamp('paid_at')->nullable();
+            $table->decimal('amount', 10, 2);
+            $table->string('transaction_id')->nullable();
+            $table->enum('payment_status', ['Due', 'paid'])
+                ->default('Due');
+            $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });
     }

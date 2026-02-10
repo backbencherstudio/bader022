@@ -212,7 +212,13 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
     // ----- Merchant/Bookings
     Route::prefix('booking')->group(function () {
+        Route::get('index', [BookingController::class, 'index'])->name('booking.index');
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
+        Route::get('show/{id}', [BookingController::class, 'show'])->name('booking.show');
+        Route::post('update/{id}', [BookingController::class, 'update'])->name('booking.update');
+        Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
+        Route::get('staff', [BookingController::class, 'getAvailableStaffByTime'])->name('booking.getAvailableStaffByTime');
+        Route::post('service-booking', [BookingController::class, 'bookingByUser'])->name('booking.bookingByUser');
     });
 
     // ----- Admin/Merchants

@@ -18,7 +18,7 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             $table->string('service_name');
-            $table->string('duration');
+            $table->integer('duration');
             $table->decimal('price', 10, 2);
             $table->text('description')->nullable();
             $table->string('image');
