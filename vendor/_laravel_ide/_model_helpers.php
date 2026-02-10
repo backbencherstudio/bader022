@@ -1982,6 +1982,76 @@ namespace App\Models {
     /**
      * App\Models\GlobalSetting
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property boolean $turn_off
+     * @property string|null $country
+     * @property string|null $contact_email
+     * @property array|null $contact_info
+     * @property string|null $terms_condition_url
+     * @property string|null $terms_condition
+     * @property string|null $privacy_policy_url
+     * @property string|null $privacy_policy
+     * @property string|null $contact_url
+     * @property string|null $contact_us
+     * @property string|null $service_url
+     * @property string|null $service
+     * @property string|null $why_choose_us_url
+     * @property string|null $why_choose_us
+     * @property string|null $about_url
+     * @property string|null $about
+     * @property string|null $home_url
+     * @property string|null $home
+     * @property array|null $social_links
+     * @property string|null $footer_text_color
+     * @property string|null $footer_background
+     * @property string|null $footer_des
+     * @property string|null $website_name
+     * @property string|null $section_spacing
+     * @property mixed $font_family
+     * @property string|null $body_text_size
+     * @property array|null $typography
+     * @property array|null $color_system
+     * @property string|null $logo_size
+     * @property mixed $logo_position
+     * @property string|null $branding_logo
+     * @property int $user_id
+     * @property int $id
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereBrandingLogo($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereLogoPosition($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereLogoSize($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereColorSystem($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereTypography($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereBodyTextSize($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereFontFamily($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereSectionSpacing($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereWebsiteName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereFooterDes($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereFooterBackground($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereFooterTextColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereSocialLinks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereHome($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereHomeUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereAbout($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereAboutUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereWhyChooseUs($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereWhyChooseUsUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereService($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereServiceUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereContactUs($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereContactUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting wherePrivacyPolicy($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting wherePrivacyPolicyUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereTermsCondition($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereTermsConditionUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereContactInfo($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereContactEmail($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereCountry($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereTurnOff($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting query()
