@@ -20,4 +20,7 @@ class MerchantPayment extends Model
     {
         return $this->belongsTo(Booking::class);
     }
+
+
+    
 }
