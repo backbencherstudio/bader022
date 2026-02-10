@@ -24,4 +24,11 @@ class Booking extends Model
         return $this->hasOne(MerchantPayment::class);
     }
 
+    protected $dates = ['date_time'];
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
 }

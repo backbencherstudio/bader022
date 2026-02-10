@@ -212,6 +212,9 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     // ----- Merchant/Bookings
     Route::prefix('booking')->group(function () {
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
+        Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
+        Route::get('staff', [BookingController::class, 'getAvailableStaffByTime'])->name('booking.getAvailableStaffByTime');
+        Route::post('service-booking', [BookingController::class, 'bookingByUser'])->name('booking.bookingByUser');
     });
 
     // ----- Admin/Merchants
