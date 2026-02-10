@@ -23,6 +23,7 @@ use App\Http\Controllers\Merchant\MinisiteController;
 use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\Merchant\StaffController;
 use App\Http\Controllers\Merchant\SubscriptionController;
+use App\Http\Controllers\Merchant\GlobalsettingController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -220,5 +221,14 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show/{id}', [MerchantController::class, 'show'])->name('merchant.show');
         Route::put('update/{id}', [MerchantController::class, 'update'])->name('merchant.update');
     });
+
+    // Globalsetting
+    Route::prefix('global-setting')->group(function () {
+        Route::get('index', [GlobalsettingController::class, 'index'])->name('merchant.index');
+        Route::get('show/{id}', [GlobalsettingController::class, 'show'])->name('merchant.show');
+        Route::post('store', [GlobalsettingController::class, 'store'])->name('global-setting.store');
+    });
+
+
 
 });
