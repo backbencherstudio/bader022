@@ -24,4 +24,9 @@ class Service extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function merchant()
+    {
+        return $this->belongsTo(User::class, 'user_id'); 
+    }
 }
