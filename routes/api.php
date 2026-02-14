@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SubcategoryController;
 use App\Http\Controllers\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserDashboardController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Merchant\BookingController;
@@ -222,6 +223,13 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('index', [MerchantController::class, 'index'])->name('merchant.index');
         Route::get('show/{id}', [MerchantController::class, 'show'])->name('merchant.show');
         Route::put('update/{id}', [MerchantController::class, 'update'])->name('merchant.update');
+    });
+
+
+    Route::prefix('dashboard')->group(function () {
+        Route::get('upcoming', [UserDashboardController::class, 'Upcoming'])->name('dashboard.upcoming');
+        Route::get('history', [UserDashboardController::class, 'History'])->name('dashboard.history');
+        Route::get('activity', [UserDashboardController::class, 'Activity'])->name('dashboard.activity');
     });
 
 });

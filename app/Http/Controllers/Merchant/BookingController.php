@@ -19,74 +19,95 @@ class BookingController extends Controller
     {
         $merchant = auth()->user();
 
-        $validator = Validator::make($request->all(), [
-            'staff_id'       => 'required|exists:staffs,id',
-            'service_id'     => 'required|exists:services,id',
-            'customer_name'  => 'required|string|max:255',
-            'email'          => 'required|email',
-            'phone'          => 'required|string|max:15',
-            'date_time'      => 'required|date_format:Y-m-d H:i:s',
-            'special_note'   => 'nullable|string|max:255',
-            'payment_method' => 'nullable|in:0,1,2,3',
-            'amount'         => 'nullable|numeric'
+        $request->validate([
+            'service_id'    => 'required|exists:services,id',
+            'staff_id'      => 'required|integer',
+            'date'          => 'required|date',
+            'time'          => 'required',
+            'customer_name' => 'required|string',
+            'email'         => 'required|email',
+            'phone'         => 'required|string',
+            'special_note'  => 'nullable|string',
+            'payment_method' => 'nullable|in:0,1,2,3'
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors'  => $validator->errors()
-            ], 422);
-        }
+        return DB::transaction(function () use ($request, $merchant) {
 
-        $staff = Staff::where('id', $request->staff_id)
-            ->where('user_id', $merchant->id)
-            ->where('status', 1)
-            ->first();
+            $service = Service::where('id', $request->service_id)
+                ->where('user_id', $merchant->id)
+                ->firstOrFail();
 
-        $service = Service::where('id', $request->service_id)
-            ->where('user_id', $merchant->id)
-            ->first();
+            $duration = (int) $service->duration;
 
-        if (!$staff || !$service) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid staff or service selection'
-            ], 403);
-        }
+            $slotStart = Carbon::parse($request->date . ' ' . $request->time);
+            $slotEnd   = $slotStart->copy()->addMinutes($duration);
 
-        DB::transaction(function () use ($request, $merchant, $service) {
+            $staff = Staff::where('id', $request->staff_id)
+                ->where('user_id', $merchant->id)
+                ->where('service_id', $service->id)
+                ->where('status', 1)
+                ->first();
+
+            if (!$staff) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid staff selection'
+                ], 422);
+            }
+
+
+            $conflict = Booking::where('staff_id', $staff->id)
+                ->whereIn('status', ['pending', 'confirm'])
+                ->where(function ($q) use ($slotStart, $slotEnd) {
+                    $q->where('date_time', '<', $slotEnd)
+                        ->whereRaw(
+                            "DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?",
+                            [$slotStart]
+                        );
+                })
+                ->lockForUpdate()
+                ->exists();
+
+            if ($conflict) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This staff is not available at this time.'
+                ], 409);
+            }
+
 
             $booking = Booking::create([
                 'user_id'        => $merchant->id,
-                'staff_id'       => $request->staff_id,
+                'staff_id'       => $staff->id,
                 'service_id'     => $service->id,
                 'customer_name'  => $request->customer_name,
                 'email'          => $request->email,
                 'phone'          => $request->phone,
-                'date_time'      => $request->date_time,
+                'date_time'      => $slotStart,
                 'status'         => 'pending',
                 'special_note'   => $request->special_note,
                 'booking_by'     => 'merchant',
                 'payment_method' => $request->payment_method ?? 2,
             ]);
 
-            if ($request->has('payment_method')) {
-                MerchantPayment::create([
-                    'booking_id'     => $booking->id,
-                    'user_id'        => $merchant->id,
-                    'payment_method' => $request->payment_method,
-                    'amount'         => $request->amount ?? $service->price,
-                    'payment_status' => 'pending',
-                    'transaction_id' => $request->transaction_id ?? null,
-                ]);
-            }
-        });
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Booking created successfully'
-        ], 201);
+            MerchantPayment::create([
+                'booking_id'     => $booking->id,
+                'user_id'        => $merchant->id,
+                'payment_method' => $request->payment_method ?? 2,
+                'amount'         => $service->price,
+                'transaction_id' => 'MERCHANT-' . uniqid(),
+                'payment_status' => 'pending',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking created successfully',
+                'booking_id' => $booking->id
+            ], 201);
+        });
     }
+
 
     public function getAvailability(Request $request)
     {
@@ -357,7 +378,7 @@ class BookingController extends Controller
                 'date_time'      => $slotStart,
                 'status'         => 'pending',
                 'special_note'   => $request->special_note,
-                'booking_by'     => 'user',
+                'booking_by'     => auth()->id(),
                 'payment_method' => 2,
             ]);
 
@@ -378,4 +399,5 @@ class BookingController extends Controller
             ], 201);
         });
     }
+
 }
