@@ -13,7 +13,7 @@ class MerchantPayment extends Model
         'amount',
         'transaction_id',
         'payment_status',
-        'paid_at'
+        'paid_at',
     ];
 
     public function booking()
@@ -21,6 +21,8 @@ class MerchantPayment extends Model
         return $this->belongsTo(Booking::class);
     }
 
-
-    
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

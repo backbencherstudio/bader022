@@ -2692,6 +2692,7 @@ namespace App\Models {
      * @property int $booking_id
      * @property int $id
      * @property-read \App\Models\Booking $booking
+     * @property-read \App\Models\User $user
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment whereBookingId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment whereUserId($value)

@@ -17,16 +17,19 @@ class BookingController extends Controller
 {
     public function index()
     {
+        $userId = auth()->id();
+
         $bookings = Booking::with(['user', 'staff', 'service'])
+            ->where('user_id', $userId)
             ->latest()
             ->get();
 
         if ($bookings->isEmpty()) {
             return response()->json([
-                'success' => false,
-                'message' => 'No bookings found',
+                'success' => true,
+                'message' => 'No bookings found for this user',
                 'data' => [],
-            ], 404);
+            ], 200);
         }
 
         return response()->json([
@@ -38,14 +41,19 @@ class BookingController extends Controller
 
     public function show($id)
     {
+        $userId = auth()->id();
+
         $booking = Booking::with(['user', 'staff', 'service'])
-            ->find($id);
+            ->where('user_id', $userId)
+            ->where('id', $id)
+            ->first();
 
         if (! $booking) {
             return response()->json([
-                'success' => false,
-                'message' => 'Booking not found',
-            ], 404);
+                'success' => true,
+                'message' => 'Booking not found for this user',
+                'data' => null,
+            ], 200);
         }
 
         return response()->json([
@@ -57,24 +65,30 @@ class BookingController extends Controller
 
     public function update(Request $request, $id)
     {
+        $userId = auth()->id();
+
         $request->validate([
             'status' => 'required|in:pending,confirm,complete,cancel',
             'payment_status' => 'required|in:Due,paid',
         ]);
 
-        $booking = Booking::find($id);
+        $booking = Booking::where('id', $id)
+            ->where('user_id', $userId)
+            ->first();
 
         if (! $booking) {
             return response()->json([
                 'success' => false,
-                'message' => 'Booking not found',
+                'message' => 'Booking not found for this user',
             ], 404);
         }
 
         $booking->status = $request->status;
         $booking->save();
 
-        $payment = MerchantPayment::where('booking_id', $id)->first();
+        $payment = MerchantPayment::where('booking_id', $id)
+            ->where('user_id', $userId)
+            ->first();
 
         if ($payment) {
             $payment->payment_status = $request->payment_status;

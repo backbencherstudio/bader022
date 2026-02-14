@@ -24,6 +24,9 @@ use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\Merchant\StaffController;
 use App\Http\Controllers\Merchant\SubscriptionController;
 use App\Http\Controllers\Merchant\GlobalsettingController;
+use App\Http\Controllers\Merchant\TransactionController;
+use App\Http\Controllers\Merchant\MerchantDashboardContoller;
+use App\Http\Controllers\Merchant\AnalyticesController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -233,6 +236,29 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('index', [GlobalsettingController::class, 'index'])->name('merchant.index');
         Route::get('show/{id}', [GlobalsettingController::class, 'show'])->name('merchant.show');
         Route::post('store', [GlobalsettingController::class, 'store'])->name('global-setting.store');
+    });
+
+    // TransactionController
+    Route::prefix('transaction')->group(function () {
+        Route::get('index', [TransactionController::class, 'index'])->name('Transaction.index');
+        Route::get('show/{id}', [TransactionController::class, 'show'])->name('Transaction.show');
+
+    });
+    // merchantdashboard
+    Route::prefix('mer-dashboard')->group(function () {
+        Route::get('index', [MerchantDashboardContoller::class, 'index'])->name('merchantdashboard.index');
+        Route::get('revenue', [MerchantDashboardContoller::class, 'monthlypaymentrevenue'])->name('merchantdashboard.monthlypaymentrevenue');
+        Route::get('weeklyrevenue', [MerchantDashboardContoller::class, 'weeklyPaymentrevenue'])->name('merchantdashboard.weeklyPaymentrevenue');
+        Route::get('today', [MerchantDashboardContoller::class, 'todayAppointment'])->name('merchantdashboard.todayAppointment');
+    });
+    // merchantdashboard
+    Route::prefix('analytics')->group(function () {
+
+        Route::get('index', [AnalyticesController::class, 'analytice'])->name('merchantdashboard.analytice');
+        Route::get('monthlyrevenue', [AnalyticesController::class, 'monthlypaymentrevenue'])->name('merchantdashboard.monthlyPaymentRevenue');
+        Route::get('weeklyrevenue', [AnalyticesController::class, 'weeklyPaymentrevenue'])->name('merchantdashboard.weeklyPaymentRevenue');
+        Route::get('newreturn', [AnalyticesController::class, 'newreturn'])->name('merchantdashboard.newreturn');
+        Route::get('staffPerformance', [AnalyticesController::class, 'staffPerformance'])->name('merchantdashboard.staffPerformance');
     });
 
 
