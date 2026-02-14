@@ -337,7 +337,7 @@ class BookingController extends Controller
     {
         $request->validate([
             'service_id' => 'required|exists:services,id',
-            'staff_id' => 'nullable|integer',
+            'staff_id' => 'nullable|integer',                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
             'date' => 'required|date',
             'time' => 'required',
             'customer_name' => 'required|string',
@@ -439,7 +439,7 @@ class BookingController extends Controller
                 'date_time' => $slotStart,
                 'status' => 'pending',
                 'special_note' => $request->special_note,
-                'booking_by' => 'user',
+                'booking_by' => 'user_id',
                 'payment_method' => 2,
             ]);
 

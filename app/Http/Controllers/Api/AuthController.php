@@ -227,7 +227,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Generate safe subdomain
+
         $rawSubdomain = Str::before($request->email, '@');
         $subdomain = Str::slug($rawSubdomain);
 
