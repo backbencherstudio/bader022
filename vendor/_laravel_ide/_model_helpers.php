@@ -4686,9 +4686,11 @@ namespace App\Models {
      * @property string|null $image
      * @property mixed $role
      * @property string $name
+     * @property string $user_id
      * @property int $id
      * @property-read \App\Models\Service $service
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereUserId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereRole($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Staff>|Staff whereImage($value)
@@ -5358,7 +5360,7 @@ namespace App\Models {
      * @property string|null $website_domain
      * @property mixed $business_category
      * @property string|null $status
-     * @property string|null $role
+     * @property string|null $platform_status
      * @property string|null $phone
      * @property bool $type
      * @property string|null $image
@@ -5385,7 +5387,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereImage($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereType($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePhone($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRole($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePlatformStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereBusinessCategory($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereWebsiteDomain($value)
