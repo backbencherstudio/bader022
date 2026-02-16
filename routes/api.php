@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqCategoryController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\MerchantController;
@@ -11,27 +13,25 @@ use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
-use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SubcategoryController;
-use App\Http\Controllers\Admin\AdminSubscriptionController;
+use App\Http\Controllers\Admin\TapPaymentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserDashboardController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Merchant\AnalyticesController;
 use App\Http\Controllers\Merchant\BookingController;
+use App\Http\Controllers\Merchant\GlobalsettingController;
+use App\Http\Controllers\Merchant\MerchantDashboardContoller;
 use App\Http\Controllers\Merchant\MerchantSettingController;
 use App\Http\Controllers\Merchant\MinisiteController;
 use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\Merchant\StaffController;
 use App\Http\Controllers\Merchant\SubscriptionController;
-use App\Http\Controllers\Merchant\GlobalsettingController;
 use App\Http\Controllers\Merchant\TransactionController;
-use App\Http\Controllers\Merchant\MerchantDashboardContoller;
-use App\Http\Controllers\Merchant\AnalyticesController;
 use App\Http\Controllers\NotificationController;
-use Illuminate\Support\Facades\Route;
-use App\Models\User;
 
+use Illuminate\Support\Facades\Route;
 
 // user login
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -40,8 +40,6 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
-
-
 
 // google login api
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
@@ -63,10 +61,9 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::post('saveinfo', [AuthController::class, 'saveInfo'])->name('saveInfo');
 
     // dashboard
-   Route::get('dashboard-overview', [DashboardController::class, 'index'])->name('dashboard-overview');
-   Route::get('monthlypaymentCount', [DashboardController::class, 'monthlypaymentCount'])->name('monthlypaymentCount');
-   Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
-
+    Route::get('dashboard-overview', [DashboardController::class, 'index'])->name('dashboard-overview');
+    Route::get('monthlypaymentCount', [DashboardController::class, 'monthlypaymentCount'])->name('monthlypaymentCount');
+    Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
 
     // Role
     Route::prefix('role')->group(function () {
@@ -151,6 +148,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::prefix('process')->group(function () {
         Route::get('index', [SubscriptionController::class, 'index'])->name('process.index');
         Route::post('store', [SubscriptionController::class, 'store'])->name('process.store');
+
         Route::get('edit/{id}', [SubscriptionController::class, 'edit'])->name('process.edit');
         Route::post('update/{id}', [SubscriptionController::class, 'update'])->name('process.update');
         Route::delete('delete/{id}', [SubscriptionController::class, 'destroy'])->name('process.destroy');
@@ -272,3 +270,5 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
 
 });
+
+Route::post('callback', [SubscriptionController::class, 'callback'])->name('tap.callback');
