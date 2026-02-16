@@ -5053,6 +5053,7 @@ namespace App\Models {
      * @property int $user_id
      * @property int $id
      * @property-read \App\Models\User $user
+     * @property-read \App\Models\User $merchant
      * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereUserId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Service>|Service whereServiceName($value)
