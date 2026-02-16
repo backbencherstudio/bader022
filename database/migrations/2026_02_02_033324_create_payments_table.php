@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('subscription_id')->constrained('subscriptions')->onDelete('cascade');
             $table->decimal('amount', 10, 2);
             $table->string('currency', 5)->default('SAR');
-            $table->enum('payment_method', ['Stripe', 'Paypal']);
+            $table->enum('payment_method', ['Stripe', 'Paypal', 'Tap']);
             $table->string('transaction_id')->unique();
             $table->enum('status', ['pending', 'successfull', 'failed'])->default('pending');
             $table->timestamps();
