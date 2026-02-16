@@ -38,7 +38,7 @@ class User extends Authenticatable implements JWTSubject
         'package_status',
         'jwt_token',
         'google_id',
-        'business_category'
+        'business_category',
     ];
 
     protected $hidden = [
@@ -72,5 +72,25 @@ class User extends Authenticatable implements JWTSubject
     public function services()
     {
         return $this->hasMany(Service::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function subscription()
+    {
+        return $this->hasOne(Subscription::class);
+    }
+
+    public function scopeMerchants($query)
+    {
+        return $query->where('type', 2);
+    }
+
+    public function merchantSetting()
+    {
+        return $this->hasOne(MerchantSetting::class);
     }
 }

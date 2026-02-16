@@ -34,7 +34,11 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'tap' => [
+    'secret_key' => env('TAP_SECRET_KEY'),
+    'redirect_url' => env('TAP_REDIRECT_URL'),
+],
 
-  
+
 
 ];

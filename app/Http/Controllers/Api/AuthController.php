@@ -6,14 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-
 
 class AuthController extends Controller
 {
@@ -58,7 +57,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => $role . ' login successfully',
+            'message' => $role.' login successfully',
             'data' => [
                 'user' => $user,
                 'user_type' => $role,
@@ -87,10 +86,10 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
 
-            $imagePath = 'user/' . $imageName;
+            $imagePath = 'user/'.$imageName;
         }
 
         $user = User::create([
@@ -142,9 +141,9 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $imagePath = 'user/' . $imageName;
+            $imagePath = 'user/'.$imageName;
         }
 
         $user = User::create([
@@ -171,6 +170,46 @@ class AuthController extends Controller
         ], 201);
     }
 
+    // public function marchantregister(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required|string|max:255',
+    //         'email' => 'required|email|unique:users,email',
+    //         'phone' => 'required|string|max:20|unique:users,phone',
+    //         'password' => 'required|string|min:6|confirmed',
+    //         'business_category' => 'required|string|in:salon_beauty,home_services,health,fitness_pro_gym,others',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+    //     $subdomain = Str::before($request->email, '@');
+    //     $merchant = User::create([
+    //         'name' => $request->name,
+    //         'email' => $request->email,
+    //         'phone' => $request->phone,
+    //         'type' => 2,
+    //         'password' => Hash::make($request->password),
+    //         'business_category' => $request->business_category,
+    //         'website_domain' => $subdomain,
+    //     ]);
+
+    //     $token = Auth::guard('api')->login($merchant);
+
+    //     $merchant->update([
+    //         'jwt_token' => $token,
+    //     ]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Merchant registered successfully',
+    //         'data' => $merchant,
+    //         'token' => $token,
+    //     ], 201);
+    // }
     public function marchantregister(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -178,14 +217,24 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'required|string|max:20|unique:users,phone',
             'password' => 'required|string|min:6|confirmed',
-            'business_category' => 'required|string|in:salon_beauty,home_services,health,fitness_pro_gym,others',
+            'business_category' => 'required|in:salon_beauty,home_services,health,fitness_pro_gym,others',
         ]);
-
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
                 'errors' => $validator->errors(),
+            ], 422);
+        }
+
+
+        $rawSubdomain = Str::before($request->email, '@');
+        $subdomain = Str::slug($rawSubdomain);
+
+        if (User::where('website_domain', $subdomain)->exists()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This subdomain is already taken.',
             ], 422);
         }
 
@@ -196,20 +245,40 @@ class AuthController extends Controller
             'type' => 2,
             'password' => Hash::make($request->password),
             'business_category' => $request->business_category,
+            'website_domain' => $subdomain,
         ]);
 
-        $token = Auth::guard('api')->login($merchant);
+        $token = Auth::guard('api')->attempt([
+            'email' => $request->email,
+            'password' => $request->password,
+        ]);
 
         $merchant->update([
             'jwt_token' => $token,
         ]);
 
         return response()->json([
+            'data' => $merchant->makeHidden(['password', 'jwt_token']),
             'success' => true,
             'message' => 'Merchant registered successfully',
-            'data' => $merchant,
+            'domain' => $subdomain.'.devlaro.com',
             'token' => $token,
+
         ], 201);
+    }
+
+    public function getStoreDetails($subdomain)
+    {
+        $merchant = User::where('website_domain', $subdomain)->firstOrFail();
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'name' => $merchant->name,
+                'category' => $merchant->business_category,
+                'phone' => $merchant->phone,
+            ],
+        ]);
     }
 
     public function edit($id)
@@ -249,8 +318,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
             // 'role' => 'required|exists:roles,id',
@@ -269,9 +338,9 @@ class AuthController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $user->image = 'user/' . $imageName;
+            $user->image = 'user/'.$imageName;
         }
 
         $user->name = $request->name;
@@ -372,7 +441,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -409,9 +478,9 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'success' =>false,
+                'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -420,7 +489,7 @@ class AuthController extends Controller
         if ($user->type == 1) {
             return response()->json([
                 'success' => false,
-                'message' => 'Admin cannot reset password via OTP. Please change password from dashboard.'
+                'message' => 'Admin cannot reset password via OTP. Please change password from dashboard.',
             ], 403);
         }
 
@@ -429,7 +498,7 @@ class AuthController extends Controller
         DB::table('password_resets')->updateOrInsert(
             ['email' => $request->email],
             [
-                'otp'        => Hash::make($otp),
+                'otp' => Hash::make($otp),
                 'expires_at' => now()->addMinutes(5),
                 'updated_at' => now(),
                 'created_at' => now(),
@@ -457,11 +526,11 @@ class AuthController extends Controller
             'otp' => 'required',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -469,7 +538,7 @@ class AuthController extends Controller
             ->where('email', $request->email)
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return response()->json(['message' => 'OTP not found'], 404);
         }
 
@@ -477,7 +546,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'OTP expired'], 400);
         }
 
-        if (!Hash::check($request->otp, $record->otp)) {
+        if (! Hash::check($request->otp, $record->otp)) {
             return response()->json(['message' => 'Invalid OTP'], 400);
         }
 
@@ -495,11 +564,11 @@ class AuthController extends Controller
             'password' => 'required|min:6|confirmed',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -507,11 +576,11 @@ class AuthController extends Controller
             ->where('email', $request->email)
             ->first();
 
-        if (!$record || now()->gt($record->expires_at)) {
+        if (! $record || now()->gt($record->expires_at)) {
             return response()->json(['message' => 'OTP expired or invalid'], 400);
         }
 
-        if (!Hash::check($request->otp, $record->otp)) {
+        if (! Hash::check($request->otp, $record->otp)) {
             return response()->json(['message' => 'Invalid OTP'], 400);
         }
 
@@ -525,5 +594,75 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Password reset successfully',
         ]);
+    }
+
+    public function profileInfo()
+    {
+        $user = auth()->user();
+
+        return response()->json([
+            'success' => true,
+            'data' => $user->only(['name', 'image', 'email', 'phone', 'address']),
+        ], 200);
+    }
+
+    public function saveInfo(Request $request)
+    {
+        $user = auth()->user();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email,'.$user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'address' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $data = [];
+
+        if ($request->filled('name')) {
+            $data['name'] = $request->name;
+        }
+
+        if ($request->filled('email')) {
+            $data['email'] = $request->email;
+        }
+
+        if ($request->filled('phone')) {
+            $data['phone'] = $request->phone;
+        }
+
+        if ($request->filled('address')) {
+            $data['address'] = $request->address;
+        }
+
+        if ($request->hasFile('image')) {
+            if ($user->image && file_exists(public_path($user->image))) {
+                unlink(public_path($user->image));
+            }
+
+            $imageName = time().'_'.$request->image->getClientOriginalName();
+
+            $request->image->move(public_path('uploads/users'), $imageName);
+
+            $data['image'] = 'uploads/users/'.$imageName;
+        }
+
+        if (! empty($data)) {
+            $user->update($data);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Personal information updated successfully',
+            'data' => $user->fresh()->only(['name', 'image', 'phone', 'address', 'email']),
+        ], 200);
     }
 }

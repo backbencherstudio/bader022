@@ -19,6 +19,7 @@ class PlanController extends Controller
         ], 200);
     }
 
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -27,7 +28,6 @@ class PlanController extends Controller
             'price' => 'required|numeric',
             'currency' => 'nullable|string',
             'package' => 'required|in:Free,Monthly,Annual',
-            'day' => 'required|integer',
             'features' => 'nullable|array',
             'features.*' => 'string',
             'status' => 'nullable|boolean',
@@ -40,16 +40,27 @@ class PlanController extends Controller
             ], 422);
         }
 
+        $day = 0;
+
+        if ($request->package === 'Free') {
+            $day = 7;
+        } elseif ($request->package === 'Monthly') {
+            $day = 30;
+        } elseif ($request->package === 'Annual') {
+            $day = 365;
+        }
+
         $plan = Plan::create([
             'name' => $request->name,
-            'title' => $request->title,
+            'title' => $request->title ?? $request->name . ' Plan',
             'price' => $request->price,
             'currency' => $request->currency ?? 'SAR',
             'package' => $request->package,
-            'day' => $request->day,
+            'day' => $day,
             'features' => $request->features,
-            'status' => $request->status ?? 1,
+            'status' => 1,
         ]);
+
 
         return response()->json([
             'success' => true,
@@ -75,6 +86,7 @@ class PlanController extends Controller
         ], 200);
     }
 
+
     public function update(Request $request, $id)
     {
         $plan = Plan::find($id);
@@ -92,10 +104,9 @@ class PlanController extends Controller
             'price' => 'sometimes|required|numeric',
             'currency' => 'nullable|string',
             'package' => 'sometimes|required|in:Free,Monthly,Annual',
-            'day' => 'sometimes|required|integer',
             'features' => 'nullable|array',
             'features.*' => 'string',
-            'status' => 'nullable|boolean',
+
         ]);
 
         if ($validator->fails()) {
@@ -107,20 +118,55 @@ class PlanController extends Controller
 
         $plan->fill($request->only([
             'name',
-            'title',
             'price',
             'currency',
             'package',
-            'day',
             'features',
-            'status'
+          
         ]));
+
+
+        if ($request->has('title')) {
+            $plan->title = $request->title ?? $plan->title;
+        }
+
+        if ($request->has('package')) {
+            if ($request->package === 'Free') {
+                $plan->day = 7;
+            } elseif ($request->package === 'Monthly') {
+                $plan->day = 30;
+            } elseif ($request->package === 'Annual') {
+                $plan->day = 365;
+            }
+        }
 
         $plan->save();
 
         return response()->json([
             'success' => true,
             'message' => 'Plan updated successfully',
+            'data' => $plan
+        ], 200);
+    }
+
+
+    public function updateStatus($id)
+    {
+        $plan = Plan::find($id);
+
+        if (!$plan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Plan not found'
+            ], 404);
+        }
+
+        $plan->status = $plan->status ? 0 : 1;
+        $plan->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Plan status updated successfully',
             'data' => $plan
         ], 200);
     }
