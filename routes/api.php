@@ -263,4 +263,5 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
 });
 
-Route::post('callback', [SubscriptionController::class, 'callback'])->name('tap.callback');
+
+    Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('plan_id')->constrained('plans')->onDelete('restrict');
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
-            $table->enum('status', ['active', 'expired', 'cancelled'])->default('active');
+            $table->enum('status', ['pending', 'active', 'expired', 'cancelled'])->default('pending');
             $table->boolean('auto_renew')->default(0)->comment('1 = Auto renew enabled');
             $table->timestamps();
         });
