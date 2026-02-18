@@ -232,6 +232,13 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::put('update/{id}', [MerchantController::class, 'update'])->name('merchant.update');
     });
 
+      // Globalsetting
+    Route::prefix('global-setting')->group(function () {
+        Route::get('index', [GlobalsettingController::class, 'index'])->name('merchant.index');
+        Route::get('show/{id}', [GlobalsettingController::class, 'show'])->name('merchant.show');
+        Route::post('store', [GlobalsettingController::class, 'store'])->name('global-setting.store');
+    });
+
     //----- User/Dashboard/Booking History.....
     Route::prefix('dashboard')->group(function () {
         Route::get('upcoming', [UserDashboardController::class, 'Upcoming'])->name('dashboard.upcoming');
