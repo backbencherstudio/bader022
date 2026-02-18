@@ -21,8 +21,11 @@ namespace App\Models {
      * @property int $id
      * @property-read \App\Models\MerchantPayment $payment
      * @property-read \App\Models\Service $service
-     * @property-read \App\Models\User $user
-     * @property-read \App\Models\User $staff
+     * @property-read \App\Models\User $bookedUser
+     * @property-read \App\Models\Staff $staff
+     * @property-read \App\Models\User $merchant
+     * @property-read \App\Models\MerchantSetting $merchantStore
+     * @property-read \App\Models\MerchantPayment $merchantPayment
      * @method static \Illuminate\Database\Eloquent\Builder<Booking>|Booking whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Booking>|Booking whereUserId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Booking>|Booking whereStaffId($value)
