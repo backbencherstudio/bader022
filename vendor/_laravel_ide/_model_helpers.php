@@ -8,7 +8,7 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property bool|null $payment_method
-     * @property mixed $booking_by
+     * @property string $booking_by
      * @property string|null $special_note
      * @property mixed $status
      * @property string $date_time
@@ -5379,64 +5379,14 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
-     * @property string|null $google_redirect_url
-     * @property string|null $google_client_secret
-     * @property string|null $google_client_id
-     * @property string|null $pusher_app_cluster
-     * @property string|null $pusher_app_secret
-     * @property string|null $pusher_app_key
-     * @property string|null $pusher_app_id
-     * @property string|null $address
-     * @property string|null $support_email
-     * @property string|null $phone_no
-     * @property string|null $whatsapp_number
-     * @property string|null $email
-     * @property string|null $map_link
-     * @property string|null $instagram_url
-     * @property string|null $telegram_url
-     * @property string|null $linkedin_url
-     * @property string|null $twitter_url
-     * @property string|null $youtube_url
-     * @property string|null $facebook_url
-     * @property string|null $copyright_text
-     * @property mixed $app_mode
-     * @property string|null $seo_image
-     * @property string|null $seo_keywords
-     * @property string|null $seo_meta_description
-     * @property string|null $favicon
-     * @property string|null $admin_logo
-     * @property string|null $site_logo
-     * @property string|null $site_name
+     * @property string|null $tap_public_key
+     * @property string|null $tap_secret_key
+     * @property mixed $tap_mode
      * @property int $id
      * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereSiteName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereSiteLogo($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereAdminLogo($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereFavicon($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereSeoMetaDescription($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereSeoKeywords($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereSeoImage($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereAppMode($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereCopyrightText($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereFacebookUrl($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereYoutubeUrl($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereTwitterUrl($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereLinkedinUrl($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereTelegramUrl($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereInstagramUrl($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereMapLink($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereEmail($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereWhatsappNumber($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting wherePhoneNo($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereSupportEmail($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereAddress($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting wherePusherAppId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting wherePusherAppKey($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting wherePusherAppSecret($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting wherePusherAppCluster($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereGoogleClientId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereGoogleClientSecret($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereGoogleRedirectUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereTapMode($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereTapSecretKey($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereTapPublicKey($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Setting>|Setting newModelQuery()
@@ -7089,9 +7039,9 @@ namespace App\Models {
      * @property string|null $remaining_day
      * @property string|null $package_expire_date
      * @property string|null $package_end_date
-     * @property string|null $package_start_date
-     * @property string|null $package_duration
-     * @property string|null $current_package
+     * @property string|null $tap_public_key
+     * @property string|null $tap_secret_key
+     * @property string|null $tap_mode
      * @property string|null $platform_access
      * @property string|null $address
      * @property string|null $website_domain
@@ -7134,9 +7084,9 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereWebsiteDomain($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereAddress($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePlatformAccess($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCurrentPackage($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageDuration($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageStartDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapMode($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapSecretKey($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapPublicKey($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageEndDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageExpireDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRemainingDay($value)
