@@ -334,7 +334,7 @@ class BookingController extends Controller
         $bookings = Booking::whereIn('staff_id', $staffIds)
             ->where('service_id', $service->id)
             ->whereDate('date_time', $request->date)
-            ->whereIn('status', ['pending', 'confirm'])
+            ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
             ->get();
 
         $bookedStaff = [];
@@ -468,9 +468,9 @@ class BookingController extends Controller
                 'booking_id' => $booking->id,
                 'user_id' => $merchantId,
                 'payment_method' => 2,
-                'amount' => $service->price,
-                'transaction_id' => 'PAY-STORE-'.uniqid(),
-                'payment_status' => 'Due',
+                'amount'         => $service->price,
+                'transaction_id' => 'PAY-STORE-' . uniqid(),
+                'payment_status' => 'due',
             ]);
 
             return response()->json([
