@@ -30,7 +30,7 @@ use App\Http\Controllers\Merchant\MerchantDashboardContoller;
 use App\Http\Controllers\Merchant\AnalyticesController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
+
 
 
 // user login
@@ -230,6 +230,13 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('index', [MerchantController::class, 'index'])->name('merchant.index');
         Route::get('show/{id}', [MerchantController::class, 'show'])->name('merchant.show');
         Route::put('update/{id}', [MerchantController::class, 'update'])->name('merchant.update');
+    });
+
+      // Globalsetting
+    Route::prefix('global-setting')->group(function () {
+        Route::get('index', [GlobalsettingController::class, 'index'])->name('merchant.index');
+        Route::get('show/{id}', [GlobalsettingController::class, 'show'])->name('merchant.show');
+        Route::post('store', [GlobalsettingController::class, 'store'])->name('global-setting.store');
     });
 
     //----- User/Dashboard/Booking History.....
