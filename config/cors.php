@@ -13,6 +13,7 @@ return [
         'http://127.0.0.1:5173',
         'http://*.devlaro.com',
         'https://*.devlaro.com',
+        'http://192.168.7.82:3000',
 
 
     ],
