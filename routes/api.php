@@ -265,10 +265,5 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
 
 
-    Route::prefix('dashboard')->group(function () {
-        Route::get('upcoming', [UserDashboardController::class, 'Upcoming'])->name('dashboard.upcoming');
-        Route::get('history', [UserDashboardController::class, 'History'])->name('dashboard.history');
-        Route::get('activity', [UserDashboardController::class, 'Activity'])->name('dashboard.activity');
-    });
-
-});
+Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
+// Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
