@@ -30,7 +30,7 @@ use App\Http\Controllers\Merchant\MerchantDashboardContoller;
 use App\Http\Controllers\Merchant\AnalyticesController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
+
 
 
 // user login
