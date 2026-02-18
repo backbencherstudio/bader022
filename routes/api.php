@@ -225,7 +225,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::put('update/{id}', [MerchantController::class, 'update'])->name('merchant.update');
     });
 
-    //----- User/Dashboard/Booking History
+    //----- User/Dashboard/Booking History.....
     Route::prefix('dashboard')->group(function () {
         Route::get('upcoming', [UserDashboardController::class, 'Upcoming'])->name('dashboard.upcoming');
         Route::get('history', [UserDashboardController::class, 'History'])->name('dashboard.history');
