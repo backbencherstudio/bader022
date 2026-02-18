@@ -8,7 +8,7 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property bool|null $payment_method
-     * @property mixed $booking_by
+     * @property string $booking_by
      * @property string|null $special_note
      * @property mixed $status
      * @property string $date_time
