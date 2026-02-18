@@ -14,7 +14,6 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\Admin\SubcategoryController;
-use App\Http\Controllers\Admin\TapPaymentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
@@ -29,7 +28,6 @@ use App\Http\Controllers\Merchant\StaffController;
 use App\Http\Controllers\Merchant\SubscriptionController;
 use App\Http\Controllers\Merchant\TransactionController;
 use App\Http\Controllers\NotificationController;
-
 use Illuminate\Support\Facades\Route;
 
 // user login
@@ -259,9 +257,6 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('staffPerformance', [AnalyticesController::class, 'staffPerformance'])->name('merchantdashboard.staffPerformance');
     });
 
-
-
 });
 
-
-    Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
+Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
