@@ -7075,7 +7075,21 @@ namespace App\Models {
     /**
      * App\Models\TapPayment
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string $tap_public_key
+     * @property string $tap_secret_key
+     * @property mixed $tap_mode
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereTapMode($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereTapSecretKey($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereTapPublicKey($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment query()
