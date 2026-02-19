@@ -379,7 +379,7 @@ class BookingController extends Controller
                 'status'         => 'pending',
                 'special_note'   => $request->special_note,
                 'booking_by'     => auth()->id(),
-                'payment_method' => 2,
+                'payment_method' => "name",
             ]);
 
             MerchantPayment::create([

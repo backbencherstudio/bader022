@@ -260,7 +260,7 @@ class SubscriptionController extends Controller
                         'subscription_id' => $subscription->id,
                         'amount' => $plan->price,
                         'currency' => 'SAR',
-                        'payment_method' => 'tap',
+                        'payment_method' => $request->payment_method,
                         'transaction_id' => $tapData['id'],
                         'status' => 'due',
                     ]);
