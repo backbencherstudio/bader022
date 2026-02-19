@@ -110,22 +110,29 @@ class BookingController extends Controller
         $merchant = auth()->user();
 
         $request->validate([
-            'service_id' => 'required|exists:services,id',
-            'staff_id' => 'required|integer',
-            'date' => 'required|date',
-            'time' => 'required',
+            'service_id'    => 'required|exists:services,id',
+            'staff_id'      => 'nullable|integer',
+            'date'          => 'required|date',
+            'time'          => 'required',
             'customer_name' => 'required|string',
-            'email' => 'required|email',
-            'phone' => 'required|string',
-            'special_note' => 'nullable|string',
-            'payment_method' => 'nullable|in:0,1,2,3',
+            'email'         => 'required|email',
+            'phone'         => 'required|string',
+            'special_note'  => 'nullable|string',
+            'payment_method' => 'required|string',
         ]);
 
         return DB::transaction(function () use ($request, $merchant) {
 
             $service = Service::where('id', $request->service_id)
                 ->where('user_id', $merchant->id)
-                ->firstOrFail();
+                ->first();
+
+            if (!$service) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid service selection'
+                ], 422);
+            }
 
             $duration = (int) $service->duration;
 
@@ -138,53 +145,100 @@ class BookingController extends Controller
                 ->where('status', 1)
                 ->first();
 
-            if (! $staff) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid staff selection',
-                ], 422);
-            }
+            if ($request->staff_id) {
 
-            $conflict = Booking::where('staff_id', $staff->id)
-                ->whereIn('status', ['pending', 'confirm'])
-                ->where(function ($q) use ($slotStart, $slotEnd) {
-                    $q->where('date_time', '<', $slotEnd)
-                        ->whereRaw(
-                            'DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?',
-                            [$slotStart]
-                        );
-                })
-                ->lockForUpdate()
-                ->exists();
+                $staff = Staff::where('id', $request->staff_id)
+                    ->where('user_id', $merchant->id)
+                    ->where('service_id', $service->id)
+                    ->where('status', 1)
+                    ->first();
 
-            if ($conflict) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'This staff is not available at this time.',
-                ], 409);
+                if (!$staff) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid staff selection'
+                    ], 422);
+                }
+
+                $conflict = Booking::where('staff_id', $staff->id)
+                    ->whereIn('status', ['pending', 'confirm'])
+                    ->where(function ($q) use ($slotStart, $slotEnd) {
+                        $q->where('date_time', '<', $slotEnd)
+                            ->whereRaw(
+                                "DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?",
+                                [$slotStart]
+                            );
+                    })
+                    ->lockForUpdate()
+                    ->exists();
+
+                if ($conflict) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'This staff is not available at this time.'
+                    ], 409);
+                }
+
+                $staffId = $staff->id;
+            } else {
+
+                $staffs = Staff::where('user_id', $merchant->id)
+                    ->where('service_id', $service->id)
+                    ->where('status', 1)
+                    ->lockForUpdate()
+                    ->get();
+
+                $freeStaff = null;
+
+                foreach ($staffs as $staff) {
+
+                    $conflict = Booking::where('staff_id', $staff->id)
+                        ->whereIn('status', ['pending', 'confirm'])
+                        ->where(function ($q) use ($slotStart, $slotEnd) {
+                            $q->where('date_time', '<', $slotEnd)
+                                ->whereRaw(
+                                    "DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?",
+                                    [$slotStart]
+                                );
+                        })
+                        ->exists();
+
+                    if (!$conflict) {
+                        $freeStaff = $staff;
+                        break;
+                    }
+                }
+
+                if (!$freeStaff) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No staff available at this time slot.'
+                    ], 409);
+                }
+
+                $staffId = $freeStaff->id;
             }
 
             $booking = Booking::create([
-                'user_id' => $merchant->id,
-                'staff_id' => $staff->id,
-                'service_id' => $service->id,
-                'customer_name' => $request->customer_name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'date_time' => $slotStart,
-                'status' => 'pending',
-                'special_note' => $request->special_note,
-                'booking_by' => 'merchant',
-                'payment_method' => $request->payment_method ?? 2,
+                'user_id'        => $merchant->id,
+                'staff_id'       => $staff->id,
+                'service_id'     => $service->id,
+                'customer_name'  => $request->customer_name,
+                'email'          => $request->email,
+                'phone'          => $request->phone,
+                'date_time'      => $slotStart,
+                'status'         => 'pending',
+                'special_note'   => $request->special_note,
+                'booking_by'     => 'merchant',
             ]);
 
             MerchantPayment::create([
-                'booking_id' => $booking->id,
-                'user_id' => $merchant->id,
-                'payment_method' => $request->payment_method ?? 2,
-                'amount' => $service->price,
-                'transaction_id' => 'MERCHANT-'.uniqid(),
-                'payment_status' => 'pending',
+                'booking_id'     => $booking->id,
+                'user_id'        => $merchant->id,
+                'payment_method' => $request->payment_method,
+                'amount'         => $service->price,
+                'transaction_id' => 'MERCHANT-' . uniqid(),
+                'payment_status' => 'due',
             ]);
 
             return response()->json([

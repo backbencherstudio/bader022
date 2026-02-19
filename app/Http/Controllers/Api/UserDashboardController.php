@@ -711,17 +711,29 @@ class UserDashboardController extends Controller
             }
         } else {
 
+            $duration = (int) $booking->service->duration;
+            $slotStart = $newDateTime;
+            $slotEnd = $slotStart->copy()->addMinutes($duration);
+
             $staff = Staff::where('user_id', $booking->user_id)
                 ->where('status', 1)
-                ->whereNotIn('id', function ($query) use ($newDateTime, $booking) {
-                    $query->select('staff_id')
-                        ->from('bookings')
-                        ->where('date_time', $newDateTime)
-                        ->where('status', '!=', 'cancel')
-                        ->where('id', '!=', $booking->id);
-                })
-                ->inRandomOrder()
-                ->first();
+                ->get()
+                ->first(function ($staff) use ($slotStart, $slotEnd, $booking) {
+
+                    $conflict = Booking::where('staff_id', $staff->id)
+                        ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
+                        ->where('id', '!=', $booking->id)
+                        ->where(function ($q) use ($slotStart, $slotEnd) {
+                            $q->where('date_time', '<', $slotEnd)
+                                ->whereRaw(
+                                    "DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?",
+                                    [$slotStart]
+                                );
+                        })
+                        ->exists();
+
+                    return !$conflict;
+                });
 
             if (!$staff) {
                 return response()->json([
