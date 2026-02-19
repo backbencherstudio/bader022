@@ -14,6 +14,7 @@ return [
         'http://*.devlaro.com',
         'https://*.devlaro.com',
         'http://192.168.7.82:3000',
+        'http://localhost:3000',
 
 
     ],
