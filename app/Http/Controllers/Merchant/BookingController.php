@@ -15,6 +15,8 @@ use App\Models\BusinessHour;
 
 class BookingController extends Controller
 {
+
+
     public function store(Request $request)
     {
         $merchant = auth()->user();
