@@ -21,21 +21,28 @@ class BookingController extends Controller
 
         $request->validate([
             'service_id'    => 'required|exists:services,id',
-            'staff_id'      => 'required|integer',
+            'staff_id'      => 'nullable|integer',
             'date'          => 'required|date',
             'time'          => 'required',
             'customer_name' => 'required|string',
             'email'         => 'required|email',
             'phone'         => 'required|string',
             'special_note'  => 'nullable|string',
-            'payment_method' => 'nullable|in:0,1,2,3'
+            'payment_method' => 'required|string',
         ]);
 
         return DB::transaction(function () use ($request, $merchant) {
 
             $service = Service::where('id', $request->service_id)
                 ->where('user_id', $merchant->id)
-                ->firstOrFail();
+                ->first();
+
+            if (!$service) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid service selection'
+                ], 422);
+            }
 
             $duration = (int) $service->duration;
 
@@ -48,31 +55,78 @@ class BookingController extends Controller
                 ->where('status', 1)
                 ->first();
 
-            if (!$staff) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid staff selection'
-                ], 422);
-            }
+            if ($request->staff_id) {
 
+                $staff = Staff::where('id', $request->staff_id)
+                    ->where('user_id', $merchant->id)
+                    ->where('service_id', $service->id)
+                    ->where('status', 1)
+                    ->first();
 
-            $conflict = Booking::where('staff_id', $staff->id)
-                ->whereIn('status', ['pending', 'confirm'])
-                ->where(function ($q) use ($slotStart, $slotEnd) {
-                    $q->where('date_time', '<', $slotEnd)
-                        ->whereRaw(
-                            "DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?",
-                            [$slotStart]
-                        );
-                })
-                ->lockForUpdate()
-                ->exists();
+                if (!$staff) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid staff selection'
+                    ], 422);
+                }
 
-            if ($conflict) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'This staff is not available at this time.'
-                ], 409);
+                $conflict = Booking::where('staff_id', $staff->id)
+                    ->whereIn('status', ['pending', 'confirm'])
+                    ->where(function ($q) use ($slotStart, $slotEnd) {
+                        $q->where('date_time', '<', $slotEnd)
+                            ->whereRaw(
+                                "DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?",
+                                [$slotStart]
+                            );
+                    })
+                    ->lockForUpdate()
+                    ->exists();
+
+                if ($conflict) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'This staff is not available at this time.'
+                    ], 409);
+                }
+
+                $staffId = $staff->id;
+            } else {
+
+                $staffs = Staff::where('user_id', $merchant->id)
+                    ->where('service_id', $service->id)
+                    ->where('status', 1)
+                    ->lockForUpdate()
+                    ->get();
+
+                $freeStaff = null;
+
+                foreach ($staffs as $staff) {
+
+                    $conflict = Booking::where('staff_id', $staff->id)
+                        ->whereIn('status', ['pending', 'confirm'])
+                        ->where(function ($q) use ($slotStart, $slotEnd) {
+                            $q->where('date_time', '<', $slotEnd)
+                                ->whereRaw(
+                                    "DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?",
+                                    [$slotStart]
+                                );
+                        })
+                        ->exists();
+
+                    if (!$conflict) {
+                        $freeStaff = $staff;
+                        break;
+                    }
+                }
+
+                if (!$freeStaff) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No staff available at this time slot.'
+                    ], 409);
+                }
+
+                $staffId = $freeStaff->id;
             }
 
 
@@ -87,17 +141,16 @@ class BookingController extends Controller
                 'status'         => 'pending',
                 'special_note'   => $request->special_note,
                 'booking_by'     => 'merchant',
-                'payment_method' => $request->payment_method ?? 2,
             ]);
 
 
             MerchantPayment::create([
                 'booking_id'     => $booking->id,
                 'user_id'        => $merchant->id,
-                'payment_method' => $request->payment_method ?? 2,
+                'payment_method' => $request->payment_method,
                 'amount'         => $service->price,
                 'transaction_id' => 'MERCHANT-' . uniqid(),
-                'payment_status' => 'pending',
+                'payment_status' => 'due',
             ]);
 
             return response()->json([
@@ -281,7 +334,7 @@ class BookingController extends Controller
             'customer_name' => 'required|string',
             'email'         => 'required|email',
             'phone'         => 'required|string',
-            'payment_method'=> 'required|string',
+            'payment_method' => 'required|string',
             'special_note'  => 'nullable|string',
         ]);
 
@@ -399,5 +452,4 @@ class BookingController extends Controller
             ], 201);
         });
     }
-
 }
