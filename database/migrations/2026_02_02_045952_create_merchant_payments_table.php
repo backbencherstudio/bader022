@@ -22,7 +22,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnDelete();
 
-            $table->tinyInteger('payment_method')->nullable();
+            $table->string('payment_method')->nullable();
 
             $table->decimal('amount', 10, 2);
             $table->string('transaction_id')->nullable();

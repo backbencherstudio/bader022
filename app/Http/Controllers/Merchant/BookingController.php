@@ -281,6 +281,7 @@ class BookingController extends Controller
             'customer_name' => 'required|string',
             'email'         => 'required|email',
             'phone'         => 'required|string',
+            'payment_method'=> 'required|string',
             'special_note'  => 'nullable|string',
         ]);
 
@@ -379,13 +380,12 @@ class BookingController extends Controller
                 'status'         => 'pending',
                 'special_note'   => $request->special_note,
                 'booking_by'     => auth()->id(),
-                'payment_method' => "name",
             ]);
 
             MerchantPayment::create([
                 'booking_id'     => $booking->id,
                 'user_id'        => $merchantId,
-                'payment_method' => 2,
+                'payment_method' => $request->payment_method,
                 'amount'         => $service->price,
                 'transaction_id' => 'PAY-STORE-' . uniqid(),
                 'payment_status' => 'due',
@@ -393,7 +393,7 @@ class BookingController extends Controller
 
             return response()->json([
                 'success'    => true,
-                'message'    => 'Booking confirmed. Pay at store.',
+                'message'    => 'Booking confirmed.',
                 'booking_id' => $booking->id,
                 'staff_id'   => $staffId
             ], 201);
