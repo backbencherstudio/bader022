@@ -2687,7 +2687,7 @@ namespace App\Models {
      * @property mixed $payment_status
      * @property string|null $transaction_id
      * @property float $amount
-     * @property bool $payment_method
+     * @property string $payment_method
      * @property int $user_id
      * @property int $booking_id
      * @property int $id
