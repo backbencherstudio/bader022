@@ -134,10 +134,74 @@ class BookingController extends Controller
                 ], 422);
             }
 
+            $storeSetting = DB::table('merchant_store_settings')
+                ->where('user_id', $merchant->id)
+                ->first();
+
+            if (! $storeSetting || ! $storeSetting->time_zone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Store timezone not set'
+                ], 422);
+            }
+
+            $merchantTimeZone = $storeSetting->time_zone;
+
+            $date = Carbon::parse($request->date, $merchantTimeZone)->startOfDay();
+            $today = Carbon::now($merchantTimeZone)->startOfDay();
+
+            if ($date->lt($today)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected date is in the past'
+                ], 422);
+            }
+
             $duration = (int) $service->duration;
 
-            $slotStart = Carbon::parse($request->date.' '.$request->time);
+            $day = strtolower($date->format('l'));
+
+            $businessHour = BusinessHour::where('merchant_store_setting_id', $storeSetting->id)
+                ->where('day', $day)
+                ->where('is_closed', 0)
+                ->first();
+
+            if (! $businessHour || ! $businessHour->open_time || ! $businessHour->close_time) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid slot selected'
+                ], 422);
+            }
+
+            $validSlots = [];
+
+            $start = Carbon::createFromTimeString($businessHour->open_time, $merchantTimeZone);
+            $end = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
+
+            while ($start->copy()->addMinutes($duration)->lte($end)) {
+                $validSlots[] = $start->format('H:i');
+                $start->addMinutes($duration);
+            }
+
+            $selectedTime = Carbon::parse($request->time)->format('H:i');
+
+            if (! in_array($selectedTime, $validSlots)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid slot selected'
+                ], 422);
+            }
+
+            $slotStart = Carbon::parse($request->date . ' ' . $request->time, $merchantTimeZone);
             $slotEnd = $slotStart->copy()->addMinutes($duration);
+
+            $now = Carbon::now($merchantTimeZone);
+            if ($slotStart->lt($now)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected time is in the past'
+                ], 422);
+            }
 
             $staff = Staff::where('id', $request->staff_id)
                 ->where('user_id', $merchant->id)
@@ -221,7 +285,7 @@ class BookingController extends Controller
 
             $booking = Booking::create([
                 'user_id'        => $merchant->id,
-                'staff_id'       => $staff->id,
+                'staff_id'       => $staffId,
                 'service_id'     => $service->id,
                 'customer_name'  => $request->customer_name,
                 'email'          => $request->email,
@@ -291,6 +355,13 @@ class BookingController extends Controller
             return response()->json(['available_times' => [], 'message' => 'Business closed']);
         }
 
+        if (!$businessHour->open_time || !$businessHour->close_time) {
+            return response()->json([
+                'available_times' => [],
+                'message' => 'Business hours not properly set'
+            ]);
+        }
+
         $staffIds = Staff::where('service_id', $service->id)
             ->where('user_id', $merchantId)
             ->where('status', 1)
@@ -329,7 +400,7 @@ class BookingController extends Controller
         $now = Carbon::now($merchantTimeZone);
 
         foreach ($slots as $slot) {
-            $slotStart = Carbon::parse($request->date.' '.$slot, $merchantTimeZone);
+            $slotStart = Carbon::parse($request->date . ' ' . $slot, $merchantTimeZone);
             $slotEnd = $slotStart->copy()->addMinutes($duration);
 
             if ($date->isToday() && $slotStart->lte($now)) {
@@ -366,8 +437,71 @@ class BookingController extends Controller
         $merchantId = $service->user_id;
         $duration = (int) $service->duration;
 
-        $slotStart = Carbon::parse($request->date.' '.$request->time);
+        $storeSetting = DB::table('merchant_store_settings')
+            ->where('user_id', $merchantId)
+            ->first();
+
+        if (! $storeSetting || ! $storeSetting->time_zone) {
+            return response()->json([
+                'available_staff' => [],
+                'message' => 'Store timezone not set'
+            ]);
+        }
+
+        $merchantTimeZone = $storeSetting->time_zone;
+
+        $date = Carbon::parse($request->date, $merchantTimeZone)->startOfDay();
+        $today = Carbon::now($merchantTimeZone)->startOfDay();
+
+        if ($date->lt($today)) {
+            return response()->json([
+                'available_staff' => [],
+                'message' => 'Selected date is in the past'
+            ]);
+        }
+
+        $day = strtolower($date->format('l'));
+
+        $businessHour = BusinessHour::where('merchant_store_setting_id', $storeSetting->id)
+            ->where('day', $day)
+            ->where('is_closed', 0)
+            ->first();
+
+        if (! $businessHour) {
+            return response()->json([
+                'available_staff' => [],
+                'message' => 'Invalid slot selected'
+            ]);
+        }
+
+        $validSlots = [];
+        $start = Carbon::createFromTimeString($businessHour->open_time, $merchantTimeZone);
+        $end = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
+
+        while ($start->copy()->addMinutes($duration)->lte($end)) {
+            $validSlots[] = $start->format('H:i');
+            $start->addMinutes($duration);
+        }
+
+        $selectedTime = Carbon::parse($request->time)->format('H:i');
+
+        if (! in_array($selectedTime, $validSlots)) {
+            return response()->json([
+                'available_staff' => [],
+                'message' => 'Invalid slot selected'
+            ], 422);
+        }
+
+        $slotStart = Carbon::parse($request->date . ' ' . $request->time, $merchantTimeZone);
         $slotEnd = $slotStart->copy()->addMinutes($duration);
+
+        $now = Carbon::now($merchantTimeZone);
+        if ($slotStart->lt($now)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Selected time is in the past'
+            ], 422);
+        }
 
         $staffIds = Staff::where('user_id', $merchantId)
             ->where('service_id', $service->id)
@@ -389,7 +523,7 @@ class BookingController extends Controller
 
         $bookedStaff = [];
         foreach ($bookings as $booking) {
-            $bookingStart = Carbon::parse($booking->date_time);
+            $bookingStart = Carbon::parse($booking->date_time, $merchantTimeZone);
             $bookingEnd = $bookingStart->copy()->addMinutes($booking->service->duration);
 
             if ($slotStart < $bookingEnd && $slotEnd > $bookingStart) {
@@ -747,7 +881,7 @@ class BookingController extends Controller
             $merchantId = $service->user_id;
             $duration = (int) $service->duration;
 
-            $slotStart = Carbon::parse($request->date.' '.$request->time);
+            $slotStart = Carbon::parse($request->date . ' ' . $request->time);
             $slotEnd = $slotStart->copy()->addMinutes($duration);
 
             if ($request->staff_id) {
@@ -785,7 +919,6 @@ class BookingController extends Controller
                 }
 
                 $staffId = $staff->id;
-
             } else {
 
                 $staffs = Staff::where('user_id', $merchantId)
@@ -842,7 +975,7 @@ class BookingController extends Controller
                 'user_id' => $merchantId,
                 'payment_method' => $request->payment_method,
                 'amount' => $service->price,
-                'transaction_id' => 'tx'.uniqid(),
+                'transaction_id' => 'tx' . uniqid(),
                 'payment_status' => 'due',
             ]);
 
@@ -874,9 +1007,9 @@ class BookingController extends Controller
                     : 'https://api.tap.company/v2';
 
                 $tapResponse = Http::withHeaders([
-                    'Authorization' => 'Bearer '.$tapPayment->tap_secret_key,
+                    'Authorization' => 'Bearer ' . $tapPayment->tap_secret_key,
                     'Content-Type' => 'application/json',
-                ])->post($tapBaseUrl.'/charges', [
+                ])->post($tapBaseUrl . '/charges', [
 
                     'amount' => $service->price,
                     'currency' => 'SAR',
@@ -895,7 +1028,7 @@ class BookingController extends Controller
                     ],
 
                     'redirect' => [
-                        'url' => url('/tap-success?booking_id='.$booking->id),
+                        'url' => url('/tap-success?booking_id=' . $booking->id),
                     ],
                 ]);
 

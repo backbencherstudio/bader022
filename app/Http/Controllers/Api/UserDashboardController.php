@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Models\Staff;
 use App\Models\MerchantPayment;
 use Illuminate\Support\Facades\DB;
+use App\Models\BusinessHour;
 
 
 class UserDashboardController extends Controller
@@ -668,6 +669,16 @@ class UserDashboardController extends Controller
 
         $merchantTimeZone = $storeSetting->time_zone;
 
+        $newDate = Carbon::parse($request->date, $merchantTimeZone)->startOfDay();
+        $today   = Carbon::now($merchantTimeZone)->startOfDay();
+
+        if ($newDate->lt($today)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Selected date is in the past.'
+            ], 400);
+        }
+
         $bookingDateTime = Carbon::parse($booking->date_time, $merchantTimeZone);
         $merchantNow     = Carbon::now($merchantTimeZone);
 
@@ -679,6 +690,41 @@ class UserDashboardController extends Controller
         }
 
         $newDateTime = Carbon::parse($request->date . ' ' . $request->time, $merchantTimeZone);
+
+        $duration = (int) $booking->service->duration;
+
+        $day = strtolower($newDateTime->format('l'));
+
+        $businessHour = BusinessHour::where('merchant_store_setting_id', $storeSetting->id)
+            ->where('day', $day)
+            ->where('is_closed', 0)
+            ->first();
+
+        if (!$businessHour || !$businessHour->open_time || !$businessHour->close_time) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid slot selected.'
+            ], 422);
+        }
+
+        $validSlots = [];
+
+        $start = Carbon::createFromTimeString($businessHour->open_time, $merchantTimeZone);
+        $end   = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
+
+        while ($start->copy()->addMinutes($duration)->lte($end)) {
+            $validSlots[] = $start->format('H:i');
+            $start->addMinutes($duration);
+        }
+
+        $selectedTime = $newDateTime->format('H:i');
+
+        if (!in_array($selectedTime, $validSlots)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid slot selected.'
+            ], 422);
+        }
 
         if ($newDateTime->lte($merchantNow)) {
             return response()->json([
@@ -709,6 +755,28 @@ class UserDashboardController extends Controller
                     'message' => 'Invalid staff selected.'
                 ], 400);
             }
+
+            $slotStart = $newDateTime;
+            $slotEnd = $slotStart->copy()->addMinutes($duration);
+
+            $conflict = Booking::where('staff_id', $staff->id)
+                ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
+                ->where('id', '!=', $booking->id)
+                ->where(function ($q) use ($slotStart, $slotEnd) {
+                    $q->where('date_time', '<', $slotEnd)
+                        ->whereRaw(
+                            "DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?",
+                            [$slotStart]
+                        );
+                })
+                ->exists();
+
+            if ($conflict) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected staff is not available at this time.'
+                ], 409);
+            }
         } else {
 
             $duration = (int) $booking->service->duration;
@@ -716,6 +784,7 @@ class UserDashboardController extends Controller
             $slotEnd = $slotStart->copy()->addMinutes($duration);
 
             $staff = Staff::where('user_id', $booking->user_id)
+                ->where('service_id', $booking->service_id)
                 ->where('status', 1)
                 ->get()
                 ->first(function ($staff) use ($slotStart, $slotEnd, $booking) {
