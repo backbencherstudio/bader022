@@ -46,6 +46,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
 // google login api
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+// Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
 // Admin Protected Routes
 Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function () {
