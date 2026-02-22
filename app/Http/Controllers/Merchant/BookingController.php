@@ -1028,7 +1028,7 @@ class BookingController extends Controller
                     ],
 
                     'redirect' => [
-                        'url' => url('/tap-success?booking_id=' . $booking->id),
+                        'url' => url('/api/tap-success?booking_id='.$booking->id),
                     ],
                 ]);
 
@@ -1054,5 +1054,92 @@ class BookingController extends Controller
                 ], 200);
             }
         });
+    }
+
+    public function tapCallbackbooking(Request $request)
+    {
+        $bookingId = $request->booking_id;
+        $tapChargeId = $request->tap_id ?? $request->charge_id ?? null;
+
+        if (! $bookingId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid callback data',
+            ], 400);
+        }
+
+        $payment = MerchantPayment::where('booking_id', $bookingId)->first();
+
+        if (! $payment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment record not found',
+            ], 404);
+        }
+
+        $merchantId = $payment->user_id;
+
+        // Get merchant Tap credentials
+        $tapPayment = DB::table('tap_payments')
+            ->where('user_id', $merchantId)
+            ->latest('updated_at')
+            ->first();
+
+        if (! $tapPayment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tap credentials not found',
+            ], 422);
+        }
+
+        $tapBaseUrl = 'https://api.tap.company/v2';
+
+        // Verify charge from Tap
+        $tapResponse = Http::withHeaders([
+            'Authorization' => 'Bearer '.$tapPayment->tap_secret_key,
+        ])->get($tapBaseUrl.'/charges/'.$payment->transaction_id);
+
+        if ($tapResponse->failed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to verify Tap payment',
+                'error' => $tapResponse->body(),
+            ], 500);
+        }
+
+        $tapData = $tapResponse->json();
+
+        DB::transaction(function () use ($tapData, $payment, $bookingId) {
+
+            if ($tapData['status'] == 'CAPTURED') {
+
+                // Update payment
+                $payment->update([
+                    'payment_status' => 'paid',
+                ]);
+
+                // Confirm booking
+                Booking::where('id', $bookingId)->update([
+                    'status' => 'confirm',
+                ]);
+
+            } else {
+
+                $payment->update([
+                    'payment_status' => 'failed',
+                ]);
+
+                Booking::where('id', $bookingId)->update([
+                    'status' => 'cancel',
+                ]);
+            }
+        });
+
+        // You can return view instead of JSON
+        return response()->json([
+            'success' => true,
+            'payment_status' => $tapData['status'],
+            'booking_id' => $bookingId,
+        ]);
     }
 }
