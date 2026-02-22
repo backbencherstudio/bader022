@@ -539,6 +539,7 @@ class BookingController extends Controller
     }
 
     // public function bookingByUser(Request $request)
+    //
     // {
     //     $request->validate([
     //         'service_id' => 'required|exists:services,id',
