@@ -281,4 +281,4 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
 
 Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
-Route::get('/tap-success', [SubscriptionController::class, 'handleTapCallback'])->name('tap.callback');
+Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->name('tap.callback');

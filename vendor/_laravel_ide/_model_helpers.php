@@ -7075,7 +7075,21 @@ namespace App\Models {
     /**
      * App\Models\TapPayment
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string $tap_public_key
+     * @property string $tap_secret_key
+     * @property mixed $tap_mode
+     * @property int $user_id
+     * @property int $id
      * @property-read \App\Models\User $user
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereUserId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereTapMode($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereTapSecretKey($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereTapPublicKey($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<TapPayment>|TapPayment query()
@@ -7401,8 +7415,8 @@ namespace App\Models {
      * @property string|null $package_expire_date
      * @property string|null $package_end_date
      * @property string|null $tap_public_key
-     * @property string|null $tap_secret_key
-     * @property string|null $tap_mode
+     * @property string|null $package_start_date
+     * @property string|null $current_package
      * @property string|null $platform_access
      * @property string|null $address
      * @property string|null $website_domain
@@ -7445,8 +7459,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereWebsiteDomain($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereAddress($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePlatformAccess($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapMode($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapSecretKey($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCurrentPackage($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageStartDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapPublicKey($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageEndDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageExpireDate($value)
