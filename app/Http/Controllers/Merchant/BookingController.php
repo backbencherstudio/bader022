@@ -1136,7 +1136,6 @@ class BookingController extends Controller
             }
         });
 
-        // You can return view instead of JSON
         return response()->json([
             'success' => true,
             'payment_status' => $tapData['status'],
