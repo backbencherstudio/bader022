@@ -66,6 +66,8 @@ class PaymentHistoryController extends Controller
             'tx_id' => $payment->transaction_id,
 
             'merchant_name' => $payment->user->name ?? null,
+            'merchant_email' => $payment->user->email ?? null,
+            'merchant_phone' => $payment->user->phone ?? null, 
 
             'business_logo' => optional($payment->user->merchantSetting)->business_logo
                 ? asset('storage/'.optional($payment->user->merchantSetting)->business_logo)

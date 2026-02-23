@@ -20,11 +20,10 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->dateTime('date_time');
-            $table->enum('status', ['pending', 'confirm', 'complete', 'cancel'])
+            $table->enum('status', ['pending', 'confirm', 'complete', 'cancel', 'rescheduled'])
                 ->default('pending');
             $table->text('special_note')->nullable();
-            $table->enum('booking_by', ['merchant', 'user'])
-                ->comment('who created the booking');
+            $table->string('booking_by');
             $table->tinyInteger('payment_method')
                 ->nullable()
                 ->comment('credit_card=0, paypal=1, pay_at_store=2, cash=3');

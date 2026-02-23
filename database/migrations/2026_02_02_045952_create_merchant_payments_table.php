@@ -22,13 +22,12 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnDelete();
 
-            $table->tinyInteger('payment_method')
-                ->comment('0=credit_card,1=paypal,2=pay_at_store,3=cash');
+            $table->string('payment_method')->nullable();
 
             $table->decimal('amount', 10, 2);
             $table->string('transaction_id')->nullable();
-            $table->enum('payment_status', ['Due', 'paid'])
-                ->default('Due');
+            $table->enum('payment_status', ['due', 'paid', 'failed'])
+                ->default('due');
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });

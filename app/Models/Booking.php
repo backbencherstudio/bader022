@@ -31,17 +31,32 @@ class Booking extends Model
         return $this->belongsTo(Service::class);
     }
 
-    public function user()
+    public function bookedUser()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'booking_by');
     }
 
     public function staff()
     {
-        return $this->belongsTo(User::class, 'staff_id');
-
+        return $this->belongsTo(Staff::class, 'staff_id');
     }
 
-   
+    public function merchant()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
+    public function merchantStore()
+    {
+        return $this->belongsTo(
+            MerchantSetting::class,
+            'user_id',
+            'user_id'
+        );
+    }
+
+    public function merchantPayment()
+    {
+        return $this->hasOne(MerchantPayment::class, 'booking_id', 'id');
+    }
 }
