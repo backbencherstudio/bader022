@@ -7040,8 +7040,8 @@ namespace App\Models {
      * @property string|null $package_expire_date
      * @property string|null $package_end_date
      * @property string|null $tap_public_key
-     * @property string|null $tap_secret_key
-     * @property string|null $tap_mode
+     * @property string|null $package_start_date
+     * @property string|null $current_package
      * @property string|null $platform_access
      * @property string|null $address
      * @property string|null $website_domain
@@ -7084,8 +7084,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereWebsiteDomain($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereAddress($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePlatformAccess($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapMode($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapSecretKey($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCurrentPackage($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageStartDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapPublicKey($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageEndDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageExpireDate($value)
