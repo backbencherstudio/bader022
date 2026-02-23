@@ -15,22 +15,13 @@
 /auth.json
 /node_modules
 /public/build
-<<<<<<< HEAD
 /public/uploads
 /public/hot
 /public/storage
 /public/uploads
-=======
-/public/hot
-/public/storage
->>>>>>> habib
 /storage/*.key
 /storage/pail
 /vendor
 Homestead.json
 Homestead.yaml
 Thumbs.db
-<<<<<<< HEAD
-
-=======
->>>>>>> habib
