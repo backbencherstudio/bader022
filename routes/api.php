@@ -144,7 +144,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     // merchant-setting
     Route::prefix('merchant-setting')->group(function () {
         Route::post('store', [MerchantSettingController::class, 'store'])->name('merchant.store');
-        Route::get('show', [MerchantSettingController::class, 'show'])->name('merchant.show');
+        Route::get('show', [MerchantSettingController::class, 'show'])->name('merchant-setting.show');
 
     });
     // merchant subscription
@@ -157,9 +157,9 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
     // admin subscription
     Route::prefix('subscription')->group(function () {
-        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('process.index');
-        Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('process.edit');
-        Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('process.update');
+        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('subscription.index');
+        Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('subscription.show');
+        Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('subscription.update');
     });
 
     // setting
@@ -234,8 +234,8 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
       // Globalsetting
     Route::prefix('global-setting')->group(function () {
-        Route::get('index', [GlobalsettingController::class, 'index'])->name('merchant.index');
-        Route::get('show/{id}', [GlobalsettingController::class, 'show'])->name('merchant.show');
+        Route::get('index', [GlobalsettingController::class, 'index'])->name('global-setting.index');
+        Route::get('show/{id}', [GlobalsettingController::class, 'show'])->name('global-setting.show');
         Route::post('store', [GlobalsettingController::class, 'store'])->name('global-setting.store');
     });
 
@@ -282,3 +282,4 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
 Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
 Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->name('tap.callback');
+Route::get('/payment/callback', [BookingController::class, 'handleTapCallbackmerchant'])->name('payment.callback');
