@@ -27,6 +27,7 @@ use App\Http\Controllers\Merchant\SubscriptionController;
 use App\Http\Controllers\Merchant\GlobalsettingController;
 use App\Http\Controllers\Merchant\TransactionController;
 use App\Http\Controllers\Merchant\MerchantDashboardContoller;
+use App\Http\Controllers\Merchant\TapPaymentController;
 use App\Http\Controllers\Merchant\AnalyticesController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
@@ -157,9 +158,10 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
     // admin subscription
     Route::prefix('subscription')->group(function () {
-        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('subscription.index');
-        Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('subscription.show');
-        Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('subscription.update');
+        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('process.index');
+        Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('process.edit');
+        Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('process.update');
+        Route::get('summary', [AdminSubscriptionController::class, 'summary'])->name('process.summary');
     });
 
     // setting
@@ -275,6 +277,10 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('weeklyrevenue', [AnalyticesController::class, 'weeklyPaymentrevenue'])->name('merchantdashboard.weeklyPaymentRevenue');
         Route::get('newreturn', [AnalyticesController::class, 'newreturn'])->name('merchantdashboard.newreturn');
         Route::get('staffPerformance', [AnalyticesController::class, 'staffPerformance'])->name('merchantdashboard.staffPerformance');
+    });
+
+    Route::prefix('tap-payment')->group(function () {
+        Route::post('upsert', [TapPaymentController::class, 'upsert'])->name('tap-payment.upsert');
     });
 
  });

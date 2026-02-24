@@ -25,7 +25,7 @@ class AdminSubscriptionController extends Controller
                     'email' => $subscription->user->email ?? null,
                     'store_name' => optional($subscription->user->merchantSetting)->store_name,
                     'business_logo' => optional($subscription->user->merchantSetting)->business_logo
-                        ? asset('storage/'.optional($subscription->user->merchantSetting)->business_logo)
+                        ? asset('storage/' . optional($subscription->user->merchantSetting)->business_logo)
                         : null,
                 ],
 
@@ -33,6 +33,7 @@ class AdminSubscriptionController extends Controller
                     'id' => $subscription->plan->id ?? null,
                     'name' => $subscription->plan->name ?? null,
                     'price' => $subscription->plan->price ?? null,
+                    'package' => $subscription->plan->package ?? null,
                 ],
 
                 'status' => $subscription->status,
@@ -71,7 +72,7 @@ class AdminSubscriptionController extends Controller
                 'email' => $subscription->user->email ?? null,
                 'store_name' => optional($subscription->user->merchantSetting)->store_name,
                 'business_logo' => optional($subscription->user->merchantSetting)->business_logo
-                    ? asset('storage/'.optional($subscription->user->merchantSetting)->business_logo)
+                    ? asset('storage/' . optional($subscription->user->merchantSetting)->business_logo)
                     : null,
             ],
 
@@ -119,6 +120,26 @@ class AdminSubscriptionController extends Controller
                 'id' => $subscription->id,
                 'status' => $subscription->status,
             ],
+        ]);
+    }
+
+    public function summary()
+    {
+        $subscriptions = Subscription::with('plan')->get();
+
+        $totalPackages = $subscriptions->pluck('plan.id')->count();
+        $activeSubscriptions = $subscriptions->where('status', 'active')->count();
+        $expiredSubscriptions = $subscriptions->where('ends_at', '<', now())->count();
+        $expiringSoon = $subscriptions->whereBetween('ends_at', [now(), now()->addDays(7)])->count();
+
+        return response()->json([
+            'success' => true,
+            'summary' => [
+                'total_packages' => $totalPackages,
+                'active_subscriptions' => $activeSubscriptions,
+                'expired_subscriptions' => $expiredSubscriptions,
+                'expiring_soon' => $expiringSoon,
+            ]
         ]);
     }
 }
