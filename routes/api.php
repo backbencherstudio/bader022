@@ -27,6 +27,7 @@ use App\Http\Controllers\Merchant\SubscriptionController;
 use App\Http\Controllers\Merchant\GlobalsettingController;
 use App\Http\Controllers\Merchant\TransactionController;
 use App\Http\Controllers\Merchant\MerchantDashboardContoller;
+use App\Http\Controllers\Merchant\TapPaymentController;
 use App\Http\Controllers\Merchant\AnalyticesController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
@@ -276,6 +277,10 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('weeklyrevenue', [AnalyticesController::class, 'weeklyPaymentrevenue'])->name('merchantdashboard.weeklyPaymentRevenue');
         Route::get('newreturn', [AnalyticesController::class, 'newreturn'])->name('merchantdashboard.newreturn');
         Route::get('staffPerformance', [AnalyticesController::class, 'staffPerformance'])->name('merchantdashboard.staffPerformance');
+    });
+
+    Route::prefix('tap-payment')->group(function () {
+        Route::post('upsert', [TapPaymentController::class, 'upsert'])->name('tap-payment.upsert');
     });
 
  });
