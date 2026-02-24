@@ -158,9 +158,10 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
     // admin subscription
     Route::prefix('subscription')->group(function () {
-        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('subscription.index');
-        Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('subscription.show');
-        Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('subscription.update');
+        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('process.index');
+        Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('process.edit');
+        Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('process.update');
+        Route::get('summary', [AdminSubscriptionController::class, 'summary'])->name('process.summary');
     });
 
     // setting
