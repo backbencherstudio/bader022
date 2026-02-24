@@ -127,8 +127,8 @@ class AdminSubscriptionController extends Controller
     {
         $subscriptions = Subscription::with('plan')->get();
 
-        $totalPackages = $subscriptions->pluck('plan.id')->unique()->count();
-        $activeSubscriptions = $subscriptions->where('status', 1)->count();
+        $totalPackages = $subscriptions->pluck('plan.id')->count();
+        $activeSubscriptions = $subscriptions->where('status', 'active')->count();
         $expiredSubscriptions = $subscriptions->where('ends_at', '<', now())->count();
         $expiringSoon = $subscriptions->whereBetween('ends_at', [now(), now()->addDays(7)])->count();
 
