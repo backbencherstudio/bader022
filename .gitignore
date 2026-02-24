@@ -15,10 +15,15 @@
 /auth.json
 /node_modules
 /public/build
+<<<<<<<<< Temporary merge branch 1
 /public/uploads
 /public/hot
 /public/storage
 /public/uploads
+=========
+/public/hot
+/public/storage
+>>>>>>>>> Temporary merge branch 2
 /storage/*.key
 /storage/pail
 /vendor
