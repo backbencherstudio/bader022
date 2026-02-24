@@ -673,6 +673,202 @@ class BookingController extends Controller
     //     });
     // }
 
+    // public function bookingByUser(Request $request)
+    // {
+    //     $request->validate([
+    //         'service_id' => 'required|exists:services,id',
+    //         'staff_id' => 'nullable|integer',
+    //         'date' => 'required|date',
+    //         'time' => 'required',
+    //         'customer_name' => 'required|string',
+    //         'email' => 'required|email',
+    //         'phone' => 'required|string',
+    //         'payment_method' => 'required|in:cash,tap',
+    //         'special_note' => 'nullable|string',
+    //     ]);
+
+    //     return DB::transaction(function () use ($request) {
+
+    //         $service = Service::findOrFail($request->service_id);
+    //         $merchantId = $service->user_id;
+    //         $duration = (int) $service->duration;
+
+    //         $slotStart = Carbon::parse($request->date.' '.$request->time);
+    //         $slotEnd = $slotStart->copy()->addMinutes($duration);
+
+    //         if ($request->staff_id) {
+
+    //             $staff = Staff::where('id', $request->staff_id)
+    //                 ->where('user_id', $merchantId)
+    //                 ->where('service_id', $service->id)
+    //                 ->where('status', 1)
+    //                 ->first();
+
+    //             if (! $staff) {
+    //                 return response()->json([
+    //                     'success' => false,
+    //                     'message' => 'Invalid staff selection',
+    //                 ], 422);
+    //             }
+
+    //             $conflict = Booking::where('staff_id', $staff->id)
+    //                 ->whereIn('status', ['pending', 'confirm'])
+    //                 ->where(function ($q) use ($slotStart, $slotEnd) {
+    //                     $q->where('date_time', '<', $slotEnd)
+    //                         ->whereRaw(
+    //                             'DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?',
+    //                             [$slotStart]
+    //                         );
+    //                 })
+    //                 ->lockForUpdate()
+    //                 ->exists();
+
+    //             if ($conflict) {
+    //                 return response()->json([
+    //                     'success' => false,
+    //                     'message' => 'This staff is not available at this time.',
+    //                 ], 409);
+    //             }
+
+    //             $staffId = $staff->id;
+
+    //         } else {
+
+    //             $staffs = Staff::where('user_id', $merchantId)
+    //                 ->where('service_id', $service->id)
+    //                 ->where('status', 1)
+    //                 ->lockForUpdate()
+    //                 ->get();
+
+    //             $freeStaff = null;
+
+    //             foreach ($staffs as $staff) {
+    //                 $conflict = Booking::where('staff_id', $staff->id)
+    //                     ->whereIn('status', ['pending', 'confirm'])
+    //                     ->where(function ($q) use ($slotStart, $slotEnd) {
+    //                         $q->where('date_time', '<', $slotEnd)
+    //                             ->whereRaw(
+    //                                 'DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?',
+    //                                 [$slotStart]
+    //                             );
+    //                     })
+    //                     ->exists();
+
+    //                 if (! $conflict) {
+    //                     $freeStaff = $staff;
+    //                     break;
+    //                 }
+    //             }
+
+    //             if (! $freeStaff) {
+    //                 return response()->json([
+    //                     'success' => false,
+    //                     'message' => 'No staff available at this time slot.',
+    //                 ], 409);
+    //             }
+
+    //             $staffId = $freeStaff->id;
+    //         }
+
+    //         $booking = Booking::create([
+    //             'user_id' => $merchantId,
+    //             'staff_id' => $staffId,
+    //             'service_id' => $service->id,
+    //             'customer_name' => $request->customer_name,
+    //             'email' => $request->email,
+    //             'phone' => $request->phone,
+    //             'date_time' => $slotStart,
+    //             'status' => 'pending',
+    //             'special_note' => $request->special_note,
+    //             'booking_by' => auth()->id(),
+    //         ]);
+
+    //         $payment = MerchantPayment::create([
+    //             'booking_id' => $booking->id,
+    //             'user_id' => $merchantId,
+    //             'payment_method' => $request->payment_method,
+    //             'amount' => $service->price,
+    //             'transaction_id' => 'tx'.uniqid(),
+    //             'payment_status' => 'due',
+    //         ]);
+
+    //         if ($request->payment_method == 'cash') {
+    //             return response()->json([
+    //                 'success' => true,
+    //                 'message' => 'Booking confirmed (Cash).',
+    //                 'booking_id' => $booking->id,
+    //                 'staff_id' => $staffId,
+    //             ], 201);
+    //         }
+
+    //         if ($request->payment_method == 'tap') {
+
+    //             $tapPayment = DB::table('tap_payments')
+    //                 ->where('user_id', $merchantId)
+    //                 ->latest('updated_at')
+    //                 ->first();
+
+    //             if (! $tapPayment) {
+    //                 return response()->json([
+    //                     'success' => false,
+    //                     'message' => 'Tap payment credentials not found for this merchant',
+    //                 ], 422);
+    //             }
+
+    //             $tapBaseUrl = $tapPayment->tap_mode == 'test'
+    //                 ? 'https://api.tap.company/v2'
+    //                 : 'https://api.tap.company/v2';
+
+    //             $tapResponse = Http::withHeaders([
+    //                 'Authorization' => 'Bearer '.$tapPayment->tap_secret_key,
+    //                 'Content-Type' => 'application/json',
+    //             ])->post($tapBaseUrl.'/charges', [
+
+    //                 'amount' => $service->price,
+    //                 'currency' => 'SAR',
+
+    //                 'customer' => [
+    //                     'first_name' => $request->customer_name,
+    //                     'email' => $request->email,
+    //                     'phone' => [
+    //                         'country_code' => '966',
+    //                         'number' => $request->phone,
+    //                     ],
+    //                 ],
+
+    //                 'source' => [
+    //                     'id' => 'src_all',
+    //                 ],
+
+    //                 'redirect' => [
+    //                     'url' => url('/api/tap-success?booking_id='.$booking->id),
+    //                 ],
+    //             ]);
+
+    //             if ($tapResponse->failed()) {
+    //                 return response()->json([
+    //                     'success' => false,
+    //                     'message' => 'Tap payment creation failed',
+    //                     'error' => $tapResponse->body(),
+    //                 ], 500);
+    //             }
+
+    //             $tapData = $tapResponse->json();
+
+    //             $payment->update([
+    //                 'transaction_id' => $tapData['id'],
+    //             ]);
+
+    //             return response()->json([
+    //                 'success' => true,
+    //                 'message' => 'Redirect to Tap payment',
+    //                 'payment_url' => $tapData['transaction']['url'],
+    //                 'booking_id' => $booking->id,
+    //             ], 200);
+    //         }
+    //     });
+    // }
+
     public function bookingByUser(Request $request)
     {
         $request->validate([
@@ -691,9 +887,75 @@ class BookingController extends Controller
 
             $service = Service::findOrFail($request->service_id);
             $merchantId = $service->user_id;
-            $duration = (int) $service->duration;
 
-            $slotStart = Carbon::parse($request->date.' '.$request->time);
+            $storeSetting = DB::table('merchant_store_settings')
+                ->where('user_id', $merchantId)
+                ->first();
+
+            if (! $storeSetting || ! $storeSetting->time_zone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Store timezone not set'
+                ], 422);
+            }
+
+            $merchantTimeZone = $storeSetting->time_zone;
+
+                        $duration = (int) $service->duration;
+
+            $newDate = Carbon::parse($request->date, $merchantTimeZone)->startOfDay();
+            $today   = Carbon::now($merchantTimeZone)->startOfDay();
+
+            if ($newDate->lt($today)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected date is in the past.'
+                ], 400);
+            }
+
+            $slotStart = Carbon::parse($request->date . ' ' . $request->time, $merchantTimeZone);
+            $now = Carbon::now($merchantTimeZone);
+
+            if ($slotStart->lte($now)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected time is in the past.'
+                ], 400);
+            }
+
+            $day = strtolower($slotStart->format('l'));
+
+            $businessHour = BusinessHour::where('merchant_store_setting_id', $storeSetting->id)
+                ->where('day', $day)
+                ->where('is_closed', 0)
+                ->first();
+
+            if (! $businessHour || ! $businessHour->open_time || ! $businessHour->close_time) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid slot selected.'
+                ], 422);
+            }
+
+            $validSlots = [];
+
+            $start = Carbon::createFromTimeString($businessHour->open_time, $merchantTimeZone);
+            $end   = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
+
+            while ($start->copy()->addMinutes($duration)->lte($end)) {
+                $validSlots[] = $start->format('H:i');
+                $start->addMinutes($duration);
+            }
+
+            $selectedTime = $slotStart->format('H:i');
+
+            if (! in_array($selectedTime, $validSlots)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid slot selected.'
+                ], 422);
+            }
+
             $slotEnd = $slotStart->copy()->addMinutes($duration);
 
             if ($request->staff_id) {
@@ -731,7 +993,6 @@ class BookingController extends Controller
                 }
 
                 $staffId = $staff->id;
-
             } else {
 
                 $staffs = Staff::where('user_id', $merchantId)
@@ -744,7 +1005,7 @@ class BookingController extends Controller
 
                 foreach ($staffs as $staff) {
                     $conflict = Booking::where('staff_id', $staff->id)
-                        ->whereIn('status', ['pending', 'confirm'])
+                        ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                         ->where(function ($q) use ($slotStart, $slotEnd) {
                             $q->where('date_time', '<', $slotEnd)
                                 ->whereRaw(
@@ -788,7 +1049,7 @@ class BookingController extends Controller
                 'user_id' => $merchantId,
                 'payment_method' => $request->payment_method,
                 'amount' => $service->price,
-                'transaction_id' => 'tx'.uniqid(),
+                'transaction_id' => 'tx' . uniqid(),
                 'payment_status' => 'due',
             ]);
 
@@ -820,9 +1081,9 @@ class BookingController extends Controller
                     : 'https://api.tap.company/v2';
 
                 $tapResponse = Http::withHeaders([
-                    'Authorization' => 'Bearer '.$tapPayment->tap_secret_key,
+                    'Authorization' => 'Bearer ' . $tapPayment->tap_secret_key,
                     'Content-Type' => 'application/json',
-                ])->post($tapBaseUrl.'/charges', [
+                ])->post($tapBaseUrl . '/charges', [
 
                     'amount' => $service->price,
                     'currency' => 'SAR',
@@ -841,7 +1102,7 @@ class BookingController extends Controller
                     ],
 
                     'redirect' => [
-                        'url' => url('/api/tap-success?booking_id='.$booking->id),
+                        'url' => url('/tap-success?booking_id=' . $booking->id),
                     ],
                 ]);
 
