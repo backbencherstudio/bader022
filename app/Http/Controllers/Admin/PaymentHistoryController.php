@@ -9,34 +9,51 @@ use Illuminate\Support\Facades\Mail;
 
 class PaymentHistoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $payments = Payment::with([
+        $query = Payment::with([
             'user.merchantSetting',
             'subscription.plan',
-        ])->orderBy('created_at', 'desc')->get();
+        ])->orderBy('created_at', 'desc');
+
+        if ($request->search) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where('transaction_id', 'like', "%{$search}%")
+                    ->orWhere('payment_method', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+
+                    ->orWhereHas('user', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    })
+
+                    ->orWhereHas('user.merchantSetting', function ($q3) use ($search) {
+                        $q3->where('store_name', 'like', "%{$search}%");
+                    })
+
+                    ->orWhereHas('subscription.plan', function ($q4) use ($search) {
+                        $q4->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $payments = $query->get();
 
         $mapped = $payments->map(function ($payment) {
             return [
                 'id' => $payment->id,
                 'tx_id' => $payment->transaction_id,
-
                 'merchant_name' => $payment->user->name ?? null,
-
                 'business_logo' => optional($payment->user->merchantSetting)->business_logo
-                    ? asset('storage/'.optional($payment->user->merchantSetting)->business_logo)
+                    ? asset('storage/' . optional($payment->user->merchantSetting)->business_logo)
                     : null,
-
                 'store_name' => optional($payment->user->merchantSetting)->store_name,
-
                 'package_name' => optional($payment->subscription->plan)->name,
-
                 'date' => $payment->created_at->format('Y-m-d'),
-
                 'amount' => $payment->amount,
-
                 'payment_method' => $payment->payment_method,
-
                 'status' => ucfirst($payment->status),
             ];
         });
@@ -67,10 +84,10 @@ class PaymentHistoryController extends Controller
 
             'merchant_name' => $payment->user->name ?? null,
             'merchant_email' => $payment->user->email ?? null,
-            'merchant_phone' => $payment->user->phone ?? null, 
+            'merchant_phone' => $payment->user->phone ?? null,
 
             'business_logo' => optional($payment->user->merchantSetting)->business_logo
-                ? asset('storage/'.optional($payment->user->merchantSetting)->business_logo)
+                ? asset('storage/' . optional($payment->user->merchantSetting)->business_logo)
                 : null,
 
             'store_name' => optional($payment->user->merchantSetting)->store_name,
