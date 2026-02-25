@@ -112,12 +112,12 @@ class UserDashboardController extends Controller
             }
         }
 
+        $bookingIds = $bookings->pluck('id')->toArray();
 
-        $payments = MerchantPayment::where('user_id', $userId)
+        $payments = MerchantPayment::whereIn('booking_id', $bookingIds)
             ->whereIn('payment_status', ['completed', 'paid'])
             ->select('amount', 'created_at')
             ->get();
-
         foreach ($payments as $payment) {
             $activities->push([
                 'title' => 'Payment completed - ' . $payment->amount . ' SAR',
