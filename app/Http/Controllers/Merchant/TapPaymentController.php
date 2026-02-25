@@ -12,14 +12,13 @@ class TapPaymentController extends Controller
     public function upsert(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
             'tap_mode' => 'required|in:test,live',
             'tap_secret_key' => 'required|string',
             'tap_public_key' => 'required|string',
         ]);
 
 
-        $user = User::findOrFail($request->user_id);
+        $user = auth()->user();
         if ($user->type != 2) {
             return response()->json([
                 'message' => 'Only merchants can update Tap payment settings.'
@@ -28,7 +27,7 @@ class TapPaymentController extends Controller
 
 
         $tapPayment = TapPayment::updateOrCreate(
-            ['user_id' => $request->user_id],
+            ['user_id' => $user->id],
             [
                 'tap_mode' => $request->tap_mode,
                 'tap_secret_key' => $request->tap_secret_key,
