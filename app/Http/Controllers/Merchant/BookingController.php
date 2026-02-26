@@ -214,52 +214,47 @@ class BookingController extends Controller
     }
 
     public function paymentCallback(Request $request)
-{
-    // ১. ট্যাপ থেকে চার্জ আইডি নেওয়া (ট্যাপ পেমেন্ট শেষে URL এ tap_id বা charge_id পাঠায়)
-    $chargeId = $request->input('tap_id');
+    {
 
-    // ২. মার্চেন্টের সিক্রেট কী খুঁজে বের করা (অথবা আপনার এনভায়রনমেন্ট ফাইল থেকে নিন)
-    // এখানে আপনার লজিক অনুযায়ী মার্চেন্ট বা ডিফল্ট কী ব্যবহার করুন
-    $tapSecretKey = "your_tap_secret_key_here";
+        $chargeId = $request->input('tap_id');
 
-    // ৩. ট্যাপ থেকে পেমেন্ট স্ট্যাটাস ভেরিফাই করা
-    $response = \Illuminate\Support\Facades\Http::withHeaders([
-        'Authorization' => 'Bearer ' . $tapSecretKey,
-        'accept' => 'application/json',
-    ])->get("https://api.tap.company/v2/charges/{$chargeId}");
+        $tapSecretKey = 'your_tap_secret_key_here';
 
-    $resData = $response->json();
+        $response = \Illuminate\Support\Facades\Http::withHeaders([
+            'Authorization' => 'Bearer '.$tapSecretKey,
+            'accept' => 'application/json',
+        ])->get("https://api.tap.company/v2/charges/{$chargeId}");
 
-    if ($response->successful() && $resData['status'] === 'CAPTURED') {
+        $resData = $response->json();
 
-        // ৪. মেটাডাটা থেকে বুকিং আইডি বের করা
-        $bookingId = $resData['metadata']['booking_id'] ?? null;
+        if ($response->successful() && $resData['status'] === 'CAPTURED') {
 
-        if ($bookingId) {
-            $booking = Booking::find($bookingId);
+            $bookingId = $resData['metadata']['booking_id'] ?? null;
 
-            if ($booking) {
-                // ৫. বুকিং স্ট্যাটাস আপডেট এবং পেমেন্ট রেকর্ড তৈরি
-                $booking->update(['status' => 'confirmed']);
+            if ($bookingId) {
+                $booking = Booking::find($bookingId);
 
-                MerchantPayment::updateOrCreate(
-                    ['booking_id' => $booking->id],
-                    [
-                        'user_id' => $booking->user_id,
-                        'payment_method' => 'tap',
-                        'amount' => $resData['amount'],
-                        'transaction_id' => $chargeId,
-                    ]
-                );
+                if ($booking) {
 
-                return response()->json(['success' => true, 'message' => 'Payment Successful']);
+                    $booking->update(['status' => 'confirmed']);
+
+                    MerchantPayment::updateOrCreate(
+                        ['booking_id' => $booking->id],
+                        [
+                            'user_id' => $booking->user_id,
+                            'payment_method' => 'tap',
+                            'amount' => $resData['amount'],
+                            'transaction_id' => $chargeId,
+                        ]
+                    );
+
+                    return response()->json(['success' => true, 'message' => 'Payment Successful']);
+                }
             }
         }
+
+        return response()->json(['success' => false, 'message' => 'Payment Failed or Invalid'], 400);
     }
-
-    return response()->json(['success' => false, 'message' => 'Payment Failed or Invalid'], 400);
-}
-
 
     public function getAvailability(Request $request)
     {
@@ -415,7 +410,6 @@ class BookingController extends Controller
             'available_staff' => $availableStaff,
         ]);
     }
-
 
     public function bookingByUser(Request $request)
     {
@@ -580,16 +574,16 @@ class BookingController extends Controller
             }
 
             $booking = Booking::create([
-                'user_id'        => $merchantId,
-                'staff_id'       => $staffId,
-                'service_id'     => $service->id,
-                'customer_name'  => $request->customer_name,
-                'email'          => $request->email,
-                'phone'          => $request->phone,
-                'date_time'      => $slotStart,
-                'status'         => 'pending',
-                'special_note'   => $request->special_note,
-                'booking_by'     => auth()->id(),
+                'user_id' => $merchantId,
+                'staff_id' => $staffId,
+                'service_id' => $service->id,
+                'customer_name' => $request->customer_name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'date_time' => $slotStart,
+                'status' => 'pending',
+                'special_note' => $request->special_note,
+                'booking_by' => auth()->id(),
                 'payment_method' => 2,
             ]);
 
