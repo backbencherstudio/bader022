@@ -390,7 +390,7 @@ class BookingController extends Controller
                 $booking = Booking::find($bookingId);
 
             if ($booking) {
-              
+
                 $booking->update(['status' => 'confirmed']);
 
                     MerchantPayment::updateOrCreate(
