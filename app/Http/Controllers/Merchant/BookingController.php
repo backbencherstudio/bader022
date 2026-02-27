@@ -484,13 +484,13 @@ class BookingController extends Controller
             $bookings = Booking::where('staff_id', $request->staff_id)
                 ->where('service_id', $service->id)
                 ->whereDate('date_time', $date)
-                ->whereIn('status', ['pending', 'confirm'])
+                ->whereIn('status', ['pending', 'confirm','rescheduled'])
                 ->get();
         } else {
             $bookings = Booking::whereIn('staff_id', $staffIds)
                 ->where('service_id', $service->id)
                 ->whereDate('date_time', $date)
-                ->whereIn('status', ['pending', 'confirm'])
+                ->whereIn('status', ['pending', 'confirm','rescheduled'])
                 ->get();
         }
 
