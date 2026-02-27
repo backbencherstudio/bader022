@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use App\Models\Staff;
 use App\Models\MerchantPayment;
 use Illuminate\Support\Facades\DB;
+use App\Models\BusinessHour;
+use App\Models\Service;
 
 
 class UserDashboardController extends Controller
@@ -631,116 +633,186 @@ class UserDashboardController extends Controller
 
     public function rescheduleBooking(Request $request, $bookingId)
     {
-        $request->validate([
-            'date'     => 'required|date',
-            'time'     => 'required',
-            'staff_id' => 'nullable|integer'
-        ]);
+        return DB::transaction(function () use ($request, $bookingId) {
+            $request->validate([
+                'date'     => 'required|date',
+                'time'     => 'required',
+                'staff_id' => 'nullable|integer'
+            ]);
 
-        $booking = Booking::where('id', $bookingId)
-            ->where('booking_by', auth()->id())
-            ->first();
-
-        if (!$booking) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Booking not found.'
-            ], 404);
-        }
-
-        if ($booking->status === 'cancel') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cancelled booking cannot be rescheduled.'
-            ], 400);
-        }
-
-        $storeSetting = DB::table('merchant_store_settings')
-            ->where('user_id', $booking->user_id)
-            ->first();
-
-        if (!$storeSetting || !$storeSetting->time_zone) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Store timezone is not set.'
-            ], 400);
-        }
-
-        $merchantTimeZone = $storeSetting->time_zone;
-
-        $bookingDateTime = Carbon::parse($booking->date_time, $merchantTimeZone);
-        $merchantNow     = Carbon::now($merchantTimeZone);
-
-        if ($bookingDateTime->lt($merchantNow)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This booking has already expired. Expired booking cannot be rescheduled.',
-            ], 400);
-        }
-
-        $newDateTime = Carbon::parse($request->date . ' ' . $request->time, $merchantTimeZone);
-
-        if ($newDateTime->lte($merchantNow)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Selected time is in the past.'
-            ], 400);
-        }
-
-        if ($merchantNow->diffInMinutes($bookingDateTime, false) <= 120) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You cannot reschedule within 2 hours of the booked time.'
-            ], 403);
-        }
-
-        $staff = null;
-
-        if ($request->filled('staff_id')) {
-
-            $staff = Staff::where('id', $request->staff_id)
-                ->where('user_id', $booking->user_id)
-                ->where('status', 1)
+            $booking = Booking::where('id', $bookingId)
+                ->where('booking_by', auth()->id())
+                ->lockForUpdate()
                 ->first();
 
-            if (!$staff) {
+            if (!$booking) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid staff selected.'
+                    'message' => 'Booking not found.'
+                ], 404);
+            }
+
+            if ($booking->status === 'cancel') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cancelled booking cannot be rescheduled.'
                 ], 400);
             }
-        } else {
 
-            $staff = Staff::where('user_id', $booking->user_id)
-                ->where('status', 1)
-                ->whereNotIn('id', function ($query) use ($newDateTime, $booking) {
-                    $query->select('staff_id')
-                        ->from('bookings')
-                        ->where('date_time', $newDateTime)
-                        ->where('status', '!=', 'cancel')
-                        ->where('id', '!=', $booking->id);
-                })
-                ->inRandomOrder()
+            $storeSetting = DB::table('merchant_store_settings')
+                ->where('user_id', $booking->user_id)
                 ->first();
 
-            if (!$staff) {
+            if (!$storeSetting || !$storeSetting->time_zone) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No available staff for selected time.'
+                    'message' => 'Store timezone is not set.'
+                ], 400);
+            }
+
+            $merchantTimeZone = $storeSetting->time_zone;
+
+            $bookingDateTime = Carbon::parse($booking->date_time, $merchantTimeZone);
+            $merchantNow     = Carbon::now($merchantTimeZone);
+
+            if ($bookingDateTime->lt($merchantNow)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This booking has already expired. Expired booking cannot be rescheduled.',
+                ], 400);
+            }
+
+            $date = Carbon::parse($request->date, $merchantTimeZone)->startOfDay();
+            $today = Carbon::now($merchantTimeZone)->startOfDay();
+
+            if ($date->lt($today)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected date is in the past'
+                ], 422);
+            }
+
+            $newDateTime = Carbon::parse($request->date . ' ' . $request->time, $merchantTimeZone);
+
+            if ($newDateTime->lte($merchantNow)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected time is in the past.'
+                ], 400);
+            }
+
+            $day = strtolower($newDateTime->format('l'));
+
+            $businessHour = BusinessHour::where('merchant_store_setting_id', $storeSetting->id)
+                ->where('day', $day)
+                ->where('is_closed', 0)
+                ->first();
+
+            if (!$businessHour || !$businessHour->open_time || !$businessHour->close_time) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid slot selected.'
+                ], 422);
+            }
+
+            $service = Service::find($booking->service_id);
+            $duration = (int) $service->duration;
+
+            $start = Carbon::createFromTimeString($businessHour->open_time, $merchantTimeZone);
+            $end   = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
+
+            $validSlots = [];
+
+            while ($start->copy()->addMinutes($duration)->lte($end)) {
+                $validSlots[] = $start->format('H:i');
+                $start->addMinutes($duration);
+            }
+
+            if (!in_array($newDateTime->format('H:i'), $validSlots)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid slot selected.'
+                ], 422);
+            }
+
+            if ($merchantNow->diffInMinutes($bookingDateTime, false) <= 120) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You cannot reschedule within 2 hours of the booked time.'
+                ], 403);
+            }
+
+            $staff = null;
+
+            if ($request->filled('staff_id')) {
+
+                $staff = Staff::where('id', $request->staff_id)
+                    ->where('user_id', $booking->user_id)
+                    ->where('status', 1)
+                    ->first();
+
+                if (!$staff) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid staff selected.'
+                    ], 400);
+                }
+            } else {
+
+                $staff = Staff::where('user_id', $booking->user_id)
+                    ->where('status', 1)
+                    ->whereNotIn('id', function ($query) use ($newDateTime, $booking) {
+                        $query->select('staff_id')
+                            ->from('bookings')
+                            ->where('date_time', $newDateTime)
+                            ->where('status', '!=', 'cancel')
+                            ->where('id', '!=', $booking->id);
+                    })
+                    ->inRandomOrder()
+                    ->first();
+
+                if (!$staff) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No available staff for selected time.'
+                    ], 409);
+                }
+            }
+
+            $slotStart = $newDateTime;
+            $slotEnd   = $newDateTime->copy()->addMinutes($duration);
+
+            $conflict = Booking::where('staff_id', $staff->id)
+                ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
+                ->where('id', '!=', $booking->id)
+                ->where(function ($q) use ($slotStart, $slotEnd) {
+                    $q->where('date_time', '<', $slotEnd)
+                        ->whereRaw(
+                            'DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?',
+                            [$slotStart]
+                        );
+                })
+                ->lockForUpdate()
+                ->exists();
+
+            if ($conflict) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected staff is not available at this time.'
                 ], 409);
             }
-        }
 
-        $booking->update([
-            'date_time'      => $newDateTime,
-            'staff_id'       => $staff->id,
-            'status'         => 'rescheduled',
-            'rescheduled_at' => $merchantNow
-        ]);
+            $booking->update([
+                'date_time'      => $newDateTime,
+                'staff_id'       => $staff->id,
+                'status'         => 'rescheduled',
+                'rescheduled_at' => $merchantNow
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Booking rescheduled successfully.'
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking rescheduled successfully.'
+            ]);
+        });
     }
 }
