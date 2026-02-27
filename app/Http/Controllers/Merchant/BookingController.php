@@ -225,7 +225,7 @@ class BookingController extends Controller
                 }
 
                 $conflict = Booking::where('staff_id', $staff->id)
-                    ->whereIn('status', ['pending', 'confirm'])
+                    ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                     ->where(function ($q) use ($slotStart, $slotEnd) {
                         $q->where('date_time', '<', $slotEnd)
                             ->whereRaw(
@@ -257,7 +257,7 @@ class BookingController extends Controller
                 foreach ($staffs as $staff) {
 
                     $conflict = Booking::where('staff_id', $staff->id)
-                        ->whereIn('status', ['pending', 'confirm'])
+                        ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                         ->where(function ($q) use ($slotStart, $slotEnd) {
                             $q->where('date_time', '<', $slotEnd)
                                 ->whereRaw(
@@ -484,13 +484,13 @@ class BookingController extends Controller
             $bookings = Booking::where('staff_id', $request->staff_id)
                 ->where('service_id', $service->id)
                 ->whereDate('date_time', $date)
-                ->whereIn('status', ['pending', 'confirm','rescheduled'])
+                ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
         } else {
             $bookings = Booking::whereIn('staff_id', $staffIds)
                 ->where('service_id', $service->id)
                 ->whereDate('date_time', $date)
-                ->whereIn('status', ['pending', 'confirm','rescheduled'])
+                ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
         }
 
@@ -742,7 +742,7 @@ class BookingController extends Controller
                 }
 
                 $conflict = Booking::where('staff_id', $staff->id)
-                    ->whereIn('status', ['pending', 'confirm'])
+                    ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                     ->where(function ($q) use ($slotStart, $slotEnd) {
                         $q->where('date_time', '<', $slotEnd)
                             ->whereRaw(
