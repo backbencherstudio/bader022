@@ -51,7 +51,7 @@ class MerchantController extends Controller
 
     public function update(Request $request, $id)
     {
-        
+
         $subscription = Subscription::find($id);
 
         if (! $subscription) {
@@ -92,7 +92,7 @@ class MerchantController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Merchant updated successfully via subscription',
+            'message' => 'Merchant updated successfully subscription',
             'merchant' => $merchant,
         ]);
     }
