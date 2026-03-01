@@ -94,6 +94,7 @@ class MerchantController extends Controller
             'success' => true,
             'message' => 'Merchant updated successfully subscription',
             'merchant' => $merchant,
+            // 'merchant' => $merchant,
         ]);
     }
 }
