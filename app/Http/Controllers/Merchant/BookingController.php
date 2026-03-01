@@ -225,7 +225,7 @@ class BookingController extends Controller
                 }
 
                 $conflict = Booking::where('staff_id', $staff->id)
-                    ->whereIn('status', ['pending', 'confirm'])
+                    ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                     ->where(function ($q) use ($slotStart, $slotEnd) {
                         $q->where('date_time', '<', $slotEnd)
                             ->whereRaw(
@@ -257,7 +257,7 @@ class BookingController extends Controller
                 foreach ($staffs as $staff) {
 
                     $conflict = Booking::where('staff_id', $staff->id)
-                        ->whereIn('status', ['pending', 'confirm'])
+                        ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                         ->where(function ($q) use ($slotStart, $slotEnd) {
                             $q->where('date_time', '<', $slotEnd)
                                 ->whereRaw(
@@ -328,7 +328,7 @@ class BookingController extends Controller
                     'source' => ['id' => 'src_all'],
                     'redirect' => ['url' => url('/api/payment/callback')],
                     'metadata' => [
-                    'booking_id' => $booking->id,
+                        'booking_id' => $booking->id,
                     ],
                 ]);
 
@@ -367,31 +367,31 @@ class BookingController extends Controller
     }
 
     public function paymentCallback(Request $request)
-{
+    {
 
-    $chargeId = $request->input('tap_id');
-
-
-    $tapSecretKey = "your_tap_secret_key_here";
+        $chargeId = $request->input('tap_id');
 
 
-    $response = \Illuminate\Support\Facades\Http::withHeaders([
-        'Authorization' => 'Bearer ' . $tapSecretKey,
-        'accept' => 'application/json',
-    ])->get("https://api.tap.company/v2/charges/{$chargeId}");
+        $tapSecretKey = "your_tap_secret_key_here";
+
+
+        $response = \Illuminate\Support\Facades\Http::withHeaders([
+            'Authorization' => 'Bearer ' . $tapSecretKey,
+            'accept' => 'application/json',
+        ])->get("https://api.tap.company/v2/charges/{$chargeId}");
 
         $resData = $response->json();
 
         if ($response->successful() && $resData['status'] === 'CAPTURED') {
 
-        $bookingId = $resData['metadata']['booking_id'] ?? null;
+            $bookingId = $resData['metadata']['booking_id'] ?? null;
 
             if ($bookingId) {
                 $booking = Booking::find($bookingId);
 
-            if ($booking) {
-              
-                $booking->update(['status' => 'confirmed']);
+                if ($booking) {
+
+                    $booking->update(['status' => 'confirmed']);
 
                     MerchantPayment::updateOrCreate(
                         ['booking_id' => $booking->id],
@@ -484,13 +484,13 @@ class BookingController extends Controller
             $bookings = Booking::where('staff_id', $request->staff_id)
                 ->where('service_id', $service->id)
                 ->whereDate('date_time', $date)
-                ->whereIn('status', ['pending', 'confirm'])
+                ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
         } else {
             $bookings = Booking::whereIn('staff_id', $staffIds)
                 ->where('service_id', $service->id)
                 ->whereDate('date_time', $date)
-                ->whereIn('status', ['pending', 'confirm'])
+                ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
         }
 
@@ -742,7 +742,7 @@ class BookingController extends Controller
                 }
 
                 $conflict = Booking::where('staff_id', $staff->id)
-                    ->whereIn('status', ['pending', 'confirm'])
+                    ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                     ->where(function ($q) use ($slotStart, $slotEnd) {
                         $q->where('date_time', '<', $slotEnd)
                             ->whereRaw(
