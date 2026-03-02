@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Merchant\BookingController;
 use App\Http\Controllers\Merchant\MerchantSettingController;
 use App\Http\Controllers\Merchant\MinisiteController;
+use App\Http\Controllers\Merchant\WhyChooseUsController;
 use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\Merchant\StaffController;
 use App\Http\Controllers\Merchant\SubscriptionController;
@@ -142,6 +143,11 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show', [MinisiteController::class, 'show'])->name('mini-sites.show');
         Route::post('update', [MinisiteController::class, 'update'])->name('mini-sites.update');
     });
+
+    Route::prefix('whychooseus')->group(function () {
+        Route::post('upsert', [WhyChooseUsController::class, 'upsert'])->name('whychoseus.upsert');
+    });
+
     // merchant-setting
     Route::prefix('merchant-setting')->group(function () {
         Route::post('store', [MerchantSettingController::class, 'store'])->name('merchant.store');
@@ -292,3 +298,4 @@ Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallba
 Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->name('tap.callback');
 Route::get('/payment/callback', [BookingController::class, 'paymentCallback'])->name('payment.callback');
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
+Route::get('mini-site/usershow/{id}', [MinisiteController::class, 'usershow'])->name('mini-site.usershow');

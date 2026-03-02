@@ -7,6 +7,7 @@ use App\Models\MiniSite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\User;
 
 class MinisiteController extends Controller
 {
@@ -98,9 +99,39 @@ class MinisiteController extends Controller
             ], 401);
         }
 
-        $miniSite = MiniSite::where('user_id', $user->id)->first();
+        $miniSite = MiniSite::with('whychooseus', 'service')->where('user_id', $user->id)->first();
 
         if (! $miniSite) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Mini site not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $miniSite,
+        ], 200);
+    }
+
+    public function usershow($id)
+    {
+        // Check user exists
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        // Load MiniSite with relations
+        $miniSite = MiniSite::with(['whychooseus', 'service'])
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$miniSite) {
             return response()->json([
                 'status' => false,
                 'message' => 'Mini site not found',
