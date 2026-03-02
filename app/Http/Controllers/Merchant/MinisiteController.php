@@ -116,7 +116,6 @@ class MinisiteController extends Controller
 
     public function usershow($id)
     {
-        // Check user exists
         $user = User::find($id);
 
         if (!$user) {
@@ -126,7 +125,6 @@ class MinisiteController extends Controller
             ], 404);
         }
 
-        // Load MiniSite with relations
         $miniSite = MiniSite::with(['whychooseus', 'service'])
             ->where('user_id', $user->id)
             ->first();
