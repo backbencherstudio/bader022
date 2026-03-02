@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('why_choose_us', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
             $table->string('section_title')->nullable();
             $table->string('section_subtitle')->nullable();
 
