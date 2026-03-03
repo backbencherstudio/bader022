@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Models\User;
 
 class ServicesController extends Controller
 {
@@ -164,10 +165,18 @@ class ServicesController extends Controller
         ], 200);
     }
 
-    public function userindex(Request $request)
+    public function userindex(Request $request, $id)
     {
+        $user = User::find($id);
 
-        $query = Service::query();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        $query = Service::where('user_id', $id);
 
         if ($request->filled('service_name')) {
             $query->where('service_name', 'like', '%' . $request->service_name . '%');
@@ -178,7 +187,7 @@ class ServicesController extends Controller
         $mapped = $services->map(function ($service) {
             return [
                 'id' => $service->id,
-                'image' => $service->image,
+                'image' => $service->image ?? null,
                 'duration' => $service->duration,
                 'price' => $service->price,
                 'name' => $service->service_name,

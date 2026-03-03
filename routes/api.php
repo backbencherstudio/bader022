@@ -192,7 +192,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show/{id}', [ServicesController::class, 'show'])->name('service.show');
         Route::put('update/{id}', [ServicesController::class, 'update'])->name('service.update');
         Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
-        Route::get('userindex', [ServicesController::class, 'userindex'])->name('service.userindex');
+        Route::get('userindex/{id}', [ServicesController::class, 'userindex'])->name('service.userindex');
     });
 
     // ----- Merchant/Staff
@@ -299,3 +299,4 @@ Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->na
 Route::get('/payment/callback', [BookingController::class, 'paymentCallback'])->name('payment.callback');
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
 Route::get('mini-site/usershow/{id}', [MinisiteController::class, 'usershow'])->name('mini-site.usershow');
+
