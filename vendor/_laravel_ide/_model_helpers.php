@@ -7417,6 +7417,7 @@ namespace App\Models {
      * @property string|null $remember_token
      * @property string|null $package_status
      * @property string|null $remaining_day
+     * @property string|null $number_of_branches
      * @property string|null $package_expire_date
      * @property string|null $package_end_date
      * @property string|null $tap_public_key
@@ -7469,6 +7470,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapPublicKey($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageEndDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageExpireDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNumberOfBranches($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRemainingDay($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRememberToken($value)
