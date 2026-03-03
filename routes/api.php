@@ -299,4 +299,5 @@ Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->na
 Route::get('/payment/callback', [BookingController::class, 'paymentCallback'])->name('payment.callback');
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
 Route::get('mini-site/usershow/{id}', [MinisiteController::class, 'usershow'])->name('mini-site.usershow');
+Route::get('mini-site/user-view/{id}', [MinisiteController::class, 'userView'])->name('mini-site.userView');
 

@@ -242,4 +242,31 @@ class MinisiteController extends Controller
     //         'data' => $miniSite,
     //     ], 200);
     // }
+
+    public function userView($id)
+    {
+        $user = User::with([
+            'minisite',
+            'services',
+            'whyChooseUs',
+            'globalSetting'
+        ])->find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        if ($user->type != 2) {
+            return response()->json([
+                'message' => 'Unauthorized access',
+            ], 403);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $user
+        ], 200, [], JSON_PRETTY_PRINT);
+    }
 }
