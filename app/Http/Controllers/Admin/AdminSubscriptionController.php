@@ -107,7 +107,7 @@ class AdminSubscriptionController extends Controller
 
 
         $validated = $request->validate([
-            'status' => 'required|in:active,expired,cancelled',
+            'status' => 'required|in:active,pending,expired,cancelled',
         ]);
 
         $subscription->status = $validated['status'];

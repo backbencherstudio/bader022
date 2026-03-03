@@ -2,16 +2,11 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Http\Controllers\Controller;
-use App\Models\Booking;
-use App\Models\BusinessHour;
-use App\Models\MerchantPayment;
-use App\Models\Service;
-use App\Models\Staff;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\{DB, Http};
+use App\Http\Controllers\Controller;
+use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff};
+use Carbon\Carbon;
 
 class BookingController extends Controller
 {
@@ -366,50 +361,7 @@ class BookingController extends Controller
         });
     }
 
-    public function paymentCallback(Request $request)
-    {
-
-        $chargeId = $request->input('tap_id');
-
-
-        $tapSecretKey = "your_tap_secret_key_here";
-
-
-        $response = \Illuminate\Support\Facades\Http::withHeaders([
-            'Authorization' => 'Bearer ' . $tapSecretKey,
-            'accept' => 'application/json',
-        ])->get("https://api.tap.company/v2/charges/{$chargeId}");
-
-        $resData = $response->json();
-
-        if ($response->successful() && $resData['status'] === 'CAPTURED') {
-
-            $bookingId = $resData['metadata']['booking_id'] ?? null;
-
-            if ($bookingId) {
-                $booking = Booking::find($bookingId);
-
-            if ($booking) {
-
-                $booking->update(['status' => 'confirmed']);
-
-                    MerchantPayment::updateOrCreate(
-                        ['booking_id' => $booking->id],
-                        [
-                            'user_id' => $booking->user_id,
-                            'payment_method' => 'tap',
-                            'amount' => $resData['amount'],
-                            'transaction_id' => $chargeId,
-                        ]
-                    );
-
-                    return response()->json(['success' => true, 'message' => 'Payment Successful']);
-                }
-            }
-        }
-
-        return response()->json(['success' => false, 'message' => 'Payment Failed or Invalid'], 400);
-    }
+    
 
     public function getAvailability(Request $request)
     {

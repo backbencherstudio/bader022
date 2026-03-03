@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Http\Controllers\Controller;
-use App\Models\Booking;
-use App\Models\MerchantPayment;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\{Booking, MerchantPayment};
+use Carbon\Carbon;
 
 class AnalyticesController extends Controller
 {
@@ -79,7 +78,7 @@ class AnalyticesController extends Controller
 
         foreach ($months as $monthNumber => $monthName) {
             $result[] = [
-                'month' => $monthName,
+                'name' => $monthName,
                 'revenue' => (float) ($revenues[$monthNumber] ?? 0),
             ];
         }
@@ -116,7 +115,7 @@ class AnalyticesController extends Controller
 
         foreach ($weekDays as $dayNumber => $dayName) {
             $result[] = [
-                'day' => $dayName,
+                'name' => $dayName,
                 'revenue' => (float) ($revenues[$dayNumber] ?? 0),
             ];
         }
