@@ -135,27 +135,14 @@ class AnalyticesController extends Controller
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
 
-        $newCustomersCount = Booking::where('user_id', $merchantId)
+        $customers = Booking::where('user_id', $merchantId)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->whereNotIn('email', function ($query) use ($merchantId, $startOfMonth) {
-                $query->select('email')
-                    ->from('bookings')
-                    ->where('user_id', $merchantId)
-                    ->where('created_at', '<', $startOfMonth);
-            })
-            ->distinct('email')
-            ->count('email');
+            ->select('email', DB::raw('COUNT(*) as total_orders'))
+            ->groupBy('email')
+            ->get();
 
-        $returningCustomersCount = Booking::where('user_id', $merchantId)
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->whereIn('email', function ($query) use ($merchantId, $startOfMonth) {
-                $query->select('email')
-                    ->from('bookings')
-                    ->where('user_id', $merchantId)
-                    ->where('created_at', '<', $startOfMonth);
-            })
-            ->distinct('email')
-            ->count('email');
+        $newCustomersCount = $customers->count();
+        $returningCustomersCount = $customers->where('total_orders', '>', 1)->count();
 
         return response()->json([
             'new_customers' => $newCustomersCount,
