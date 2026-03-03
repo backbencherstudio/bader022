@@ -7443,6 +7443,9 @@ namespace App\Models {
      * @property-read int|null $payments_count
      * @property-read \App\Models\Subscription $subscription
      * @property-read \App\Models\MerchantSetting $merchantSetting
+     * @property-read \App\Models\MiniSite $minisite
+     * @property-read \App\Models\WhyChooseUs $whyChooseUs
+     * @property-read \App\Models\GlobalSetting $globalSetting
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
      * @property-read int|null $tokens_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Notifications\DatabaseNotification> $notifications

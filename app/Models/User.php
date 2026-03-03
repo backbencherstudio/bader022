@@ -90,4 +90,19 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(MerchantSetting::class);
     }
+
+    public function minisite()
+    {
+        return $this->hasOne(MiniSite::class);
+    }
+
+    public function whyChooseUs()
+    {
+        return $this->hasOne(WhyChooseUs::class);
+    }
+
+    public function globalSetting()
+    {
+        return $this->hasOne(GlobalSetting::class);
+    }
 }
