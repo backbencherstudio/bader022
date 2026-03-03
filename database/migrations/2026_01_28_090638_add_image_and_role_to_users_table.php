@@ -26,7 +26,10 @@ return new class extends Migration
             $table->string('package_start_date')->nullable()->after('package_duration');
             $table->string('package_end_date')->nullable()->after('package_start_date');
             $table->string('package_expire_date')->nullable()->after('package_end_date');
-            $table->string('remaining_day')->nullable()->after('package_expire_date');
+            $table->string('number_of_branches')->nullable()->after('package_end_date');
+            $table->string('business_name')->nullable()->after('number_of_branches');
+            $table->string('address')->nullable()->after('business_name');
+            $table->string('remaining_day')->nullable()->after('number_of_branches');
             $table->string('package_status')->nullable()->comment('0 = Inactive, 1 = Active')->after('remaining_day');
 
         });
