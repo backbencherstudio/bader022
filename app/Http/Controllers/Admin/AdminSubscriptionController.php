@@ -8,12 +8,36 @@ use Illuminate\Http\Request;
 
 class AdminSubscriptionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $subscriptions = Subscription::with([
+        $query = Subscription::with([
             'user.merchantSetting',
             'plan',
-        ])->latest()->get();
+        ])->latest();
+
+        if ($request->filled('plan_name')) {
+            $query->whereHas('plan', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->plan_name . '%');
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('package')) {
+            $query->whereHas('plan', function ($q) use ($request) {
+                $q->where('package', $request->package);
+            });
+        }
+
+        if ($request->filled('plan_type')) {
+            $query->whereHas('plan', function ($q) use ($request) {
+                $q->where('name', $request->plan_type);
+            });
+        }
+
+        $subscriptions = $query->get();
 
         $mapped = $subscriptions->map(function ($subscription) {
             return [
