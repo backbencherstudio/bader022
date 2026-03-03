@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class AdminSubscriptionController extends Controller
 {
@@ -15,9 +16,15 @@ class AdminSubscriptionController extends Controller
             'plan',
         ])->latest();
 
-        if ($request->filled('plan_name')) {
+        if ($request->filled('package')) {
             $query->whereHas('plan', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->plan_name . '%');
+                $q->where('name', 'like', '%' . $request->package . '%');
+            });
+        }
+
+        if ($request->filled('plan_type')) {
+            $query->whereHas('plan', function ($q) use ($request) {
+                $q->where('package', $request->plan_type);
             });
         }
 
@@ -25,21 +32,22 @@ class AdminSubscriptionController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('package')) {
-            $query->whereHas('plan', function ($q) use ($request) {
-                $q->where('package', $request->package);
-            });
-        }
-
-        if ($request->filled('plan_type')) {
-            $query->whereHas('plan', function ($q) use ($request) {
-                $q->where('name', $request->plan_type);
-            });
-        }
-
         $subscriptions = $query->get();
 
         $mapped = $subscriptions->map(function ($subscription) {
+
+            $start = $subscription->starts_at
+                ? Carbon::parse($subscription->starts_at)
+                : null;
+
+            $end = $subscription->ends_at
+                ? Carbon::parse($subscription->ends_at)
+                : null;
+
+            $remaining_days = $end
+                ? max(0, now()->diffInDays($end, false))
+                : 0;
+
             return [
                 'id' => $subscription->id,
 
@@ -47,22 +55,23 @@ class AdminSubscriptionController extends Controller
                     'id' => $subscription->user->id ?? null,
                     'name' => $subscription->user->name ?? null,
                     'email' => $subscription->user->email ?? null,
-                    'store_name' => optional($subscription->user->merchantSetting)->store_name,
                     'business_logo' => optional($subscription->user->merchantSetting)->business_logo
                         ? asset('storage/' . optional($subscription->user->merchantSetting)->business_logo)
                         : null,
+                    'business_name' => optional($subscription->user->merchantSetting)->store_name,
                 ],
 
                 'plan' => [
                     'id' => $subscription->plan->id ?? null,
-                    'name' => $subscription->plan->name ?? null,
+                    'package' => $subscription->plan->name ?? null,
+                    'plan_type' => $subscription->plan->package ?? null,
                     'price' => $subscription->plan->price ?? null,
-                    'package' => $subscription->plan->package ?? null,
                 ],
 
                 'status' => $subscription->status,
-                'starts_at' => $subscription->starts_at,
-                'ends_at' => $subscription->ends_at,
+                'start_date' => $start ? $start->format('M d, Y') : null,
+                'expiry_date' => $end ? $end->format('M d, Y') : null,
+                'remaining_days' => (int) $remaining_days,
                 'created_at' => $subscription->created_at->format('Y-m-d H:i:s'),
             ];
         });
