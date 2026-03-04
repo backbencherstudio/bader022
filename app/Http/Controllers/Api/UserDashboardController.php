@@ -117,12 +117,12 @@ class UserDashboardController extends Controller
 
         $payments = MerchantPayment::whereIn('booking_id', $bookingIds)
             ->whereIn('payment_status', ['completed', 'paid'])
-            ->select('amount', 'created_at')
+            ->select('amount', 'paid_at')
             ->get();
         foreach ($payments as $payment) {
             $activities->push([
                 'title' => 'Payment completed - ' . $payment->amount . ' SAR',
-                'time'  => $payment->created_at,
+                'time'  => $payment->paid_at,
             ]);
         }
 
