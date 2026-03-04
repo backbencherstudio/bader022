@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Merchant;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{DB, Http};
+use Illuminate\Support\Facades\{DB, Http, Log};
 use App\Http\Controllers\Controller;
 use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff};
 use Carbon\Carbon;
@@ -531,19 +531,18 @@ class BookingController extends Controller
             $staffId = $freeStaff->id;
         }
 
-        // 5️⃣ Create booking
-        $booking = Booking::create([
-            'user_id' => $merchant->id,
-            'staff_id' => $staffId,
-            'service_id' => $service->id,
-            'customer_name' => $request->customer_name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'date_time' => $slotStart,
-            'status' => 'pending',
-            'special_note' => $request->special_note,
-            'booking_by' => 'merchant',
-        ]);
+            $booking = Booking::create([
+                'user_id'        => $merchant->id,
+                'staff_id'       => $staffId,
+                'service_id'     => $service->id,
+                'customer_name'  => $request->customer_name,
+                'email'          => $request->email,
+                'phone'          => $request->phone,
+                'date_time'      => $slotStart,
+                'status'         => 'pending',
+                'special_note'   => $request->special_note,
+                'booking_by'     => 'merchant',
+            ]);
 
         // 6️⃣ Handle payment
         if ($request->payment_method === 'cash') {
@@ -601,127 +600,39 @@ class BookingController extends Controller
 
         $resData = $response->json();
 
-        if ($response->successful() && isset($resData['transaction']['url'])) {
-            return response()->json([
-                'success' => true,
-                'payment_url' => $resData['transaction']['url'],
-                'booking_id' => $booking->id,
-            ], 200);
-        }
+                if ($response->successful() && isset($resData['transaction']['url'])) {
+                    return response()->json([
+                        'success' => true,
+                        'payment_url' => $resData['transaction']['url'],
+                        'booking_id' => $booking->id,
+                    ], 200);
+                }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Tap API Error: '.($resData['errors'][0]['description'] ?? 'Transaction failed'),
-        ], 400);
-    });
-}
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tap API Error: ' . ($resData['errors'][0]['description'] ?? 'Transaction failed'),
+                ], 400);
+            } else {
 
-    public function paymentCallback(Request $request)
-    {
-        $tapId = $request->query('tap_id');
-
-        if (! $tapId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid callback request. tap_id missing.',
-            ], 400);
-        }
-
-        // Step 1: Verify payment with Tap API
-        $tapResponse = Http::withHeaders([
-            'accept' => 'application/json',
-        ])->get("https://api.tap.company/v2/charges/{$tapId}");
-
-        if (! $tapResponse->successful()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to verify payment with Tap.',
-            ], 400);
-        }
-
-        $tapData = $tapResponse->json();
-
-        // Step 2: Get booking_id from metadata
-        $bookingId = $tapData['metadata']['booking_id'] ?? null;
-
-        if (! $bookingId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Booking ID not found in metadata.',
-            ], 400);
-        }
-
-        $booking = Booking::find($bookingId);
-
-        if (! $booking) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Booking not found.',
-            ], 404);
-        }
-
-        // Step 3: Get merchant Tap secret key
-        $tapSetting = DB::table('tap_payments')
-            ->where('user_id', $booking->user_id)
-            ->latest('updated_at')
-            ->first();
-
-        if (! $tapSetting || ! $tapSetting->tap_secret_key) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Tap secret key not found for merchant.',
-            ], 422);
-        }
-
-        // Step 4: Verify again using secret key (secure way)
-        $verifyResponse = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
-            'accept' => 'application/json',
-        ])->get("https://api.tap.company/v2/charges/{$tapId}");
-
-        $verifyData = $verifyResponse->json();
-
-        if (! $verifyResponse->successful()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Payment verification failed.',
-            ], 400);
-        }
-
-        // Step 5: Check payment status
-        if (
-            isset($verifyData['status']) &&
-            $verifyData['status'] === 'CAPTURED'
-        ) {
-
-            // Prevent duplicate entry
-            $alreadyPaid = MerchantPayment::where('booking_id', $booking->id)->exists();
-
-            if (! $alreadyPaid) {
                 MerchantPayment::create([
-                    'booking_id' => $booking->id,
-                    'user_id' => $booking->user_id,
-                    'payment_method' => 'tap',
-                    'amount' => $verifyData['amount'],
-                    'transaction_id' => $tapId,
+                    'booking_id'     => $booking->id,
+                    'user_id'        => $merchant->id,
+                    'payment_method' => 'cash',
+                    'amount'         => $service->price,
+                    'transaction_id' => 'cash-' . uniqid(),
                     'payment_status' => 'paid',
                 ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booking created successfully',
+                    'booking_id' => $booking->id,
+                ], 201);
             }
-
-            $booking->update([
-                'status' => 'confirm',
-            ]);
-
-            return redirect('/payment-success');
-        }
-
-        // If payment failed
-        $booking->update([
-            'status' => 'cancelled',
-        ]);
-
-        return redirect('/payment-failed');
+        });
     }
+
+
 
     public function getAvailability(Request $request)
     {
