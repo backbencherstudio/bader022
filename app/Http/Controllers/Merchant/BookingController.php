@@ -1018,6 +1018,7 @@ class BookingController extends Controller
 
                 $payment->update([
                     'payment_status' => 'paid',
+                    'paid_at' => now(),
                 ]);
 
                 Booking::where('id', $bookingId)->update([
