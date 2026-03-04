@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{DB, Http};
 use App\Http\Controllers\Controller;
-use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff};
+use App\Models\Booking;
+use App\Models\BusinessHour;
+use App\Models\MerchantPayment;
+use App\Models\Service;
+use App\Models\Staff;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class BookingController extends Controller
 {
@@ -361,22 +366,52 @@ class BookingController extends Controller
         });
     }
 
-    
-
-    public function getAvailability(Request $request)
+    public function paymentCallback(Request $request)
     {
-        $request->validate([
-            'service_id' => 'required|exists:services,id',
-            'date' => 'required|date',
-            'staff_id' => 'nullable|integer',
-        ]);
 
-        $service = Service::find($request->service_id);
-        if (! $service) {
-            return response()->json(['available_times' => [], 'message' => 'Service not found'], 404);
+        $chargeId = $request->input('tap_id');
+
+
+        $tapSecretKey = "your_tap_secret_key_here";
+
+
+        $response = \Illuminate\Support\Facades\Http::withHeaders([
+            'Authorization' => 'Bearer ' . $tapSecretKey,
+            'accept' => 'application/json',
+        ])->get("https://api.tap.company/v2/charges/{$chargeId}");
+
+        $resData = $response->json();
+
+        if ($response->successful() && $resData['status'] === 'CAPTURED') {
+
+            $bookingId = $resData['metadata']['booking_id'] ?? null;
+
+            if ($bookingId) {
+                $booking = Booking::find($bookingId);
+
+            if ($booking) {
+
+                $booking->update(['status' => 'confirmed']);
+
+                    MerchantPayment::updateOrCreate(
+                        ['booking_id' => $booking->id],
+                        [
+                            'user_id' => $booking->user_id,
+                            'payment_method' => 'tap',
+                            'amount' => $resData['amount'],
+                            'transaction_id' => $chargeId,
+                        ]
+                    );
+
+                    return response()->json(['success' => true, 'message' => 'Payment Successful']);
+                }
+            }
         }
 
-        $merchantId = $service->user_id;
+        return response()->json(['success' => false, 'message' => 'Payment Failed or Invalid'], 400);
+    }
+
+d;
 
         $storeSetting = DB::table('merchant_store_settings')
             ->where('user_id', $merchantId)
