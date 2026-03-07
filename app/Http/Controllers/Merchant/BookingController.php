@@ -464,33 +464,11 @@ class BookingController extends Controller
                         'transaction_id' => $booking->merchantPayment->transaction_id,
                     ]
                 ], 201);
-            } else {
-                $payment->update([
-                    'payment_status' => 'failed',
-                ]);
-
-                $booking = Booking::find($payment->booking_id);
-                if ($booking) {
-                    $booking->update([
-                        'status' => 'cancel',
-                    ]);
-                }
-
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Payment failed or pending',
-                    'booking_id' => $payment->booking_id,
-                ]);
             }
-        } catch (\Exception $e) {
-            Log::error('Tap callback error', ['error' => $e->getMessage()]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Server error during payment verification',
-            ], 500);
-        }
+        });
     }
+
+
 
     public function getAvailability(Request $request)
     {
