@@ -328,12 +328,12 @@ class BookingController extends Controller
                     'content-type' => 'application/json',
                 ])->post('https://api.tap.company/v2/charges', [
                     'amount' => $service->price,
-                    'currency' => 'KWD',
+                    'currency' => 'SAR',
                     'customer' => [
                         'first_name' => $request->customer_name,
                         'email' => $request->email,
                         'phone' => [
-                            'country_code' => '965',
+                            'country_code' => '966',
                             'number' => $request->phone,
                         ],
                     ],
@@ -367,8 +367,17 @@ class BookingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Booking created successfully',
-                'booking_id' => $booking->id,
+                'message' => 'Booking confirmed!',
+                'booking' => [
+                    'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                    'service' => $booking->service->service_name,
+                    'date_time' => $booking->date_time->format('Y-m-d h:i A'),
+                    'staff_name' => $booking->staff->name,
+                    'duration' => $booking->service->duration . ' min',
+                    'amount' => $booking->service->price . ' SAR',
+                    'payment_method' => $booking->merchantPayment->payment_method,
+                    'transaction_id' => $booking->merchantPayment->transaction_id,
+                ]
             ], 201);
         });
     }
@@ -449,9 +458,18 @@ class BookingController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Payment successful',
-                    'booking_id' => $payment->booking_id,
-                ]);
+                    'message' => 'Booking confirmed!',
+                    'booking' => [
+                        'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                        'service' => $booking->service->service_name,
+                        'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
+                        'staff_name' => $booking->staff->name,
+                        'duration' => $booking->service->duration . ' min',
+                        'amount' => $booking->service->price . ' SAR',
+                        'payment_method' => $booking->merchantPayment->payment_method,
+                        'transaction_id' => $booking->merchantPayment->transaction_id,
+                    ]
+                ], 201);
             } else {
                 $payment->update([
                     'payment_status' => 'failed',
@@ -460,7 +478,7 @@ class BookingController extends Controller
                 $booking = Booking::find($payment->booking_id);
                 if ($booking) {
                     $booking->update([
-                        'status' => 'cancelled',
+                        'status' => 'cancel',
                     ]);
                 }
 
@@ -893,9 +911,17 @@ class BookingController extends Controller
             if ($request->payment_method == 'cash') {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Booking confirmed (Cash).',
-                    'booking_id' => $booking->id,
-                    'staff_id' => $staffId,
+                    'message' => 'Booking confirmed!',
+                    'booking' => [
+                        'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                        'service' => $booking->service->service_name,
+                        'date_time' => $booking->date_time->format('Y-m-d h:i A'),
+                        'staff_name' => $booking->staff->name,
+                        'duration' => $booking->service->duration . ' min',
+                        'amount' => $booking->service->price . ' SAR',
+                        'payment_method' => $booking->merchantPayment->payment_method,
+                        'transaction_id' => $booking->merchantPayment->transaction_id,
+                    ]
                 ], 201);
             }
 
@@ -980,6 +1006,7 @@ class BookingController extends Controller
         }
 
         $payment = MerchantPayment::where('booking_id', $bookingId)->first();
+        $booking = Booking::with(['service', 'staff'])->find($bookingId);
 
         if (! $payment) {
             return response()->json([
@@ -1042,10 +1069,22 @@ class BookingController extends Controller
             }
         });
 
+        $bookingData = [
+            'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+            'service' => $booking->service->service_name,
+            'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
+            'staff' => $booking->staff->name,
+            'duration' => $booking->service->duration . ' min',
+            'total_amount' => $payment->amount . ' SAR',
+            'pay' => $payment->payment_method,
+            'transaction_id' => $payment->transaction_id,
+        ];
+
         return response()->json([
             'success' => true,
             'payment_status' => $tapData['status'],
-            'booking_id' => $bookingId,
+            'message' => 'Booking confirmed!',
+            'booking_info' => $bookingData,
         ]);
     }
 }
