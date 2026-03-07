@@ -15,68 +15,7 @@ use App\Models\Service;
 
 class UserDashboardController extends Controller
 {
-    public function Upcoming(Request $request)
-    {
-        $userId = $request->user()->id;
-
-        $booking = Booking::with([
-            'service:id,service_name,duration,price,user_id',
-            'service.merchant:id,name,phone,address'
-        ])
-            ->where('booking_by', $userId)
-            ->whereIn('status', ['confirm', 'pending', 'rescheduled'])
-            ->orderBy('date_time', 'asc')
-            ->get()
-            ->first(function ($booking) {
-
-                $storeSetting = DB::table('merchant_store_settings')
-                    ->where('user_id', $booking->service->user_id)
-                    ->first();
-
-                if (!$storeSetting || !$storeSetting->time_zone) {
-                    return false;
-                }
-
-                $merchantNow = Carbon::now($storeSetting->time_zone);
-                $bookingTime = Carbon::parse($booking->date_time, $storeSetting->time_zone);
-
-                return $bookingTime->gte($merchantNow);
-            });
-
-        if (!$booking) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No upcoming appointment found.'
-            ]);
-        }
-
-        $storeSetting = DB::table('merchant_store_settings')
-            ->where('user_id', $booking->service->user_id)
-            ->first();
-
-        $merchantTimeZone = $storeSetting->time_zone;
-
-        $bookingDateTime = Carbon::parse($booking->date_time, $merchantTimeZone);
-
-        $result = [
-            'booking_id'        => $booking->id,
-            'service_name'      => $booking->service->service_name ?? null,
-            'status'            => ucfirst($booking->status),
-            'address'           => $booking->service->merchant->address ?? null,
-
-            'booking_date'      => $bookingDateTime->format('M d, Y'),
-            'booking_time'      => $bookingDateTime->format('h:i A'),
-
-            'service_price'     => $booking->service->price ?? null,
-            'merchant_phone'    => $booking->service->merchant->phone ?? null,
-        ];
-
-        return response()->json([
-            'success' => true,
-            'data' => $result
-        ]);
-    }
-
+    
 
     public function Activity()
     {
