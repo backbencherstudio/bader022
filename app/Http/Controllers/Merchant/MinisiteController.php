@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Http\Controllers\Controller;
-use App\Models\MiniSite;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
-use App\Models\User;
+use Illuminate\Support\Facades\{Auth, Validator};
+use App\Http\Controllers\Controller;
+use App\Models\{MiniSite, User};
 
 class MinisiteController extends Controller
 {
@@ -243,14 +241,16 @@ class MinisiteController extends Controller
     //     ], 200);
     // }
 
-    public function userView($id)
+    public function userView($website_domain)
     {
         $user = User::with([
             'minisite',
             'services',
             'whyChooseUs',
             'globalSetting'
-        ])->find($id);
+        ])
+        ->where('website_domain', $website_domain)
+        ->first();
 
         if (!$user) {
             return response()->json([

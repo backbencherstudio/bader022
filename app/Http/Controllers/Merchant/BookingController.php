@@ -361,7 +361,7 @@ class BookingController extends Controller
         });
     }
 
-    
+
 
     public function getAvailability(Request $request)
     {
