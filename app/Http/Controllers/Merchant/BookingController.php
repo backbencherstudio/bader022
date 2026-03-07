@@ -2,17 +2,11 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Http\Controllers\Controller;
-use App\Models\Booking;
-use App\Models\BusinessHour;
-use App\Models\MerchantPayment;
-use App\Models\Service;
-use App\Models\Staff;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{DB, Http, Log};
+use App\Http\Controllers\Controller;
+use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff};
+use Carbon\Carbon;
 
 class BookingController extends Controller
 {

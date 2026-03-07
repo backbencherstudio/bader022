@@ -34,6 +34,7 @@ class User extends Authenticatable implements JWTSubject
         'package_start_date',
         'package_end_date',
         'package_expire_date',
+        'number_of_branches',
         'remaining_day',
         'package_status',
         'jwt_token',

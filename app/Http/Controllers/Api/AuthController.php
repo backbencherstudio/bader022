@@ -2,15 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\{Auth, DB, Hash, Mail, Validator};
+use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -68,6 +64,8 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -152,7 +150,7 @@ class AuthController extends Controller
             'phone' => $request->phone,
             'type' => 1,
             'status' => 1,
-            'role' => $request->role,
+
             'image' => $imagePath,
             'password' => Hash::make($request->password),
         ]);
@@ -245,6 +243,9 @@ class AuthController extends Controller
             'type' => 2,
             'password' => Hash::make($request->password),
             'business_category' => $request->business_category,
+            'number_of_branches' => $request->number_of_branches,
+            'address' => $request->address,
+            'business_name' => $request->business_name,
             'website_domain' => $subdomain,
         ]);
 
