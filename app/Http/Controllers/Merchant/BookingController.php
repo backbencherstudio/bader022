@@ -377,51 +377,106 @@ class BookingController extends Controller
     }
 
     public function paymentCallback(Request $request)
-{
-    // ১. ট্যাপ থেকে চার্জ আইডি নেওয়া (ট্যাপ পেমেন্ট শেষে URL এ tap_id বা charge_id পাঠায়)
-    $chargeId = $request->input('tap_id');
+    {
 
-    // ২. মার্চেন্টের সিক্রেট কী খুঁজে বের করা (অথবা আপনার এনভায়রনমেন্ট ফাইল থেকে নিন)
-    // এখানে আপনার লজিক অনুযায়ী মার্চেন্ট বা ডিফল্ট কী ব্যবহার করুন
-    $tapSecretKey = "your_tap_secret_key_here";
+        $tapTransactionId = $request->query('tap_id');
 
-    // ৩. ট্যাপ থেকে পেমেন্ট স্ট্যাটাস ভেরিফাই করা
-    $response = \Illuminate\Support\Facades\Http::withHeaders([
-        'Authorization' => 'Bearer ' . $tapSecretKey,
-        'accept' => 'application/json',
-    ])->get("https://api.tap.company/v2/charges/{$chargeId}");
+        if (! $tapTransactionId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction ID missing',
+            ], 400);
+        }
 
-    $resData = $response->json();
+        try {
 
-    if ($response->successful() && $resData['status'] === 'CAPTURED') {
+            $payment = MerchantPayment::where('transaction_id', $tapTransactionId)->first();
 
-        // ৪. মেটাডাটা থেকে বুকিং আইডি বের করা
-        $bookingId = $resData['metadata']['booking_id'] ?? null;
-
-        if ($bookingId) {
-            $booking = Booking::find($bookingId);
-
-            if ($booking) {
-                // ৫. বুকিং স্ট্যাটাস আপডেট এবং পেমেন্ট রেকর্ড তৈরি
-                $booking->update(['status' => 'confirmed']);
-
-                MerchantPayment::updateOrCreate(
-                    ['booking_id' => $booking->id],
-                    [
-                        'user_id' => $booking->user_id,
-                        'payment_method' => 'tap',
-                        'amount' => $resData['amount'],
-                        'transaction_id' => $chargeId,
-                    ]
-                );
-
-                return response()->json(['success' => true, 'message' => 'Payment Successful']);
+            if (! $payment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment record not found',
+                ], 404);
             }
+
+            $tapSetting = DB::table('tap_payments')
+                ->where('user_id', $payment->user_id)
+                ->latest('updated_at')
+                ->first();
+
+            if (! $tapSetting || ! $tapSetting->tap_secret_key) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tap Payment settings not found',
+                ], 422);
+            }
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+                'Accept' => 'application/json',
+            ])->get("https://api.tap.company/v2/charges/{$tapTransactionId}");
+
+            $resData = $response->json();
+
+            if (! $response->successful() || ! isset($resData['status'])) {
+                Log::error('Tap API failed', ['response' => $resData]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to verify payment with Tap.',
+                ], 400);
+            }
+
+            $status = $resData['status'];
+
+            if ($payment->payment_status === 'paid') {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment already processed',
+                    'booking_id' => $payment->booking_id,
+                ]);
+            }
+
+            if ($status === 'CAPTURED') {
+                $payment->update([
+                    'payment_status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+
+                $booking = Booking::find($payment->booking_id);
+                if ($booking) {
+                    $booking->update([
+                        'status' => 'confirm',
+                    ]);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booking confirmed!',
+                    'booking' => [
+                        'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                        'service' => $booking->service->service_name,
+                        'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
+                        'staff_name' => $booking->staff->name,
+                        'duration' => $booking->service->duration . ' min',
+                        'amount' => $booking->service->price . ' SAR',
+                        'payment_method' => $booking->merchantPayment->payment_method,
+                        'transaction_id' => $booking->merchantPayment->transaction_id,
+                    ]
+                ], 201);
+            }
+        }
+        catch (\Exception $e) {
+            Log::error('Payment callback error', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing the payment callback.',
+            ], 500);
         }
     }
 
-    return response()->json(['success' => false, 'message' => 'Payment Failed or Invalid'], 400);
-}
+
 
 
     public function getAvailability(Request $request)
@@ -649,6 +704,7 @@ class BookingController extends Controller
         ]);
     }
 
+
     public function bookingByUser(Request $request)
     {
         $request->validate([
@@ -822,7 +878,6 @@ class BookingController extends Controller
                 'status' => 'pending',
                 'special_note' => $request->special_note,
                 'booking_by' => auth()->id(),
-                'payment_method' => 2,
             ]);
 
             $payment = MerchantPayment::create([
