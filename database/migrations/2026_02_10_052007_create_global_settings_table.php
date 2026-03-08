@@ -23,8 +23,13 @@ return new class extends Migration
             $table->string('logo_size')->nullable();
 
             // Design system
-            $table->json('color_system')->nullable();
-            $table->json('typography')->nullable();
+            $table->string('primary_color')->nullable();
+            $table->string('secondary_color')->nullable();
+            $table->string('heading_color')->nullable();
+            $table->string('body_text_color')->nullable();
+            $table->string('button_color')->nullable();
+            $table->string('typography_h1')->nullable();
+            $table->string('typography_h2')->nullable();
             $table->string('body_text_size')->nullable();
             $table->enum('font_family', [
                 'Inter',
@@ -43,8 +48,11 @@ return new class extends Migration
             $table->text('footer_des')->nullable();
             $table->string('footer_background')->nullable();
             $table->string('footer_text_color')->nullable();
-            $table->json('social_links')->nullable();
-
+            $table->string('facebook_url')->nullable();
+            $table->string('twitter_url')->nullable();
+            $table->string('instagram_url')->nullable();
+            $table->string('linkedin_url')->nullable();
+            $table->string('pinterest_url')->nullable();
             // Menu sections & URLs
             $table->string('home')->nullable();
             $table->string('home_url')->nullable();
@@ -67,7 +75,7 @@ return new class extends Migration
             $table->string('terms_condition')->nullable();
             $table->string('terms_condition_url')->nullable();
 
-            $table->json('contact_info')->nullable();
+            $table->string('contact_info')->nullable();
             $table->string('contact_email')->nullable();
             $table->string('country')->nullable();
 

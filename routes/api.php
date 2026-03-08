@@ -1,36 +1,10 @@
 <?php
 
-use App\Http\Controllers\Admin\BrandController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\FaqCategoryController;
-use App\Http\Controllers\Admin\FaqController;
-use App\Http\Controllers\Admin\MerchantController;
-use App\Http\Controllers\Admin\PaymentHistoryController;
-use App\Http\Controllers\Admin\PermissionController;
-use App\Http\Controllers\Admin\PlanController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\SettingController;
-use App\Http\Controllers\Admin\SliderController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\SubcategoryController;
-use App\Http\Controllers\Admin\AdminSubscriptionController;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\UserDashboardController;
-use App\Http\Controllers\Api\EmailController;
-use App\Http\Controllers\Api\GoogleAuthController;
-use App\Http\Controllers\Merchant\BookingController;
-use App\Http\Controllers\Merchant\MerchantSettingController;
-use App\Http\Controllers\Merchant\MinisiteController;
-use App\Http\Controllers\Merchant\ServicesController;
-use App\Http\Controllers\Merchant\StaffController;
-use App\Http\Controllers\Merchant\SubscriptionController;
-use App\Http\Controllers\Merchant\GlobalsettingController;
-use App\Http\Controllers\Merchant\TransactionController;
-use App\Http\Controllers\Merchant\MerchantDashboardContoller;
-use App\Http\Controllers\Merchant\TapPaymentController;
-use App\Http\Controllers\Merchant\AnalyticesController;
-use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\{AdminSubscriptionController, BrandController, CategoryController, DashboardController, FaqCategoryController, FaqController, MerchantController, PaymentHistoryController, PermissionController, PlanController, RoleController, SettingController, SliderController, SubcategoryController};
+use App\Http\Controllers\Api\{AuthController, EmailController, GoogleAuthController, UserDashboardController};
+use App\Http\Controllers\Merchant\{AnalyticesController, BookingController, GlobalsettingController, MerchantDashboardContoller, MerchantSettingController, MinisiteController, ServicesController, StaffController, SubscriptionController, TapPaymentController, TransactionController, WhyChooseUsController};
+use App\Http\Controllers\NotificationController;
 
 
 
@@ -142,6 +116,11 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show', [MinisiteController::class, 'show'])->name('mini-sites.show');
         Route::post('update', [MinisiteController::class, 'update'])->name('mini-sites.update');
     });
+
+    Route::prefix('whychooseus')->group(function () {
+        Route::post('upsert', [WhyChooseUsController::class, 'upsert'])->name('whychoseus.upsert');
+    });
+
     // merchant-setting
     Route::prefix('merchant-setting')->group(function () {
         Route::post('store', [MerchantSettingController::class, 'store'])->name('merchant.store');
@@ -158,7 +137,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
     // admin subscription
     Route::prefix('subscription')->group(function () {
-        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('process.index');
+        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('processs.index');
         Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('process.edit');
         Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('process.update');
         Route::get('summary', [AdminSubscriptionController::class, 'summary'])->name('process.summary');
@@ -186,6 +165,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show/{id}', [ServicesController::class, 'show'])->name('service.show');
         Route::put('update/{id}', [ServicesController::class, 'update'])->name('service.update');
         Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
+        Route::get('userindex/{id}', [ServicesController::class, 'userindex'])->name('service.userindex');
     });
 
     // ----- Merchant/Staff
@@ -286,6 +266,10 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
  });
 
 
+
 Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
 Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->name('tap.callback');
 Route::get('/payment/callback', [BookingController::class, 'paymentCallback'])->name('payment.callback');
+Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
+Route::get('bokli/{website_domain}', [MinisiteController::class, 'userView'])->name('mini-site.userView');
+

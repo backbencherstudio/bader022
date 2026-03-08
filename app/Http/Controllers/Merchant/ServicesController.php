@@ -6,16 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Models\User;
 
 class ServicesController extends Controller
 {
-    public function index(Request $request) 
+    public function index(Request $request)
     {
 
         $query = Service::where('user_id', auth()->id());
 
         if ($request->filled('service_name')) {
-            $query->where('service_name', 'like', '%' .$request->service_name . '%');
+            $query->where('service_name', 'like', '%' . $request->service_name . '%');
         }
 
         $services = $query->get();
@@ -28,7 +29,7 @@ class ServicesController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'service_name' => 'required|string|max:255',
             'duration' => 'required|string',
             'price' => 'required|numeric|min:0',
@@ -37,7 +38,7 @@ class ServicesController extends Controller
             'status' => 'nullable|boolean',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -47,7 +48,7 @@ class ServicesController extends Controller
 
         $imagePath = null;
 
-        if($request->hasFile('image')) {
+        if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('services/'), $imageName);
@@ -72,11 +73,11 @@ class ServicesController extends Controller
         ], 201);
     }
 
-    public function show ($id)
+    public function show($id)
     {
         $service = Service::where('id', $id)->where('user_id', auth()->id())->first();
 
-        if(!$service) {
+        if (!$service) {
             return response()->json([
                 'success' => false,
                 'message' => 'Service not found',
@@ -93,14 +94,14 @@ class ServicesController extends Controller
     {
         $service = Service::where('id', $id)->where('user_id', auth()->id())->first();
 
-        if(!$service) {
+        if (!$service) {
             return response()->json([
                 'success' => false,
                 'message' => 'Service not found'
             ], 404);
         }
 
-        $validator = validator::make($request->all(),[
+        $validator = validator::make($request->all(), [
             'service_name' => 'sometimes|required|string|max:255',
             'duration' => 'sometimes|required|string',
             'price' => 'sometimes|required|numeric|min:0',
@@ -109,15 +110,15 @@ class ServicesController extends Controller
             'status' => 'nullable|boolean',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'errors' => $validator->errors()
             ], 422);
         }
 
-        if($request->hasfile('image')) {
-            if($service->image && file_exists(public_path($service->image))){
+        if ($request->hasfile('image')) {
+            if ($service->image && file_exists(public_path($service->image))) {
                 unlink(public_path($service->image));
             }
 
@@ -125,9 +126,9 @@ class ServicesController extends Controller
             $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('services'), $imageName);
 
-            $service->image = 'services/' .$imageName;
+            $service->image = 'services/' . $imageName;
         }
-        
+
         $service->fill($request->only([
             'service_name',
             'duration',
@@ -149,7 +150,7 @@ class ServicesController extends Controller
     {
         $service = Service::where('id', $id)->where('user_id', auth()->id())->first();
 
-        if(!$service) {
+        if (!$service) {
             return response()->json([
                 'success' => false,
                 'message' => 'Service not found'
@@ -164,4 +165,39 @@ class ServicesController extends Controller
         ], 200);
     }
 
+    public function userindex(Request $request, $id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        $query = Service::where('user_id', $id);
+
+        if ($request->filled('service_name')) {
+            $query->where('service_name', 'like', '%' . $request->service_name . '%');
+        }
+
+        $services = $query->get();
+
+        $mapped = $services->map(function ($service) {
+            return [
+                'id' => $service->id,
+                'image' => $service->image ?? null,
+                'duration' => $service->duration,
+                'price' => $service->price,
+                'name' => $service->service_name,
+                'description' => $service->description,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $mapped
+        ]);
+    }
 }
