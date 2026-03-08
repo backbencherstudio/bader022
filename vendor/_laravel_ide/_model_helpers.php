@@ -2020,7 +2020,11 @@ namespace App\Models {
      * @property string|null $about
      * @property string|null $home_url
      * @property string|null $home
-     * @property array|null $social_links
+     * @property string|null $pinterest_url
+     * @property string|null $linkedin_url
+     * @property string|null $instagram_url
+     * @property string|null $twitter_url
+     * @property string|null $facebook_url
      * @property string|null $footer_text_color
      * @property string|null $footer_background
      * @property string|null $footer_des
@@ -2028,8 +2032,13 @@ namespace App\Models {
      * @property string|null $section_spacing
      * @property mixed $font_family
      * @property string|null $body_text_size
-     * @property array|null $typography
-     * @property array|null $color_system
+     * @property string $typography_h2
+     * @property string $typography_h1
+     * @property string|null $button_color
+     * @property string|null $body_text_color
+     * @property string|null $heading_color
+     * @property string|null $secondary_color
+     * @property string|null $primary_color
      * @property string|null $logo_size
      * @property mixed $logo_position
      * @property string|null $branding_logo
@@ -2040,8 +2049,13 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereBrandingLogo($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereLogoPosition($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereLogoSize($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereColorSystem($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereTypography($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting wherePrimaryColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereSecondaryColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereHeadingColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereBodyTextColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereButtonColor($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereTypographyH1($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereTypographyH2($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereBodyTextSize($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereFontFamily($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereSectionSpacing($value)
@@ -2049,7 +2063,11 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereFooterDes($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereFooterBackground($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereFooterTextColor($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereSocialLinks($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereFacebookUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereTwitterUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereInstagramUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereLinkedinUrl($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting wherePinterestUrl($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereHome($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereHomeUrl($value)
      * @method static \Illuminate\Database\Eloquent\Builder<GlobalSetting>|GlobalSetting whereAbout($value)
@@ -3383,6 +3401,9 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $service_background
+     * @property string|null $service_description
+     * @property string|null $service_title
      * @property string|null $cta_padding
      * @property string|null $cta_overlay_color
      * @property string|null $cta_image
@@ -3422,6 +3443,9 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaImage($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaOverlayColor($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCtaPadding($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereServiceTitle($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereServiceDescription($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereServiceBackground($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MiniSite>|MiniSite newModelQuery()
@@ -7412,6 +7436,7 @@ namespace App\Models {
      * @property string|null $remember_token
      * @property string|null $package_status
      * @property string|null $remaining_day
+     * @property string|null $number_of_branches
      * @property string|null $package_expire_date
      * @property string|null $package_end_date
      * @property string|null $tap_public_key
@@ -7464,6 +7489,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTapPublicKey($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageEndDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageExpireDate($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNumberOfBranches($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRemainingDay($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePackageStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRememberToken($value)
