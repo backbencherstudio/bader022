@@ -2,15 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Booking;
-use Carbon\Carbon;
-use App\Models\Staff;
-use App\Models\MerchantPayment;
 use Illuminate\Support\Facades\DB;
-use App\Models\BusinessHour;
-use App\Models\Service;
+use App\Http\Controllers\Controller;
+use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff};
+use Carbon\Carbon;
 
 
 class UserDashboardController extends Controller

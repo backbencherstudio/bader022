@@ -31,6 +31,9 @@ return new class extends Migration
             $table->string('cta_image')->nullable();
             $table->string('cta_overlay_color')->nullable();
             $table->string('cta_padding')->nullable();
+            $table->string('service_title')->nullable();
+            $table->text('service_description')->nullable();
+            $table->text('service_background')->nullable();
             $table->timestamps();
         });
     }

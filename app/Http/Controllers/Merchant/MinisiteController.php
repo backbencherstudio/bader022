@@ -41,6 +41,9 @@ class MinisiteController extends Controller
             'cta_subtitle' => 'nullable|string|max:255',
             'cta_overlay_color' => 'nullable|string|max:50',
             'cta_padding' => 'nullable|string',
+            'service_title' => 'nullable|string|max:255',
+            'service_description' => 'nullable|string',
+            'service_background' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {

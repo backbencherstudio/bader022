@@ -465,8 +465,17 @@ class BookingController extends Controller
                     ]
                 ], 201);
             }
-        });
+        }
+        catch (\Exception $e) {
+            Log::error('Payment callback error', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing the payment callback.',
+            ], 500);
+        }
     }
+
 
 
 

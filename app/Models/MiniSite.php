@@ -28,6 +28,9 @@ class MiniSite extends Model
         'cta_image',
         'cta_overlay_color',
         'cta_padding',
+        'service_title',
+        'service_description',
+        'service_background',
     ];
 
     public function user()
