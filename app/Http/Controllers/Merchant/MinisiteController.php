@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Http\Controllers\Controller;
-use App\Models\MiniSite;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\{Auth, Validator};
+use App\Http\Controllers\Controller;
+use App\Models\{MiniSite, User};
 
 class MinisiteController extends Controller
 {
@@ -42,6 +41,9 @@ class MinisiteController extends Controller
             'cta_subtitle' => 'nullable|string|max:255',
             'cta_overlay_color' => 'nullable|string|max:50',
             'cta_padding' => 'nullable|string',
+            'service_title' => 'nullable|string|max:255',
+            'service_description' => 'nullable|string',
+            'service_background' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -98,9 +100,37 @@ class MinisiteController extends Controller
             ], 401);
         }
 
-        $miniSite = MiniSite::where('user_id', $user->id)->first();
+        $miniSite = MiniSite::with('whychooseus', 'service')->where('user_id', $user->id)->first();
 
         if (! $miniSite) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Mini site not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $miniSite,
+        ], 200);
+    }
+
+    public function usershow($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        $miniSite = MiniSite::with(['whychooseus', 'service'])
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$miniSite) {
             return response()->json([
                 'status' => false,
                 'message' => 'Mini site not found',
@@ -213,4 +243,33 @@ class MinisiteController extends Controller
     //         'data' => $miniSite,
     //     ], 200);
     // }
+
+    public function userView($website_domain)
+    {
+        $user = User::with([
+            'minisite',
+            'services',
+            'whyChooseUs',
+            'globalSetting'
+        ])
+        ->where('website_domain', $website_domain)
+        ->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        if ($user->type != 2) {
+            return response()->json([
+                'message' => 'Unauthorized access',
+            ], 403);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $user
+        ], 200, [], JSON_PRETTY_PRINT);
+    }
 }

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Staff;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class StaffController extends Controller
@@ -15,14 +15,14 @@ class StaffController extends Controller
         $query = Staff::where('user_id', auth()->id())->with('service')->orderBy('id', 'desc');
 
         if ($request->filled('name')) {
-            $query->where('name', 'like', '%' . $request->name . '%');
+            $query->where('name', 'like', '%'.$request->name.'%');
         }
 
         $staffs = $query->get();
 
         return response()->json([
             'success' => true,
-            'data' => $staffs
+            'data' => $staffs,
         ], 200);
     }
 
@@ -77,20 +77,22 @@ class StaffController extends Controller
         ], 201);
     }
 
+
+
     public function show($id)
     {
         $staff = Staff::where('id', $id)->where('user_id', auth()->id())->with('service')->first();
 
-        if (!$staff) {
+        if (! $staff) {
             return response()->json([
                 'success' => false,
-                'message' => 'Staff not found'
+                'message' => 'Staff not found',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $staff
+            'data' => $staff,
         ], 200);
     }
 
@@ -98,10 +100,10 @@ class StaffController extends Controller
     {
         $staff = Staff::where('id', $id)->where('user_id', auth()->id())->first();
 
-        if (!$staff) {
+        if (! $staff) {
             return response()->json([
                 'success' => false,
-                'message' => 'Staff not found'
+                'message' => 'Staff not found',
             ], 404);
         }
 
@@ -109,24 +111,24 @@ class StaffController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'role' => 'sometimes|required|string|in:staff,admin',
             'service_id' => 'sometimes|required|string',
-            'image'      => 'sometimes|required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'sometimes|required|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         if ($request->has('service_id')) {
             $userService = auth()->user()->services()->where('id', $request->service_id)->first();
 
-            if (!$userService) {
+            if (! $userService) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'The selected service does not belong to the authenticated user.'
+                    'message' => 'The selected service does not belong to the authenticated user.',
                 ], 404);
             }
         }
@@ -137,17 +139,17 @@ class StaffController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imageName = time().'_'.$image->getClientOriginalName();
             $image->move(public_path('staffs'), $imageName);
 
-            $staff->image = 'staffs/' . $imageName;
+            $staff->image = 'staffs/'.$imageName;
         }
 
         $staff->fill($request->only([
             'name',
             'role',
             'service_id',
-            'status'
+            'status',
         ]));
 
         $staff->save();
@@ -155,7 +157,7 @@ class StaffController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Staff updated successfully',
-            'data' => $staff
+            'data' => $staff,
         ], 200);
     }
 
@@ -163,10 +165,10 @@ class StaffController extends Controller
     {
         $staff = Staff::where('id', $id)->where('user_id', auth()->id())->first();
 
-        if (!$staff) {
+        if (! $staff) {
             return response()->json([
                 'success' => false,
-                'message' => 'Staff not found'
+                'message' => 'Staff not found',
             ], 404);
         }
 
@@ -178,7 +180,7 @@ class StaffController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Staff deleted successfully'
+            'message' => 'Staff deleted successfully',
         ], 200);
     }
 }

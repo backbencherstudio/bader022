@@ -2,15 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Booking;
-use Carbon\Carbon;
-use App\Models\Staff;
-use App\Models\MerchantPayment;
 use Illuminate\Support\Facades\DB;
-use App\Models\BusinessHour;
-use App\Models\Service;
+use App\Http\Controllers\Controller;
+use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff};
+use Carbon\Carbon;
 
 
 class UserDashboardController extends Controller
@@ -21,7 +17,7 @@ class UserDashboardController extends Controller
 
         $booking = Booking::with([
             'service:id,service_name,duration,price,user_id',
-            'service.merchant:id,name,phone,business_category'
+            'service.merchant:id,name,phone,address'
         ])
             ->where('booking_by', $userId)
             ->whereIn('status', ['confirm', 'pending', 'rescheduled'])
@@ -62,7 +58,7 @@ class UserDashboardController extends Controller
             'booking_id'        => $booking->id,
             'service_name'      => $booking->service->service_name ?? null,
             'status'            => ucfirst($booking->status),
-            'merchant_category' => $booking->service->merchant->business_category ?? null,
+            'address'           => $booking->service->merchant->address ?? null,
 
             'booking_date'      => $bookingDateTime->format('M d, Y'),
             'booking_time'      => $bookingDateTime->format('h:i A'),
@@ -117,12 +113,12 @@ class UserDashboardController extends Controller
 
         $payments = MerchantPayment::whereIn('booking_id', $bookingIds)
             ->whereIn('payment_status', ['completed', 'paid'])
-            ->select('amount', 'created_at')
+            ->select('amount', 'paid_at')
             ->get();
         foreach ($payments as $payment) {
             $activities->push([
                 'title' => 'Payment completed - ' . $payment->amount . ' SAR',
-                'time'  => $payment->created_at,
+                'time'  => $payment->paid_at,
             ]);
         }
 
@@ -263,14 +259,11 @@ class UserDashboardController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->whereHas('merchantStore', fn($mq) => $mq->where('store_name', 'LIKE', "%$search%"))
-                    ->orWhereHas('merchantPayment', fn($pq) => $pq->where('transaction_id', 'LIKE', "%$search%"))
+                    ->orWhereHas('merchantPayment', fn($pq) => $pq->where('transaction_id', 'LIKE', "%$search%")
+                        ->orWhere('payment_status', 'LIKE', "%$search%"))
                     ->orWhereHas('merchant', fn($mq) => $mq->where('name', 'LIKE', "%$search%"))
                     ->orWhere('id', 'LIKE', "%$search%");
             });
-        }
-
-        if ($request->filled('status')) {
-            $query->whereHas('merchantPayment', fn($pq) => $pq->where('payment_status', $request->status));
         }
 
         $payments = $query->orderBy('created_at', 'desc')->paginate(10);
@@ -278,13 +271,8 @@ class UserDashboardController extends Controller
         $data = $payments->getCollection()->map(function ($booking) {
             $payment = $booking->merchantPayment;
 
-            $paymentMethod = match ($payment->payment_method ?? 3) {
-                0 => 'Credit Card',
-                1 => 'Paypal',
-                2 => 'Pay at Store',
-                3 => 'Cash',
-                default => 'N/A'
-            };
+            $paymentMethod = $payment->payment_method;
+
 
             return [
                 'tx_id'          => $payment->transaction_id ?? null,
@@ -334,14 +322,7 @@ class UserDashboardController extends Controller
 
         $payment = $booking->merchantPayment;
 
-        $paymentMethod = match ($payment->payment_method ?? 3) {
-            0 => 'Credit Card',
-            1 => 'Paypal',
-            2 => 'Pay at Store',
-            3 => 'Cash',
-            default => 'N/A'
-        };
-
+        $paymentMethod = $payment->payment_method;
 
         $data = [
             'payment_status' => ucfirst($payment->payment_status ?? $booking->status),

@@ -34,6 +34,7 @@ class User extends Authenticatable implements JWTSubject
         'package_start_date',
         'package_end_date',
         'package_expire_date',
+        'number_of_branches',
         'remaining_day',
         'package_status',
         'jwt_token',
@@ -88,5 +89,20 @@ class User extends Authenticatable implements JWTSubject
     public function merchantSetting()
     {
         return $this->hasOne(MerchantSetting::class);
+    }
+
+    public function minisite()
+    {
+        return $this->hasOne(MiniSite::class);
+    }
+
+    public function whyChooseUs()
+    {
+        return $this->hasOne(WhyChooseUs::class);
+    }
+
+    public function globalSetting()
+    {
+        return $this->hasOne(GlobalSetting::class);
     }
 }
