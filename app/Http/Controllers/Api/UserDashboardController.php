@@ -56,6 +56,7 @@ class UserDashboardController extends Controller
 
         $result = [
             'booking_id'        => $booking->id,
+            'service_id'      => $booking->service->id ?? null,
             'service_name'      => $booking->service->service_name ?? null,
             'status'            => ucfirst($booking->status),
             'address'           => $booking->service->merchant->address ?? null,
@@ -403,6 +404,7 @@ class UserDashboardController extends Controller
             ],
             'booking_info' => [
                 'booking_id'    => $booking->id,
+                'service_id'  => $booking->service->id ?? null,
                 'service_name'  => $booking->service->service_name ?? null,
 
                 'date_time'     => $bookingDateTime->format('M d, Y h:i A'),
@@ -468,6 +470,7 @@ class UserDashboardController extends Controller
         }
 
         $data = [
+            'service_id' => $booking->service->id ?? 'N/A',
             'service_name' => $booking->service->service_name ?? 'N/A',
             'booking_date' => $bookingDateTime->format('M d, Y'),
             'booking_time' => $bookingDateTime->format('h:i A'),
@@ -651,6 +654,7 @@ class UserDashboardController extends Controller
             'success' => true,
             'data' => [
                 'booking_id'   => $booking->id,
+                'service_id'      => $booking->service->id ?? null,
                 'service'      => $booking->service->service_name ?? null,
                 'current_date' => $bookingDateTime->format('M d, Y'),
                 'current_time' => $bookingDateTime->format('h:i A'),
