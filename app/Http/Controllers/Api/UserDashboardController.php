@@ -10,6 +10,7 @@ use App\Models\Staff;
 use App\Models\MerchantPayment;
 use Illuminate\Support\Facades\DB;
 use App\Models\BusinessHour;
+use Illuminate\Support\Facades\Http;
 use App\Models\Service;
 
 
@@ -545,15 +546,64 @@ class UserDashboardController extends Controller
             'status' => 'cancel'
         ]);
 
-        if ($booking->merchantPayment) {
-            $booking->merchantPayment->update([
-                'payment_status' => 'failed'
-            ]);
+        $message = 'Your booking has been cancelled successfully.';
+
+        $payment = $booking->merchantPayment;
+
+        if ($payment) {
+
+            if ($payment->payment_method === 'tap' && $payment->payment_status === 'paid') {
+
+                $tapSetting = DB::table('tap_payments')
+                    ->where('user_id', $booking->user_id)
+                    ->latest()
+                    ->first();
+
+                if ($tapSetting) {
+
+                    $response = Http::withHeaders([
+                        'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+                        'accept' => 'application/json',
+                        'content-type' => 'application/json',
+                    ])->post('https://api.tap.company/v2/refunds', [
+                        'charge_id' => $payment->transaction_id,
+                        'amount' => $payment->amount,
+                        'currency' => 'SAR',
+                        'reason' => 'Booking cancelled',
+                    ]);
+
+                    $resData = $response->json();
+
+                    if ($response->successful() && isset($resData['id'])) {
+
+                        $payment->update([
+                            'payment_status' => 'refunded',
+                            'refund_id' => $resData['id'],
+                            'refund_date' => now(),
+                        ]);
+
+                        $message = 'Your booking has been cancelled successfully. The payment has been refunded to your account.';
+                    } else {
+
+                        $payment->update([
+                            'payment_status' => 'refund_failed'
+                        ]);
+                        $message = 'Your booking has been cancelled, but refund could not be processed. Please contact the merchant.';
+                    }
+                }
+            } else {
+
+                $payment->update([
+                    'payment_status' => 'failed'
+                ]);
+
+                $message = 'Your booking has been cancelled successfully.';
+            }
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Your booking has been cancelled successfully.'
+            'message' => $message
         ]);
     }
 
