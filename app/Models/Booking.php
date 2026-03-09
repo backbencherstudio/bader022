@@ -59,4 +59,8 @@ class Booking extends Model
     {
         return $this->hasOne(MerchantPayment::class, 'booking_id', 'id');
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
