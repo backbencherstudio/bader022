@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\Payment;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\{Payment, User};
 
 class DashboardController extends Controller
 {
@@ -14,9 +13,9 @@ class DashboardController extends Controller
     {
         $merchantsCount = User::where('type', 1)->count();
 
-        $revenue = Payment::where('status', 'successfull')->sum('amount');
+        $revenue = Payment::where('status', 'paid')->sum('amount');
 
-        $planSalesRaw = Payment::where('payments.status', 'successfull')
+        $planSalesRaw = Payment::where('payments.status', 'paid')
             ->join('subscriptions', 'payments.subscription_id', '=', 'subscriptions.id')
             ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
             ->whereIn('plans.name', ['Basic', 'Premium', 'Enterprise'])
