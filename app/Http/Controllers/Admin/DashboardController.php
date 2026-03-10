@@ -56,9 +56,18 @@ class DashboardController extends Controller
             ->pluck('total_revenue', 'month');
 
         $months = [
-            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
-            5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
-            9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec',
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
+            5 => 'May',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Aug',
+            9 => 'Sep',
+            10 => 'Oct',
+            11 => 'Nov',
+            12 => 'Dec',
         ];
 
         $result = [];
@@ -174,4 +183,18 @@ class DashboardController extends Controller
     //     ]);
     // }
 
+    public function businessTypeAnalytics()
+    {
+        $totalMerchants = User::where('type', 2)->count();
+
+        $categories = User::where('type', 2)
+            ->select('business_category', DB::raw('COUNT(*) as total'))
+            ->groupBy('business_category')
+            ->get();
+
+        return response()->json([
+            'total_merchants' => $totalMerchants,
+            'categories' => $categories
+        ]);
+    }
 }
