@@ -2721,6 +2721,8 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $refund_date
+     * @property string|null $refund_id
      * @property string|null $paid_at
      * @property mixed $payment_status
      * @property string|null $transaction_id
@@ -2739,6 +2741,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment whereTransactionId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment wherePaymentStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment wherePaidAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment whereRefundId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment whereRefundDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<MerchantPayment>|MerchantPayment newModelQuery()
