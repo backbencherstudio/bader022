@@ -41,6 +41,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
    Route::get('dashboard-overview', [DashboardController::class, 'index'])->name('dashboard-overview');
    Route::get('monthlypaymentCount', [DashboardController::class, 'monthlypaymentCount'])->name('monthlypaymentCount');
    Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
+   Route::get('businessTypeAnalytics', [DashboardController::class, 'businessTypeAnalytics'])->name('businessTypeAnalytics');
 
 
     // Role
