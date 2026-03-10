@@ -110,8 +110,8 @@ class BookingController extends Controller
             'date'          => 'required|date',
             'time'          => 'required',
             'customer_name' => 'required|string',
-            'email'         => 'required|email',
-            'phone'         => 'required|string',
+            'email'         => 'nullable|email',
+            'phone'         => 'nullable|string',
             'special_note'  => 'nullable|string',
             'payment_method' => 'required|in:tap,cash',
         ]);
