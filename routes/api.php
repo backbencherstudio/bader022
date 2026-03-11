@@ -230,6 +230,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show/{id}', [UserDashboardController::class, 'show'])->name('dashboard.show');
         Route::get('payment-history', [UserDashboardController::class, 'paymentHistory'])->name('dashboard.paymentHistory');
         Route::get('show-payment/{id}', [UserDashboardController::class, 'showPayment'])->name('dashboard.showPayment');
+        Route::get('invoice/{id}', [UserDashboardController::class, 'userInvoice'])->name('dashboard.userInvoice');
         Route::get('view-order-details/{id}', [UserDashboardController::class, 'viewOrderDetails'])->name('dashboard.viewOrderDetails');
         Route::get('cancel-preview/{id}', [UserDashboardController::class, 'cancelPreview'])->name('dashboard.cancelPreview');
         Route::patch('cancel-booking/{id}', [UserDashboardController::class, 'cancelBooking'])->name('dashboard.cancelBooking');
