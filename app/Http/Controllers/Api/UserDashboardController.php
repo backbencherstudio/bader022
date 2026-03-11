@@ -833,4 +833,81 @@ class UserDashboardController extends Controller
             ]);
         });
     }
+
+    public function userInvoice($bookingId)
+    {
+        $userId = auth()->id();
+
+        $booking = Booking::with([
+            'bookedUser:id,name,email,phone',
+            'service:id,service_name,price,duration',
+            'merchant:id,name,email,phone',
+            'merchantStore:id,user_id,store_name,business_logo,business_address',
+            'merchantPayment'
+        ])
+            ->where('id', $bookingId)
+            ->where('booking_by', $userId)
+            ->first();
+
+        if (!$booking) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invoice not found.'
+            ], 404);
+        }
+
+        $payment = $booking->merchantPayment;
+
+        $invoice = [
+
+            'invoice_info' => [
+                'invoice_no' => 'INV-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
+                'booking_id' => $booking->id,
+                'date' => Carbon::parse($booking->created_at)->format('M d, Y'),
+            ],
+
+            'customer' => [
+                'name' => $booking->bookedUser->name ?? null,
+                'email' => $booking->bookedUser->email ?? null,
+                'phone' => $booking->bookedUser->phone ?? null,
+            ],
+
+            'merchant' => [
+                'business_logo' => $booking->merchantStore->business_logo ?? null,
+                'business_name' => $booking->merchantStore->store_name ?? null,
+                'merchant_name' => $booking->merchant->name ?? null,
+                'email' => $booking->merchant->email ?? null,
+                'phone' => $booking->merchant->phone ?? null,
+                'address' => $booking->merchantStore->business_address ?? null,
+            ],
+
+            'service' => [
+                'service_name' => $booking->service->service_name ?? null,
+                'duration' => $booking->service->duration . ' min',
+                'price' => $booking->service->price . ' SAR',
+                'booking_time' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
+            ],
+
+            'payment' => [
+                'transaction_id' => $payment->transaction_id ?? null,
+                'method' => $payment->payment_method ?? null,
+                'status' => ucfirst($payment->payment_status ?? 'unpaid'),
+                'paid_at' => $payment->paid_at
+                    ? Carbon::parse($payment->paid_at)->format('M d, Y h:i A')
+                    : null,
+            ],
+
+            'summary' => [
+                'subtotal' => $booking->service->price ?? 0,
+                'tax' => 0,
+                'total' => $booking->service->price ?? 0,
+                'currency' => 'SAR',
+            ]
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $invoice
+        ]);
+    }
 }
