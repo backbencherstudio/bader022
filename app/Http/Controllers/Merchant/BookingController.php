@@ -465,8 +465,7 @@ class BookingController extends Controller
                     ]
                 ], 201);
             }
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Payment callback error', ['error' => $e->getMessage()]);
 
             return response()->json([
@@ -477,6 +476,83 @@ class BookingController extends Controller
     }
 
 
+    public function bookingInvoice($bookingId)
+    {
+        $merchantId = auth()->id();
+
+        $booking = Booking::with([
+            'service:id,service_name,duration,price',
+            'staff:id,name',
+            'merchant:id,name,email,phone',
+            'merchantStore:id,user_id,store_name,business_address',
+            'merchantPayment'
+        ])
+            ->where('id', $bookingId)
+            ->where('user_id', $merchantId)
+            ->first();
+
+        if (!$booking) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invoice not found'
+            ], 404);
+        }
+
+        $payment = $booking->merchantPayment;
+
+        $invoice = [
+
+            'invoice_info' => [
+                'invoice_no' => 'INV-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
+                'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                'invoice_date' => $booking->created_at->format('M d, Y'),
+            ],
+
+            'merchant_info' => [
+                'business_logo' => $booking->merchantStore->business_logo ?? null,
+                'business_name' => $booking->merchantStore->store_name ?? null,
+                'merchant_name' => $booking->merchant->name ?? null,
+                'email' => $booking->merchant->email ?? null,
+                'phone' => $booking->merchant->phone ?? null,
+                'address' => $booking->merchantStore->business_address ?? null,
+            ],
+
+            'customer_info' => [
+                'name' => $booking->customer_name,
+                'email' => $booking->email,
+                'phone' => $booking->phone,
+            ],
+
+            'booking_details' => [
+                'service' => $booking->service->service_name,
+                'staff' => $booking->staff->name ?? 'Any Staff',
+                'duration' => $booking->service->duration . ' min',
+                'booking_time' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
+            ],
+
+            'payment_details' => [
+                'payment_method' => ucfirst($payment->payment_method),
+                'transaction_id' => $payment->transaction_id,
+                'status' => ucfirst($payment->payment_status),
+                'paid_at' => $payment->paid_at
+                    ? Carbon::parse($payment->paid_at)->format('M d, Y h:i A')
+                    : null,
+            ],
+
+            'summary' => [
+                'service_price' => $booking->service->price,
+                'tax' => 0,
+                'discount' => 0,
+                'total_amount' => $booking->service->price,
+                'currency' => 'SAR'
+            ]
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $invoice
+        ]);
+    }
 
 
     public function getAvailability(Request $request)
