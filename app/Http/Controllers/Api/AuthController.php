@@ -323,7 +323,7 @@ class AuthController extends Controller
             'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
-            // 'role' => 'required|exists:roles,id',
+
         ]);
 
         if ($validator->fails()) {
@@ -360,14 +360,7 @@ class AuthController extends Controller
             ->where('guard_name', 'api')
             ->first();
 
-        // if (! $role) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Role not found for this guard',
-        //     ], 422);
-        // }
 
-        // $user->syncRoles([$role->name]);
 
         return response()->json([
             'success' => true,
