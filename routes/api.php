@@ -201,6 +201,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::prefix('booking')->group(function () {
         Route::get('index', [BookingController::class, 'index'])->name('booking.index');
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
+        Route::get('booking-invoice/{id}', [BookingController::class, 'bookingInvoice'])->name('booking.bookingInvoice');
         Route::get('show/{id}', [BookingController::class, 'show'])->name('booking.show');
         Route::post('update/{id}', [BookingController::class, 'update'])->name('booking.update');
         Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
