@@ -120,7 +120,7 @@ class UserDashboardController extends Controller
             ->get();
         foreach ($payments as $payment) {
             $activities->push([
-                'title' => 'Payment completed - '.$payment->amount.' SAR',
+                'title' => 'Payment completed - ' . $payment->amount . ' SAR',
                 'time' => $payment->paid_at,
             ]);
         }
@@ -169,7 +169,7 @@ class UserDashboardController extends Controller
 
         if ($request->filled('service_name')) {
             $query->whereHas('service', function ($q) use ($request) {
-                $q->where('service_name', 'LIKE', '%'.$request->service_name.'%');
+                $q->where('service_name', 'LIKE', '%' . $request->service_name . '%');
             });
         }
 
@@ -235,7 +235,7 @@ class UserDashboardController extends Controller
                     'booking_id' => $booking->id,
                     'service' => $booking->service->service_name ?? null,
                     'date_time' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
-                    'duration' => $booking->service->duration.' min' ?? null,
+                    'duration' => $booking->service->duration . ' min' ?? null,
                     'staff' => $booking->staff->name ?? 'Not Assigned',
                     'price' => $booking->service->price ?? null,
                     'status' => ucfirst($booking->status),
@@ -250,19 +250,15 @@ class UserDashboardController extends Controller
 
         $query = Booking::with([
             'merchantPayment',
+            'service',
             'merchantStore:id,user_id,store_name,business_logo',
             'merchant:id,name,email',
         ])
             ->where('booking_by', $userId);
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('merchantStore', fn ($mq) => $mq->where('store_name', 'LIKE', "%$search%"))
-                    ->orWhereHas('merchantPayment', fn ($pq) => $pq->where('transaction_id', 'LIKE', "%$search%")
-                        ->orWhere('payment_status', 'LIKE', "%$search%"))
-                    ->orWhereHas('merchant', fn ($mq) => $mq->where('name', 'LIKE', "%$search%"))
-                    ->orWhere('id', 'LIKE', "%$search%");
+        if ($request->filled('status')) {
+            $query->whereHas('merchantPayment', function ($q) use ($request) {
+                $q->where('payment_status', $request->status);
             });
         }
 
@@ -271,16 +267,13 @@ class UserDashboardController extends Controller
         $data = $payments->getCollection()->map(function ($booking) {
             $payment = $booking->merchantPayment;
 
-            $paymentMethod = $payment->payment_method;
-
             return [
-                'tx_id' => $payment->transaction_id ?? null,
-                'merchant_name' => $booking->merchant->name ?? null,
-                'business_logo' => $booking->merchantStore->business_logo ?? null,
-                'business_name' => $booking->merchantStore->store_name ?? null,
-                'date' => Carbon::parse($booking->created_at)->format('M d, Y'),
-                'amount' => $payment->amount ?? 0,
-                'payment_method' => $paymentMethod,
+                'booking_id' => $booking->id,
+                'store_logo' => $booking->merchantStore->business_logo ?? null,
+                'store_name' => $booking->merchantStore->store_name ?? null,
+                'service' => $booking->service->service_name ?? null,
+                'date_time' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
+                'amount' => $payment ? $payment->amount . ' SAR' : '0 SAR',
                 'status' => ucfirst($payment->payment_status ?? $booking->status),
             ];
         });
@@ -325,7 +318,7 @@ class UserDashboardController extends Controller
         $data = [
             'payment_status' => ucfirst($payment->payment_status ?? $booking->status),
             'transaction_info' => [
-                'transaction_id' => $payment->transaction_id ?? '#TX'.str_pad($booking->id, 3, '0', STR_PAD_LEFT),
+                'transaction_id' => $payment->transaction_id ?? '#TX' . str_pad($booking->id, 3, '0', STR_PAD_LEFT),
                 'amount' => $payment->amount ?? 0,
                 'date_time' => Carbon::parse($payment->paid_at ?? $booking->created_at)->format('M d, Y h:i A'),
                 'payment_method' => $paymentMethod,
@@ -554,7 +547,7 @@ class UserDashboardController extends Controller
                 if ($tapSetting) {
 
                     $response = Http::withHeaders([
-                        'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+                        'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
                         'accept' => 'application/json',
                         'content-type' => 'application/json',
                     ])->post('https://api.tap.company/v2/refunds', [
@@ -717,7 +710,7 @@ class UserDashboardController extends Controller
                 ], 422);
             }
 
-            $newDateTime = Carbon::parse($request->date.' '.$request->time, $merchantTimeZone);
+            $newDateTime = Carbon::parse($request->date . ' ' . $request->time, $merchantTimeZone);
 
             if ($newDateTime->lte($merchantNow)) {
                 return response()->json([
