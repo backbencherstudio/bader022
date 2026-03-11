@@ -23,11 +23,15 @@ class MiniSite extends Model
         'about_description',
         'background_color',
         'about_padding',
+        'about_hero_image',
         'cta_title',
         'cta_subtitle',
         'cta_image',
         'cta_overlay_color',
         'cta_padding',
+        'service_title',
+        'service_description',
+        'service_background',
     ];
 
     public function user()

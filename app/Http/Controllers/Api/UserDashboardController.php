@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Booking;
-use Carbon\Carbon;
-use App\Models\Staff;
-use App\Models\MerchantPayment;
-use Illuminate\Support\Facades\DB;
 use App\Models\BusinessHour;
+use App\Models\MerchantPayment;
 use App\Models\Service;
-
+use App\Models\Staff;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class UserDashboardController extends Controller
 {
@@ -21,7 +21,7 @@ class UserDashboardController extends Controller
 
         $booking = Booking::with([
             'service:id,service_name,duration,price,user_id',
-            'service.merchant:id,name,phone,business_category'
+            'service.merchant:id,name,phone,address',
         ])
             ->where('booking_by', $userId)
             ->whereIn('status', ['confirm', 'pending', 'rescheduled'])
@@ -33,7 +33,7 @@ class UserDashboardController extends Controller
                     ->where('user_id', $booking->service->user_id)
                     ->first();
 
-                if (!$storeSetting || !$storeSetting->time_zone) {
+                if (! $storeSetting || ! $storeSetting->time_zone) {
                     return false;
                 }
 
@@ -43,10 +43,10 @@ class UserDashboardController extends Controller
                 return $bookingTime->gte($merchantNow);
             });
 
-        if (!$booking) {
+        if (! $booking) {
             return response()->json([
                 'success' => false,
-                'message' => 'No upcoming appointment found.'
+                'message' => 'No upcoming appointment found.',
             ]);
         }
 
@@ -59,24 +59,24 @@ class UserDashboardController extends Controller
         $bookingDateTime = Carbon::parse($booking->date_time, $merchantTimeZone);
 
         $result = [
-            'booking_id'        => $booking->id,
-            'service_name'      => $booking->service->service_name ?? null,
-            'status'            => ucfirst($booking->status),
-            'merchant_category' => $booking->service->merchant->business_category ?? null,
+            'booking_id' => $booking->id,
+            'service_id' => $booking->service->id ?? null,
+            'service_name' => $booking->service->service_name ?? null,
+            'status' => ucfirst($booking->status),
+            'address' => $booking->service->merchant->address ?? null,
 
-            'booking_date'      => $bookingDateTime->format('M d, Y'),
-            'booking_time'      => $bookingDateTime->format('h:i A'),
+            'booking_date' => $bookingDateTime->format('M d, Y'),
+            'booking_time' => $bookingDateTime->format('h:i A'),
 
-            'service_price'     => $booking->service->price ?? null,
-            'merchant_phone'    => $booking->service->merchant->phone ?? null,
+            'service_price' => $booking->service->price ?? null,
+            'merchant_phone' => $booking->service->merchant->phone ?? null,
         ];
 
         return response()->json([
             'success' => true,
-            'data' => $result
+            'data' => $result,
         ]);
     }
-
 
     public function Activity()
     {
@@ -90,25 +90,24 @@ class UserDashboardController extends Controller
             ->limit(1)
             ->get();
 
-
         foreach ($bookings as $booking) {
 
             $activities->push([
                 'title' => 'Appointment booked',
-                'time'  => $booking->created_at,
+                'time' => $booking->created_at,
             ]);
 
             if ($booking->status === 'rescheduled') {
                 $activities->push([
                     'title' => 'Appointment rescheduled',
-                    'time'  => $booking->updated_at,
+                    'time' => $booking->updated_at,
                 ]);
             }
 
             if ($booking->status === 'cancel') {
                 $activities->push([
                     'title' => 'Appointment cancelled',
-                    'time'  => $booking->updated_at,
+                    'time' => $booking->updated_at,
                 ]);
             }
         }
@@ -117,15 +116,14 @@ class UserDashboardController extends Controller
 
         $payments = MerchantPayment::whereIn('booking_id', $bookingIds)
             ->whereIn('payment_status', ['completed', 'paid'])
-            ->select('amount', 'created_at')
+            ->select('amount', 'paid_at')
             ->get();
         foreach ($payments as $payment) {
             $activities->push([
                 'title' => 'Payment completed - ' . $payment->amount . ' SAR',
-                'time'  => $payment->created_at,
+                'time' => $payment->paid_at,
             ]);
         }
-
 
         $activities = $activities
             ->sortByDesc('time')
@@ -134,16 +132,15 @@ class UserDashboardController extends Controller
             ->map(function ($item) {
                 return [
                     'title' => $item['title'],
-                    'time'  => Carbon::parse($item['time'])->diffForHumans(),
+                    'time' => Carbon::parse($item['time'])->diffForHumans(),
                 ];
             });
 
         return response()->json([
             'success' => true,
-            'data' => $activities
+            'data' => $activities,
         ]);
     }
-
 
     public function History(Request $request)
     {
@@ -152,7 +149,7 @@ class UserDashboardController extends Controller
         $query = Booking::with([
             'service:id,service_name,duration,price,user_id',
             'service.merchant:id,name,phone,business_category',
-            'bookedUser:id,name,image'
+            'bookedUser:id,name,image',
         ])
             ->where('booking_by', $userId);
 
@@ -182,13 +179,13 @@ class UserDashboardController extends Controller
 
         $result = $bookings->getCollection()->map(function ($booking) {
             return [
-                'booking_id'     => $booking->id,
+                'booking_id' => $booking->id,
                 'customer_image' => $booking->bookedUser->image ?? null,
-                'customer'       => $booking->bookedUser->name ?? null,
-                'service_name'   => $booking->service->service_name ?? null,
-                'amount'         => $booking->service->price ?? null,
-                'booking_date'   => Carbon::parse($booking->date_time)->format('M d, Y'),
-                'status'         => ucfirst($booking->status),
+                'customer' => $booking->bookedUser->name ?? null,
+                'service_name' => $booking->service->service_name ?? null,
+                'amount' => $booking->service->price ?? null,
+                'booking_date' => Carbon::parse($booking->date_time)->format('M d, Y'),
+                'status' => ucfirst($booking->status),
             ];
         });
 
@@ -199,8 +196,8 @@ class UserDashboardController extends Controller
                 'total' => $bookings->total(),
                 'per_page' => $bookings->perPage(),
                 'current_page' => $bookings->currentPage(),
-                'last_page' => $bookings->lastPage()
-            ]
+                'last_page' => $bookings->lastPage(),
+            ],
         ]);
     }
 
@@ -212,13 +209,13 @@ class UserDashboardController extends Controller
         $booking = Booking::with([
             'bookedUser:id,name,email,phone,image',
             'service:id,service_name,duration,price',
-            'staff:id,name'
+            'staff:id,name',
         ])
             ->where('id', $id)
             ->where('booking_by', $userId)
             ->first();
 
-        if (!$booking) {
+        if (! $booking) {
             return response()->json([
                 'success' => false,
                 'message' => 'No booking found for this user.',
@@ -229,24 +226,23 @@ class UserDashboardController extends Controller
             'success' => true,
             'data' => [
                 'customer' => [
-                    'name'  => $booking->bookedUser->name ?? null,
+                    'name' => $booking->bookedUser->name ?? null,
                     'email' => $booking->bookedUser->email ?? null,
                     'phone' => $booking->bookedUser->phone ?? null,
                 ],
 
                 'booking' => [
                     'booking_id' => $booking->id,
-                    'service'    => $booking->service->service_name ?? null,
-                    'date_time'  => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
-                    'duration'   => $booking->service->duration . ' min' ?? null,
-                    'staff'      => $booking->staff->name ?? 'Not Assigned',
-                    'price'      => $booking->service->price ?? null,
-                    'status'     => ucfirst($booking->status),
-                ]
-            ]
+                    'service' => $booking->service->service_name ?? null,
+                    'date_time' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
+                    'duration' => $booking->service->duration . ' min' ?? null,
+                    'staff' => $booking->staff->name ?? 'Not Assigned',
+                    'price' => $booking->service->price ?? null,
+                    'status' => ucfirst($booking->status),
+                ],
+            ],
         ]);
     }
-
 
     public function paymentHistory(Request $request)
     {
@@ -254,23 +250,16 @@ class UserDashboardController extends Controller
 
         $query = Booking::with([
             'merchantPayment',
+            'service',
             'merchantStore:id,user_id,store_name,business_logo',
-            'merchant:id,name,email'
+            'merchant:id,name,email',
         ])
             ->where('booking_by', $userId);
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('merchantStore', fn($mq) => $mq->where('store_name', 'LIKE', "%$search%"))
-                    ->orWhereHas('merchantPayment', fn($pq) => $pq->where('transaction_id', 'LIKE', "%$search%"))
-                    ->orWhereHas('merchant', fn($mq) => $mq->where('name', 'LIKE', "%$search%"))
-                    ->orWhere('id', 'LIKE', "%$search%");
-            });
-        }
-
         if ($request->filled('status')) {
-            $query->whereHas('merchantPayment', fn($pq) => $pq->where('payment_status', $request->status));
+            $query->whereHas('merchantPayment', function ($q) use ($request) {
+                $q->where('payment_status', $request->status);
+            });
         }
 
         $payments = $query->orderBy('created_at', 'desc')->paginate(10);
@@ -278,23 +267,14 @@ class UserDashboardController extends Controller
         $data = $payments->getCollection()->map(function ($booking) {
             $payment = $booking->merchantPayment;
 
-            $paymentMethod = match ($payment->payment_method ?? 3) {
-                0 => 'Credit Card',
-                1 => 'Paypal',
-                2 => 'Pay at Store',
-                3 => 'Cash',
-                default => 'N/A'
-            };
-
             return [
-                'tx_id'          => $payment->transaction_id ?? null,
-                'merchant_name'  => $booking->merchant->name ?? null,
-                'business_logo'  => $booking->merchantStore->business_logo ?? null,
-                'business_name'  => $booking->merchantStore->store_name ?? null,
-                'date'           => Carbon::parse($booking->created_at)->format('M d, Y'),
-                'amount'         => $payment->amount ?? 0,
-                'payment_method' => $paymentMethod,
-                'status'         => ucfirst($payment->payment_status ?? $booking->status),
+                'booking_id' => $booking->id,
+                'store_logo' => $booking->merchantStore->business_logo ?? null,
+                'store_name' => $booking->merchantStore->store_name ?? null,
+                'service' => $booking->service->service_name ?? null,
+                'date_time' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
+                'amount' => $payment ? $payment->amount . ' SAR' : '0 SAR',
+                'status' => ucfirst($payment->payment_status ?? $booking->status),
             ];
         });
 
@@ -302,14 +282,13 @@ class UserDashboardController extends Controller
             'success' => true,
             'data' => $data,
             'pagination' => [
-                'total'        => $payments->total(),
+                'total' => $payments->total(),
                 'current_page' => $payments->currentPage(),
-                'last_page'    => $payments->lastPage(),
-                'per_page'     => $payments->perPage()
-            ]
+                'last_page' => $payments->lastPage(),
+                'per_page' => $payments->perPage(),
+            ],
         ]);
     }
-
 
     public function showPayment($bookingId)
     {
@@ -319,13 +298,13 @@ class UserDashboardController extends Controller
         $booking = Booking::with([
             'merchantPayment',
             'merchantStore:id,user_id,store_name,business_logo',
-            'merchant:id,name,email,phone'
+            'merchant:id,name,email,phone',
         ])
             ->where('id', $bookingId)
             ->where('booking_by', $userId)
             ->first();
 
-        if (!$booking) {
+        if (! $booking) {
             return response()->json([
                 'success' => false,
                 'message' => 'No payment information found for this user. Please check your booking ID.',
@@ -334,38 +313,29 @@ class UserDashboardController extends Controller
 
         $payment = $booking->merchantPayment;
 
-        $paymentMethod = match ($payment->payment_method ?? 3) {
-            0 => 'Credit Card',
-            1 => 'Paypal',
-            2 => 'Pay at Store',
-            3 => 'Cash',
-            default => 'N/A'
-        };
-
+        $paymentMethod = $payment->payment_method;
 
         $data = [
             'payment_status' => ucfirst($payment->payment_status ?? $booking->status),
             'transaction_info' => [
                 'transaction_id' => $payment->transaction_id ?? '#TX' . str_pad($booking->id, 3, '0', STR_PAD_LEFT),
-                'amount'         => $payment->amount ?? 0,
-                'date_time'      => Carbon::parse($payment->paid_at ?? $booking->created_at)->format('M d, Y h:i A'),
+                'amount' => $payment->amount ?? 0,
+                'date_time' => Carbon::parse($payment->paid_at ?? $booking->created_at)->format('M d, Y h:i A'),
                 'payment_method' => $paymentMethod,
             ],
             'customer_info' => [
-                'merchant_name'  => $booking->merchant->name ?? null,
-                'business_name'  => $booking->merchantStore->store_name ?? null,
-                'email'          => $booking->merchant->email ?? null,
-                'phone'          => $booking->merchant->phone ?? null,
-            ]
+                'merchant_name' => $booking->merchant->name ?? null,
+                'business_name' => $booking->merchantStore->store_name ?? null,
+                'email' => $booking->merchant->email ?? null,
+                'phone' => $booking->merchant->phone ?? null,
+            ],
         ];
-
 
         return response()->json([
             'success' => true,
-            'data'    => $data
+            'data' => $data,
         ]);
     }
-
 
     public function viewOrderDetails($bookingId)
     {
@@ -376,13 +346,13 @@ class UserDashboardController extends Controller
             'staff',
             'merchant',
             'merchantStore',
-            'merchantPayment'
+            'merchantPayment',
         ])
             ->where('id', $bookingId)
             ->where('booking_by', $userId)
             ->first();
 
-        if (!$booking) {
+        if (! $booking) {
             return response()->json([
                 'success' => false,
                 'message' => 'No booking found for this user. Please check your booking ID and try again.',
@@ -393,7 +363,7 @@ class UserDashboardController extends Controller
             ->where('user_id', $booking->service->user_id)
             ->first();
 
-        if (!$storeSetting || !$storeSetting->time_zone) {
+        if (! $storeSetting || ! $storeSetting->time_zone) {
             return response()->json([
                 'success' => false,
                 'message' => 'Store timezone not set.',
@@ -403,7 +373,7 @@ class UserDashboardController extends Controller
         $merchantTimeZone = $storeSetting->time_zone;
 
         $bookingDateTime = Carbon::parse($booking->date_time, $merchantTimeZone);
-        $merchantNow     = Carbon::now($merchantTimeZone);
+        $merchantNow = Carbon::now($merchantTimeZone);
 
         if ($bookingDateTime->lt($merchantNow)) {
             return response()->json([
@@ -418,28 +388,28 @@ class UserDashboardController extends Controller
         $data = [
             'merchant_info' => [
                 'merchant_name' => $booking->merchantStore->store_name ?? $booking->merchant->name ?? null,
-                'location'      => $booking->merchantStore->business_address ?? null,
-                'phone'         => $booking->merchant->phone ?? null,
+                'location' => $booking->merchantStore->business_address ?? null,
+                'phone' => $booking->merchant->phone ?? null,
             ],
             'booking_info' => [
-                'booking_id'    => $booking->id,
-                'service_name'  => $booking->service->service_name ?? null,
+                'booking_id' => $booking->id,
+                'service_id' => $booking->service->id ?? null,
+                'service_name' => $booking->service->service_name ?? null,
 
-                'date_time'     => $bookingDateTime->format('M d, Y h:i A'),
+                'date_time' => $bookingDateTime->format('M d, Y h:i A'),
 
-                'duration'      => $booking->service->duration ?? null,
-                'staff_name'    => $booking->staff->name ?? 'Not Assigned',
-                'price'         => $booking->service->price ?? 0,
+                'duration' => $booking->service->duration ?? null,
+                'staff_name' => $booking->staff->name ?? 'Not Assigned',
+                'price' => $booking->service->price ?? 0,
                 'payment_status' => $paymentStatus,
-            ]
+            ],
         ];
 
         return response()->json([
             'success' => true,
-            'data'    => $data
+            'data' => $data,
         ]);
     }
-
 
     public function cancelPreview(Request $request, $bookingId)
     {
@@ -450,7 +420,7 @@ class UserDashboardController extends Controller
             ->where('booking_by', $userId)
             ->first();
 
-        if (!$booking) {
+        if (! $booking) {
             return response()->json([
                 'success' => false,
                 'message' => 'No booking found for this user. Please check your booking ID and try again.',
@@ -468,7 +438,7 @@ class UserDashboardController extends Controller
             ->where('user_id', $booking->user_id)
             ->first();
 
-        if (!$storeSetting || !$storeSetting->time_zone) {
+        if (! $storeSetting || ! $storeSetting->time_zone) {
             return response()->json([
                 'success' => false,
                 'message' => 'Store timezone not set.',
@@ -478,7 +448,7 @@ class UserDashboardController extends Controller
         $merchantTimeZone = $storeSetting->time_zone;
 
         $bookingDateTime = Carbon::parse($booking->date_time, $merchantTimeZone);
-        $merchantNow     = Carbon::now($merchantTimeZone);
+        $merchantNow = Carbon::now($merchantTimeZone);
 
         if ($bookingDateTime->lt($merchantNow)) {
             return response()->json([
@@ -488,19 +458,19 @@ class UserDashboardController extends Controller
         }
 
         $data = [
+            'service_id' => $booking->service->id ?? 'N/A',
             'service_name' => $booking->service->service_name ?? 'N/A',
             'booking_date' => $bookingDateTime->format('M d, Y'),
             'booking_time' => $bookingDateTime->format('h:i A'),
-            'note' => 'Cancellation policies may apply. Please check with the merchant for refund details.'
+            'note' => 'Cancellation policies may apply. Please check with the merchant for refund details.',
         ];
 
         return response()->json([
             'success' => true,
             'message' => 'Booking cancellation preview. Please review the details before proceeding.',
-            'data' => $data
+            'data' => $data,
         ]);
     }
-
 
     public function cancelBooking(Request $request, $bookingId)
     {
@@ -511,7 +481,7 @@ class UserDashboardController extends Controller
             ->where('booking_by', $userId)
             ->first();
 
-        if (!$booking) {
+        if (! $booking) {
             return response()->json([
                 'success' => false,
                 'message' => 'No booking found for this user. Please check your booking ID and try again.',
@@ -521,7 +491,7 @@ class UserDashboardController extends Controller
         if ($booking->status === 'cancel') {
             return response()->json([
                 'success' => false,
-                'message' => 'This booking has already been cancelled.'
+                'message' => 'This booking has already been cancelled.',
             ], 400);
         }
 
@@ -529,17 +499,17 @@ class UserDashboardController extends Controller
             ->where('user_id', $booking->user_id)
             ->first();
 
-        if (!$storeSetting || !$storeSetting->time_zone) {
+        if (! $storeSetting || ! $storeSetting->time_zone) {
             return response()->json([
                 'success' => false,
-                'message' => 'Store timezone is not set.'
+                'message' => 'Store timezone is not set.',
             ], 400);
         }
 
         $merchantTimeZone = $storeSetting->time_zone;
 
         $bookingDateTime = Carbon::parse($booking->date_time, $merchantTimeZone);
-        $merchantNow     = Carbon::now($merchantTimeZone);
+        $merchantNow = Carbon::now($merchantTimeZone);
 
         if ($bookingDateTime->lt($merchantNow)) {
             return response()->json([
@@ -553,26 +523,74 @@ class UserDashboardController extends Controller
         if ($minutesDifference < 120) {
             return response()->json([
                 'success' => false,
-                'message' => 'You cannot cancel this booking within 2 hours of the scheduled time.'
+                'message' => 'You cannot cancel this booking within 2 hours of the scheduled time.',
             ], 403);
         }
 
         $booking->update([
-            'status' => 'cancel'
+            'status' => 'cancel',
         ]);
 
-        if ($booking->merchantPayment) {
-            $booking->merchantPayment->update([
-                'payment_status' => 'failed'
-            ]);
+        $message = 'Your booking has been cancelled successfully.';
+
+        $payment = $booking->merchantPayment;
+
+        if ($payment) {
+
+            if ($payment->payment_method === 'tap' && $payment->payment_status === 'paid') {
+
+                $tapSetting = DB::table('tap_payments')
+                    ->where('user_id', $booking->user_id)
+                    ->latest()
+                    ->first();
+
+                if ($tapSetting) {
+
+                    $response = Http::withHeaders([
+                        'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+                        'accept' => 'application/json',
+                        'content-type' => 'application/json',
+                    ])->post('https://api.tap.company/v2/refunds', [
+                        'charge_id' => $payment->transaction_id,
+                        'amount' => $payment->amount,
+                        'currency' => 'SAR',
+                        'reason' => 'Booking cancelled',
+                    ]);
+
+                    $resData = $response->json();
+
+                    if ($response->successful() && isset($resData['id'])) {
+
+                        $payment->update([
+                            'payment_status' => 'refunded',
+                            'refund_id' => $resData['id'],
+                            'refund_date' => now(),
+                        ]);
+
+                        $message = 'Your booking has been cancelled successfully. The payment has been refunded to your account.';
+                    } else {
+
+                        $payment->update([
+                            'payment_status' => 'refund_failed',
+                        ]);
+                        $message = 'Your booking has been cancelled, but refund could not be processed. Please contact the merchant.';
+                    }
+                }
+            } else {
+
+                $payment->update([
+                    'payment_status' => 'failed',
+                ]);
+
+                $message = 'Your booking has been cancelled successfully.';
+            }
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Your booking has been cancelled successfully.'
+            'message' => $message,
         ]);
     }
-
 
     public function reschedulePreview(Request $request, $bookingId)
     {
@@ -581,17 +599,17 @@ class UserDashboardController extends Controller
             ->where('booking_by', auth()->id())
             ->first();
 
-        if (!$booking) {
+        if (! $booking) {
             return response()->json([
                 'success' => false,
-                'message' => 'Booking not found.'
+                'message' => 'Booking not found.',
             ], 404);
         }
 
         if ($booking->status === 'cancel') {
             return response()->json([
                 'success' => false,
-                'message' => 'Cancelled booking cannot be rescheduled.'
+                'message' => 'Cancelled booking cannot be rescheduled.',
             ], 400);
         }
 
@@ -599,7 +617,7 @@ class UserDashboardController extends Controller
             ->where('user_id', $booking->service->user_id)
             ->first();
 
-        if (!$storeSetting || !$storeSetting->time_zone) {
+        if (! $storeSetting || ! $storeSetting->time_zone) {
             return response()->json([
                 'success' => false,
                 'message' => 'Store timezone not set.',
@@ -609,7 +627,7 @@ class UserDashboardController extends Controller
         $merchantTimeZone = $storeSetting->time_zone;
 
         $bookingDateTime = Carbon::parse($booking->date_time, $merchantTimeZone);
-        $merchantNow     = Carbon::now($merchantTimeZone);
+        $merchantNow = Carbon::now($merchantTimeZone);
 
         if ($bookingDateTime->lt($merchantNow)) {
             return response()->json([
@@ -621,23 +639,23 @@ class UserDashboardController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'booking_id'   => $booking->id,
-                'service'      => $booking->service->service_name ?? null,
+                'booking_id' => $booking->id,
+                'service_id' => $booking->service->id ?? null,
+                'service' => $booking->service->service_name ?? null,
                 'current_date' => $bookingDateTime->format('M d, Y'),
                 'current_time' => $bookingDateTime->format('h:i A'),
-                'staff'        => $booking->staff->name ?? 'Any staff'
-            ]
+                'staff' => $booking->staff->name ?? 'Any staff',
+            ],
         ]);
     }
-
 
     public function rescheduleBooking(Request $request, $bookingId)
     {
         return DB::transaction(function () use ($request, $bookingId) {
             $request->validate([
-                'date'     => 'required|date',
-                'time'     => 'required',
-                'staff_id' => 'nullable|integer'
+                'date' => 'required|date',
+                'time' => 'required',
+                'staff_id' => 'nullable|integer',
             ]);
 
             $booking = Booking::where('id', $bookingId)
@@ -645,17 +663,17 @@ class UserDashboardController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (!$booking) {
+            if (! $booking) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Booking not found.'
+                    'message' => 'Booking not found.',
                 ], 404);
             }
 
             if ($booking->status === 'cancel') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Cancelled booking cannot be rescheduled.'
+                    'message' => 'Cancelled booking cannot be rescheduled.',
                 ], 400);
             }
 
@@ -663,17 +681,17 @@ class UserDashboardController extends Controller
                 ->where('user_id', $booking->user_id)
                 ->first();
 
-            if (!$storeSetting || !$storeSetting->time_zone) {
+            if (! $storeSetting || ! $storeSetting->time_zone) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Store timezone is not set.'
+                    'message' => 'Store timezone is not set.',
                 ], 400);
             }
 
             $merchantTimeZone = $storeSetting->time_zone;
 
             $bookingDateTime = Carbon::parse($booking->date_time, $merchantTimeZone);
-            $merchantNow     = Carbon::now($merchantTimeZone);
+            $merchantNow = Carbon::now($merchantTimeZone);
 
             if ($bookingDateTime->lt($merchantNow)) {
                 return response()->json([
@@ -688,7 +706,7 @@ class UserDashboardController extends Controller
             if ($date->lt($today)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Selected date is in the past'
+                    'message' => 'Selected date is in the past',
                 ], 422);
             }
 
@@ -697,7 +715,7 @@ class UserDashboardController extends Controller
             if ($newDateTime->lte($merchantNow)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Selected time is in the past.'
+                    'message' => 'Selected time is in the past.',
                 ], 400);
             }
 
@@ -708,10 +726,10 @@ class UserDashboardController extends Controller
                 ->where('is_closed', 0)
                 ->first();
 
-            if (!$businessHour || !$businessHour->open_time || !$businessHour->close_time) {
+            if (! $businessHour || ! $businessHour->open_time || ! $businessHour->close_time) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid slot selected.'
+                    'message' => 'Invalid slot selected.',
                 ], 422);
             }
 
@@ -719,7 +737,7 @@ class UserDashboardController extends Controller
             $duration = (int) $service->duration;
 
             $start = Carbon::createFromTimeString($businessHour->open_time, $merchantTimeZone);
-            $end   = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
+            $end = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
 
             $validSlots = [];
 
@@ -728,17 +746,17 @@ class UserDashboardController extends Controller
                 $start->addMinutes($duration);
             }
 
-            if (!in_array($newDateTime->format('H:i'), $validSlots)) {
+            if (! in_array($newDateTime->format('H:i'), $validSlots)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid slot selected.'
+                    'message' => 'Invalid slot selected.',
                 ], 422);
             }
 
             if ($merchantNow->diffInMinutes($bookingDateTime, false) <= 120) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'You cannot reschedule within 2 hours of the booked time.'
+                    'message' => 'You cannot reschedule within 2 hours of the booked time.',
                 ], 403);
             }
 
@@ -751,10 +769,10 @@ class UserDashboardController extends Controller
                     ->where('status', 1)
                     ->first();
 
-                if (!$staff) {
+                if (! $staff) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Invalid staff selected.'
+                        'message' => 'Invalid staff selected.',
                     ], 400);
                 }
             } else {
@@ -771,16 +789,16 @@ class UserDashboardController extends Controller
                     ->inRandomOrder()
                     ->first();
 
-                if (!$staff) {
+                if (! $staff) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'No available staff for selected time.'
+                        'message' => 'No available staff for selected time.',
                     ], 409);
                 }
             }
 
             $slotStart = $newDateTime;
-            $slotEnd   = $newDateTime->copy()->addMinutes($duration);
+            $slotEnd = $newDateTime->copy()->addMinutes($duration);
 
             $conflict = Booking::where('staff_id', $staff->id)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
@@ -798,21 +816,98 @@ class UserDashboardController extends Controller
             if ($conflict) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Selected staff is not available at this time.'
+                    'message' => 'Selected staff is not available at this time.',
                 ], 409);
             }
 
             $booking->update([
-                'date_time'      => $newDateTime,
-                'staff_id'       => $staff->id,
-                'status'         => 'rescheduled',
-                'rescheduled_at' => $merchantNow
+                'date_time' => $newDateTime,
+                'staff_id' => $staff->id,
+                'status' => 'rescheduled',
+                'rescheduled_at' => $merchantNow,
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Booking rescheduled successfully.'
+                'message' => 'Booking rescheduled successfully.',
             ]);
         });
+    }
+
+    public function userInvoice($bookingId)
+    {
+        $userId = auth()->id();
+
+        $booking = Booking::with([
+            'bookedUser:id,name,email,phone',
+            'service:id,service_name,price,duration',
+            'merchant:id,name,email,phone',
+            'merchantStore:id,user_id,store_name,business_logo,business_address',
+            'merchantPayment'
+        ])
+            ->where('id', $bookingId)
+            ->where('booking_by', $userId)
+            ->first();
+
+        if (!$booking) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invoice not found.'
+            ], 404);
+        }
+
+        $payment = $booking->merchantPayment;
+
+        $invoice = [
+
+            'invoice_info' => [
+                'invoice_no' => 'INV-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
+                'booking_id' => $booking->id,
+                'date' => Carbon::parse($booking->created_at)->format('M d, Y'),
+            ],
+
+            'customer' => [
+                'name' => $booking->bookedUser->name ?? null,
+                'email' => $booking->bookedUser->email ?? null,
+                'phone' => $booking->bookedUser->phone ?? null,
+            ],
+
+            'merchant' => [
+                'business_logo' => $booking->merchantStore->business_logo ?? null,
+                'business_name' => $booking->merchantStore->store_name ?? null,
+                'merchant_name' => $booking->merchant->name ?? null,
+                'email' => $booking->merchant->email ?? null,
+                'phone' => $booking->merchant->phone ?? null,
+                'address' => $booking->merchantStore->business_address ?? null,
+            ],
+
+            'service' => [
+                'service_name' => $booking->service->service_name ?? null,
+                'duration' => $booking->service->duration . ' min',
+                'price' => $booking->service->price . ' SAR',
+                'booking_time' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
+            ],
+
+            'payment' => [
+                'transaction_id' => $payment->transaction_id ?? null,
+                'method' => $payment->payment_method ?? null,
+                'status' => ucfirst($payment->payment_status ?? 'unpaid'),
+                'paid_at' => $payment->paid_at
+                    ? Carbon::parse($payment->paid_at)->format('M d, Y h:i A')
+                    : null,
+            ],
+
+            'summary' => [
+                'subtotal' => $booking->service->price ?? 0,
+                'tax' => 0,
+                'total' => $booking->service->price ?? 0,
+                'currency' => 'SAR',
+            ]
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $invoice
+        ]);
     }
 }

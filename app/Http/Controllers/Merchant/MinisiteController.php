@@ -9,82 +9,173 @@ use App\Models\{MiniSite, User};
 
 class MinisiteController extends Controller
 {
+    // public function store(Request $request)
+    // {
+    //     $user = Auth::user();
+
+    //     if (! $user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Unauthorized',
+    //         ], 401);
+    //     }
+
+    //     $validator = Validator::make($request->all(), [
+    //         'hero_title' => 'nullable|string|max:255',
+    //         'hero_subtitle' => 'nullable|string|max:255',
+    //         'hero_description' => 'nullable|string',
+    //         'cta_button_text' => 'nullable|string|max:255',
+    //         'cta_button_text_two' => 'nullable|string|max:255',
+
+    //         'hero_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+    //         'about_hero_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+    //         'cta_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+
+    //         'hero_overlay_color' => 'nullable|string|max:50',
+    //         'about_title' => 'nullable|string|max:255',
+    //         'about_description' => 'nullable|string',
+    //         'background_color' => 'nullable|string|max:50',
+    //         'about_padding' => 'nullable|string',
+
+    //         'cta_title' => 'nullable|string|max:255',
+    //         'cta_subtitle' => 'nullable|string|max:255',
+    //         'cta_overlay_color' => 'nullable|string|max:50',
+    //         'cta_padding' => 'nullable|string',
+    //         'service_title' => 'nullable|string|max:255',
+    //         'service_description' => 'nullable|string',
+    //         'service_background' => 'nullable|string',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Validation error',
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+
+    //     $miniSite = MiniSite::where('user_id', $user->id)->first();
+
+    //     $data = $request->except(['hero_image', 'about_hero_image', 'cta_image']);
+    //     $data['user_id'] = $user->id;
+
+    //     if ($request->hasFile('hero_image')) {
+    //         $data['hero_image'] = $request->file('hero_image')
+    //             ->store('mini-sites/hero', 'public');
+    //     }
+
+    //     if ($request->hasFile('about_hero_image')) {
+    //         $data['about_hero_image'] = $request->file('about_hero_image')
+    //             ->store('mini-sites/about', 'public');
+    //     }
+
+    //     if ($request->hasFile('cta_image')) {
+    //         $data['cta_image'] = $request->file('cta_image')
+    //             ->store('mini-sites/cta', 'public');
+    //     }
+
+    //     if ($miniSite) {
+    //         $miniSite->update($data);
+    //         $message = 'Mini site updated successfully';
+    //     } else {
+    //         $miniSite = MiniSite::create($data);
+    //         $message = 'Mini site created successfully';
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => $message,
+    //         'data' => $miniSite,
+    //     ], 200);
+    // }
     public function store(Request $request)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        if (! $user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthorized',
-            ], 401);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'hero_title' => 'nullable|string|max:255',
-            'hero_subtitle' => 'nullable|string|max:255',
-            'hero_description' => 'nullable|string',
-            'cta_button_text' => 'nullable|string|max:255',
-            'cta_button_text_two' => 'nullable|string|max:255',
-
-            'hero_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'about_hero_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'cta_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-
-            'hero_overlay_color' => 'nullable|string|max:50',
-            'about_title' => 'nullable|string|max:255',
-            'about_description' => 'nullable|string',
-            'background_color' => 'nullable|string|max:50',
-            'about_padding' => 'nullable|string',
-
-            'cta_title' => 'nullable|string|max:255',
-            'cta_subtitle' => 'nullable|string|max:255',
-            'cta_overlay_color' => 'nullable|string|max:50',
-            'cta_padding' => 'nullable|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $miniSite = MiniSite::where('user_id', $user->id)->first();
-
-        $data = $request->except(['hero_image', 'about_hero_image', 'cta_image']);
-        $data['user_id'] = $user->id;
-
-        if ($request->hasFile('hero_image')) {
-            $data['hero_image'] = $request->file('hero_image')
-                ->store('mini-sites/hero', 'public');
-        }
-
-        if ($request->hasFile('about_hero_image')) {
-            $data['about_hero_image'] = $request->file('about_hero_image')
-                ->store('mini-sites/about', 'public');
-        }
-
-        if ($request->hasFile('cta_image')) {
-            $data['cta_image'] = $request->file('cta_image')
-                ->store('mini-sites/cta', 'public');
-        }
-
-        if ($miniSite) {
-            $miniSite->update($data);
-            $message = 'Mini site updated successfully';
-        } else {
-            $miniSite = MiniSite::create($data);
-            $message = 'Mini site created successfully';
-        }
-
+    if (!$user) {
         return response()->json([
-            'status' => true,
-            'message' => $message,
-            'data' => $miniSite,
-        ], 200);
+            'status' => false,
+            'message' => 'Unauthorized',
+        ], 401);
     }
+
+    $validator = Validator::make($request->all(), [
+        'hero_title' => 'nullable|string|max:255',
+        'hero_subtitle' => 'nullable|string|max:255',
+        'hero_description' => 'nullable|string',
+        'cta_button_text' => 'nullable|string|max:255',
+        'cta_button_text_two' => 'nullable|string|max:255',
+
+        'hero_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        'about_hero_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        'cta_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+
+        'hero_overlay_color' => 'nullable|string|max:50',
+        'about_title' => 'nullable|string|max:255',
+        'about_description' => 'nullable|string',
+        'background_color' => 'nullable|string|max:50',
+        'about_padding' => 'nullable|string',
+
+        'cta_title' => 'nullable|string|max:255',
+        'cta_subtitle' => 'nullable|string|max:255',
+        'cta_overlay_color' => 'nullable|string|max:50',
+        'cta_padding' => 'nullable|string',
+        'service_title' => 'nullable|string|max:255',
+        'service_description' => 'nullable|string',
+        'service_background' => 'nullable|string',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Validation error',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $miniSite = MiniSite::where('user_id', $user->id)->first();
+
+    $data = $request->except(['hero_image','about_hero_image','cta_image']);
+    $data['user_id'] = $user->id;
+
+    // hero image upload
+    if ($request->hasFile('hero_image')) {
+        $file = $request->file('hero_image');
+        $filename = time().'_hero.'.$file->getClientOriginalExtension();
+        $file->move(public_path('mini-sites/hero'), $filename);
+        $data['hero_image'] = 'mini-sites/hero/'.$filename;
+    }
+
+    // about image upload
+    if ($request->hasFile('about_hero_image')) {
+        $file = $request->file('about_hero_image');
+        $filename = time().'_about.'.$file->getClientOriginalExtension();
+        $file->move(public_path('mini-sites/about'), $filename);
+        $data['about_hero_image'] = 'mini-sites/about/'.$filename;
+    }
+
+    // cta image upload
+    if ($request->hasFile('cta_image')) {
+        $file = $request->file('cta_image');
+        $filename = time().'_cta.'.$file->getClientOriginalExtension();
+        $file->move(public_path('mini-sites/cta'), $filename);
+        $data['cta_image'] = 'mini-sites/cta/'.$filename;
+    }
+
+    if ($miniSite) {
+        $miniSite->update($data);
+        $message = 'Mini site updated successfully';
+    } else {
+        $miniSite = MiniSite::create($data);
+        $message = 'Mini site created successfully';
+    }
+
+    return response()->json([
+        'status' => true,
+        'message' => $message,
+        'data' => $miniSite,
+    ], 200);
+}
 
     public function show()
     {

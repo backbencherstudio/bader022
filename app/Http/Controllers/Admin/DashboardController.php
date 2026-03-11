@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\Payment;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\{Payment, User};
 
 class DashboardController extends Controller
 {
@@ -14,9 +13,9 @@ class DashboardController extends Controller
     {
         $merchantsCount = User::where('type', 1)->count();
 
-        $revenue = Payment::where('status', 'successfull')->sum('amount');
+        $revenue = Payment::where('status', 'paid')->sum('amount');
 
-        $planSalesRaw = Payment::where('payments.status', 'successfull')
+        $planSalesRaw = Payment::where('payments.status', 'paid')
             ->join('subscriptions', 'payments.subscription_id', '=', 'subscriptions.id')
             ->join('plans', 'subscriptions.plan_id', '=', 'plans.id')
             ->whereIn('plans.name', ['Basic', 'Premium', 'Enterprise'])
@@ -57,9 +56,18 @@ class DashboardController extends Controller
             ->pluck('total_revenue', 'month');
 
         $months = [
-            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
-            5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
-            9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec',
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
+            5 => 'May',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Aug',
+            9 => 'Sep',
+            10 => 'Oct',
+            11 => 'Nov',
+            12 => 'Dec',
         ];
 
         $result = [];
@@ -175,4 +183,18 @@ class DashboardController extends Controller
     //     ]);
     // }
 
+    public function businessTypeAnalytics()
+    {
+        $totalMerchants = User::where('type', 2)->count();
+
+        $categories = User::where('type', 2)
+            ->select('business_category', DB::raw('COUNT(*) as total'))
+            ->groupBy('business_category')
+            ->get();
+
+        return response()->json([
+            'total_merchants' => $totalMerchants,
+            'categories' => $categories
+        ]);
+    }
 }
