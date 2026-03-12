@@ -213,7 +213,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('invoice/{id}', [InvoiceController::class, 'generate']);
     });
 
-    // ----- Admin/Merchants
+    //-----Admin/Merchants
     Route::prefix('merchant')->group(function () {
         Route::get('index', [MerchantController::class, 'index'])->name('merchant.index');
         Route::get('show/{id}', [MerchantController::class, 'show'])->name('merchant.show');
