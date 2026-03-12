@@ -207,6 +207,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
         Route::get('staff', [BookingController::class, 'getAvailableStaffByTime'])->name('booking.getAvailableStaffByTime');
         Route::post('service-booking', [BookingController::class, 'bookingByUser'])->name('booking.bookingByUser');
+        Route::get('invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
     });
 
     // ----- Admin/Merchants
