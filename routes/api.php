@@ -178,7 +178,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
     });
 
-    // ----- Admin/Subscription/Plan
+    // -----Admin/Subscription/Plan
     Route::prefix('plan')->group(function () {
         Route::get('index', [PlanController::class, 'index'])->name('plan.index');
         Route::post('store', [PlanController::class, 'store'])->name('plan.store');
@@ -188,7 +188,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::patch('update-status/{id}', [PlanController::class, 'updateStatus'])->name('plan.updateStatus');
     });
 
-    // ----- Admin/Payments
+    // -----Admin/Payments
     Route::prefix('payment-history')->group(function () {
         Route::get('index', [PaymentHistoryController::class, 'index'])->name('payment-history.index');
         Route::get('show/{id}', [PaymentHistoryController::class, 'show'])->name('payment-history.show');
