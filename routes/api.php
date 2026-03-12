@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\{AdminSubscriptionController, BrandController, Ca
 use App\Http\Controllers\Api\{AuthController, EmailController, GoogleAuthController, UserDashboardController};
 use App\Http\Controllers\Merchant\{AnalyticesController, BookingController, GlobalsettingController, MerchantDashboardContoller, MerchantSettingController, MinisiteController, ServicesController, StaffController, SubscriptionController, TapPaymentController, TransactionController, WhyChooseUsController};
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\InvoiceController;
 
 
 
@@ -207,7 +208,10 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
         Route::get('staff', [BookingController::class, 'getAvailableStaffByTime'])->name('booking.getAvailableStaffByTime');
         Route::post('service-booking', [BookingController::class, 'bookingByUser'])->name('booking.bookingByUser');
-        Route::get('invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
+        // Route::get('invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
+
+        // invoice generate route
+        Route::post('invoice/{id}', [InvoiceController::class, 'generate']);
     });
 
     // ----- Admin/Merchants
