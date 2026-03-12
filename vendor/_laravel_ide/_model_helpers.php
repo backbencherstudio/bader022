@@ -7455,6 +7455,7 @@ namespace App\Models {
      * @property string|null $platform_access
      * @property string|null $address
      * @property string|null $website_domain
+     * @property string|null $business_name
      * @property mixed $business_category
      * @property string|null $status
      * @property string|null $platform_status
@@ -7494,6 +7495,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePlatformStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereBusinessCategory($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereBusinessName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereWebsiteDomain($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereAddress($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePlatformAccess($value)
