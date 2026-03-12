@@ -4,8 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\{AdminSubscriptionController, BrandController, CategoryController, DashboardController, FaqCategoryController, FaqController, MerchantController, PaymentHistoryController, PermissionController, PlanController, RoleController, SettingController, SliderController, SubcategoryController};
 use App\Http\Controllers\Api\{AuthController, EmailController, GoogleAuthController, UserDashboardController};
 use App\Http\Controllers\Merchant\{AnalyticesController, BookingController, GlobalsettingController, MerchantDashboardContoller, MerchantSettingController, MinisiteController, ServicesController, StaffController, SubscriptionController, TapPaymentController, TransactionController, WhyChooseUsController};
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\{InvoiceController, NotificationController};
 
 
 
@@ -211,7 +210,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         // Route::get('invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
 
         // invoice generate route
-        Route::post('invoice/{id}', [InvoiceController::class, 'generate']);
+        Route::get('invoice/{id}', [InvoiceController::class, 'generate']);
     });
 
     // ----- Admin/Merchants
