@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB, Hash, Http, Mail, Validator};
-use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
-use App\Models\{Payment, Plan, Subscription, User};
+use App\Models\Payment;
+use App\Models\Plan;
+use App\Models\Subscription;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -224,12 +232,14 @@ class AuthController extends Controller
             $endDate = null;
         }
 
+        $subscriptionStatus = $plan->id == 1 ? 'active' : 'pending';
+
         $subscription = Subscription::create([
             'user_id' => $merchant->id,
             'plan_id' => $plan->id,
             'starts_at' => $startDate,
             'ends_at' => $endDate,
-            'status' => 'pending',
+            'status' => $subscriptionStatus,
             'auto_renew' => 0,
         ]);
 
