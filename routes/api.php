@@ -4,8 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\{AdminSubscriptionController, BrandController, CategoryController, DashboardController, FaqCategoryController, FaqController, MerchantController, PaymentHistoryController, PermissionController, PlanController, RoleController, SettingController, SliderController, SubcategoryController};
 use App\Http\Controllers\Api\{AuthController, EmailController, GoogleAuthController, UserDashboardController};
 use App\Http\Controllers\Merchant\{AnalyticesController, BookingController, GlobalsettingController, MerchantDashboardContoller, MerchantSettingController, MinisiteController, ServicesController, StaffController, SubscriptionController, TapPaymentController, TransactionController, WhyChooseUsController};
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\{InvoiceController, NotificationController};
 
 
 
@@ -179,7 +178,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
     });
 
-    // ----- Admin/Subscription/Plan
+    // -----Admin/Subscription/Plan
     Route::prefix('plan')->group(function () {
         Route::get('index', [PlanController::class, 'index'])->name('plan.index');
         Route::post('store', [PlanController::class, 'store'])->name('plan.store');
@@ -189,7 +188,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::patch('update-status/{id}', [PlanController::class, 'updateStatus'])->name('plan.updateStatus');
     });
 
-    // ----- Admin/Payments
+    // -----Admin/Payments
     Route::prefix('payment-history')->group(function () {
         Route::get('index', [PaymentHistoryController::class, 'index'])->name('payment-history.index');
         Route::get('show/{id}', [PaymentHistoryController::class, 'show'])->name('payment-history.show');
@@ -278,6 +277,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
 Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->name('tap.callback');
 Route::get('/payment/callback', [BookingController::class, 'paymentCallback'])->name('payment.callback');
+Route::get('/tap-successregister', [AuthController::class, 'tapSuccessregister'])->name('tap-successregister');
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
 Route::get('bokli/{website_domain}', [MinisiteController::class, 'userView'])->name('mini-site.userView');
 
