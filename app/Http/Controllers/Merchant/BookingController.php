@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\{DB, Http, Log};
 use App\Http\Controllers\Controller;
 use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff};
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BookingController extends Controller
 {
@@ -1153,7 +1154,7 @@ class BookingController extends Controller
             'service:id,service_name,duration,price',
             'staff:id,name',
             'merchant:id,name,email,phone',
-            'merchantStore:id,user_id,store_name,business_address',
+            'merchantStore:id,user_id,store_name,business_address,business_logo',
             'merchantPayment'
         ])
             ->where('id', $bookingId)
@@ -1179,11 +1180,11 @@ class BookingController extends Controller
 
             'merchant_info' => [
                 'business_logo' => $booking->merchantStore->business_logo ?? null,
-                'business_name' => $booking->merchantStore->store_name ?? null,
-                'merchant_name' => $booking->merchant->name ?? null,
-                'email' => $booking->merchant->email ?? null,
-                'phone' => $booking->merchant->phone ?? null,
-                'address' => $booking->merchantStore->business_address ?? null,
+                'business_name' => $booking->merchantStore->store_name ?? '',
+                'merchant_name' => $booking->merchant->name ?? '',
+                'email' => $booking->merchant->email ?? '',
+                'phone' => $booking->merchant->phone ?? '',
+                'address' => $booking->merchantStore->business_address ?? '',
             ],
 
             'customer_info' => [
@@ -1200,12 +1201,12 @@ class BookingController extends Controller
             ],
 
             'payment_details' => [
-                'payment_method' => ucfirst($payment->payment_method),
-                'transaction_id' => $payment->transaction_id,
-                'status' => ucfirst($payment->payment_status),
+                'payment_method' => ucfirst($payment->payment_method ?? ''),
+                'transaction_id' => $payment->transaction_id ?? '',
+                'status' => ucfirst($payment->payment_status ?? ''),
                 'paid_at' => $payment->paid_at
                     ? Carbon::parse($payment->paid_at)->format('M d, Y h:i A')
-                    : null,
+                    : '',
             ],
 
             'summary' => [
@@ -1217,9 +1218,8 @@ class BookingController extends Controller
             ]
         ];
 
-        return response()->json([
-            'success' => true,
-            'data' => $invoice
-        ]);
+        $pdf = Pdf::loadView('invoice', compact('invoice'));
+
+        return $pdf->download('invoice-' . $booking->id . '.pdf');
     }
 }
