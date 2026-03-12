@@ -211,7 +211,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         // Route::get('invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
 
         // invoice generate route
-        Route::post('invoice/{id}', [InvoiceController::class, 'generate']);
+        Route::get('invoice/{id}', [InvoiceController::class, 'generate']);
     });
 
     // ----- Admin/Merchants
