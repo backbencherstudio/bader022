@@ -1022,8 +1022,12 @@ class BookingController extends Controller
                         'id' => 'src_all',
                     ],
 
+                    // 'redirect' => [
+                    //     'url' => url('/api/tap-success?booking_id=' . $booking->id),
+                    // ],
+
                     'redirect' => [
-                        'url' => url('/api/tap-success?booking_id=' . $booking->id),
+                        'url' => url('/api/tap-callback?booking_id=' . $booking->id),
                     ],
                 ]);
 
@@ -1051,10 +1055,110 @@ class BookingController extends Controller
         });
     }
 
+    // public function tapCallbackbooking(Request $request)
+    // {
+    //     $bookingId = $request->booking_id;
+    //     $tapChargeId = $request->tap_id ?? $request->charge_id ?? null;
+
+    //     if (! $bookingId) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Invalid callback data',
+    //         ], 400);
+    //     }
+
+    //     $payment = MerchantPayment::where('booking_id', $bookingId)->first();
+    //     $booking = Booking::with(['service', 'staff'])->find($bookingId);
+
+    //     if (! $payment) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Payment record not found',
+    //         ], 404);
+    //     }
+
+    //     $merchantId = $payment->user_id;
+
+    //     $tapPayment = DB::table('tap_payments')
+    //         ->where('user_id', $merchantId)
+    //         ->latest('updated_at')
+    //         ->first();
+
+    //     if (! $tapPayment) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Tap credentials not found',
+    //         ], 422);
+    //     }
+
+    //     $tapBaseUrl = 'https://api.tap.company/v2';
+
+    //     $tapResponse = Http::withHeaders([
+    //         'Authorization' => 'Bearer ' . $tapPayment->tap_secret_key,
+    //     ])->get($tapBaseUrl . '/charges/' . $payment->transaction_id);
+
+    //     if ($tapResponse->failed()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to verify Tap payment',
+    //             'error' => $tapResponse->body(),
+    //         ], 500);
+    //     }
+
+    //     $tapData = $tapResponse->json();
+
+    //     DB::transaction(function () use ($tapData, $payment, $bookingId) {
+
+    //         if ($tapData['status'] == 'CAPTURED') {
+
+    //             $payment->update([
+    //                 'payment_status' => 'paid',
+    //                 'paid_at' => now(),
+    //             ]);
+
+    //             Booking::where('id', $bookingId)->update([
+    //                 'status' => 'confirm',
+    //             ]);
+
+    //             $frontendUrl = "http://192.168.7.82:3000/booking-success?booking_id=" . $bookingId;
+    //         } else {
+
+    //             $payment->update([
+    //                 'payment_status' => 'failed',
+    //             ]);
+
+    //             Booking::where('id', $bookingId)->update([
+    //                 'status' => 'cancel',
+    //             ]);
+
+    //             $frontendUrl = "http://192.168.7.82:3000/booking-failed?booking_id=" . $bookingId;
+    //         }
+
+    //         return redirect($frontendUrl);
+    //     });
+
+    //     // $bookingData = [
+    //     //     'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+    //     //     'service' => $booking->service->service_name,
+    //     //     'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
+    //     //     'staff' => $booking->staff->name,
+    //     //     'duration' => $booking->service->duration . ' min',
+    //     //     'total_amount' => $payment->amount . ' SAR',
+    //     //     'pay' => $payment->payment_method,
+    //     //     'transaction_id' => $payment->transaction_id,
+    //     // ];
+
+    //     // return response()->json([
+    //     //     'success' => true,
+    //     //     'payment_status' => $tapData['status'],
+    //     //     'message' => 'Booking confirmed!',
+    //     //     'booking_info' => $bookingData,
+    //     // ]);
+    // }
+
     public function tapCallbackbooking(Request $request)
     {
         $bookingId = $request->booking_id;
-        $tapChargeId = $request->tap_id ?? $request->charge_id ?? null;
 
         if (! $bookingId) {
             return response()->json([
@@ -1064,7 +1168,6 @@ class BookingController extends Controller
         }
 
         $payment = MerchantPayment::where('booking_id', $bookingId)->first();
-        $booking = Booking::with(['service', 'staff'])->find($bookingId);
 
         if (! $payment) {
             return response()->json([
@@ -1097,7 +1200,6 @@ class BookingController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to verify Tap payment',
-                'error' => $tapResponse->body(),
             ], 500);
         }
 
@@ -1127,22 +1229,34 @@ class BookingController extends Controller
             }
         });
 
-        $bookingData = [
-            'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
-            'service' => $booking->service->service_name,
-            'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
-            'staff' => $booking->staff->name,
-            'duration' => $booking->service->duration . ' min',
-            'total_amount' => $payment->amount . ' SAR',
-            'pay' => $payment->payment_method,
-            'transaction_id' => $payment->transaction_id,
-        ];
+        $frontendBaseUrl = env('FRONTEND_URL', 'http://localhost:3000');
+
+        if ($tapData['status'] == 'CAPTURED') {
+            $frontendUrl = $frontendBaseUrl . "/booking-success?booking_id=" . $bookingId;
+        } else {
+            $frontendUrl = $frontendBaseUrl . "/booking-failed?booking_id=" . $bookingId;
+        }
+
+        return redirect()->away($frontendUrl);
+    }
+
+    public function bookingDetails($id)
+    {
+        $booking = Booking::with(['service', 'staff', 'merchantPayment'])->findOrFail($id);
 
         return response()->json([
             'success' => true,
-            'payment_status' => $tapData['status'],
             'message' => 'Booking confirmed!',
-            'booking_info' => $bookingData,
+            'data' => [
+                'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                'service' => $booking->service->service_name,
+                'staff' => $booking->staff->name,
+                'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
+                'duration' => $booking->service->duration . ' min',
+                'amount' => $booking->merchantPayment->amount . ' SAR',
+                'payment_method' => $booking->merchantPayment->payment_method,
+                'transaction_id' => $booking->merchantPayment->transaction_id,
+            ]
         ]);
     }
 
