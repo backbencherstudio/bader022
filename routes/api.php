@@ -282,3 +282,7 @@ Route::get('/tap-successregister', [AuthController::class, 'tapSuccessregister']
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
 Route::get('bokli/{website_domain}', [MinisiteController::class, 'userView'])->name('mini-site.userView');
 
+// redirect to confirmation page
+Route::get('/tap-callback', [BookingController::class, 'tapCallbackbooking']);
+Route::get('/booking-details/{id}', [BookingController::class, 'bookingDetails']);
+Route::get('confirm-invoice/{id}', [InvoiceController::class, 'confirmationInvoice']);
