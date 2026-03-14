@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff};
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingConfirmationMail;
 
 class BookingController extends Controller
 {
@@ -1205,7 +1207,9 @@ class BookingController extends Controller
 
         $tapData = $tapResponse->json();
 
-        DB::transaction(function () use ($tapData, $payment, $bookingId) {
+        $booking = null;
+
+        DB::transaction(function () use ($tapData, $payment, $bookingId, &$booking) {
 
             if ($tapData['status'] == 'CAPTURED') {
 
@@ -1217,6 +1221,10 @@ class BookingController extends Controller
                 Booking::where('id', $bookingId)->update([
                     'status' => 'confirm',
                 ]);
+
+                $booking = Booking::with(['service', 'staff', 'merchantPayment'])
+                    ->find($bookingId);
+                    
             } else {
 
                 $payment->update([
@@ -1228,6 +1236,12 @@ class BookingController extends Controller
                 ]);
             }
         });
+
+        if ($tapData['status'] == 'CAPTURED' && $booking) {
+
+            Mail::to($booking->email)
+                ->send(new BookingConfirmationMail($booking));
+        }
 
         $frontendBaseUrl = env('FRONTEND_URL', 'http://localhost:3000');
 
