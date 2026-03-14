@@ -192,6 +192,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::prefix('payment-history')->group(function () {
         Route::get('index', [PaymentHistoryController::class, 'index'])->name('payment-history.index');
         Route::get('show/{id}', [PaymentHistoryController::class, 'show'])->name('payment-history.show');
+        Route::get('admin-invoice/{id}', [InvoiceController::class, 'adminInvoice'])->name('payment-history.adminInvoice');
         Route::post('update/{id}', [PaymentHistoryController::class, 'update'])->name('payment-history.update');
         Route::post('{id}/sendEmail', [PaymentHistoryController::class, 'sendEmail'])->name('payment-history.sendEmail');
         Route::patch('updateStatus/{id}', [PaymentHistoryController::class, 'updateStatus'])->name('payment-history.updateStatus');

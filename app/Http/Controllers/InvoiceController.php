@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Booking;
+use App\Models\Payment;
 use Carbon\Carbon;
 
 class InvoiceController extends Controller
@@ -20,9 +21,9 @@ class InvoiceController extends Controller
             'merchantStore:id,user_id,store_name,business_address,business_logo',
             'merchantPayment'
         ])
-        ->where('id', $bookingId)
-        ->where('booking_by', $userId)
-        ->first();
+            ->where('id', $bookingId)
+            ->where('booking_by', $userId)
+            ->first();
 
         if (!$booking) {
             return response()->json([
@@ -82,8 +83,73 @@ class InvoiceController extends Controller
         ];
 
         $pdf = Pdf::loadView('invoice', compact('invoice'))
-                  ->setPaper('A4', 'portrait');
+            ->setPaper('A4', 'portrait');
 
-        return $pdf->download('invoice-'.$booking->id.'.pdf');
+        return $pdf->download('invoice-' . $booking->id . '.pdf');
+    }
+
+    public function adminInvoice($id)
+    {
+        $payment = Payment::with([
+            'user.merchantSetting',
+            'subscription.plan',
+        ])->find($id);
+
+        if (!$payment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment not found',
+            ], 404);
+        }
+
+        $invoice = [
+
+            'invoice_info' => [
+                'invoice_no' => 'INV-' . str_pad($payment->id, 6, '0', STR_PAD_LEFT),
+                'subscription_id' => 'SUB-' . str_pad($payment->subscription_id, 5, '0', STR_PAD_LEFT),
+                'invoice_date' => now()->format('M d, Y'),
+            ],
+
+            'merchant_info' => [
+                'business_logo' => optional($payment->user->merchantSetting)->business_logo ?? null,
+                'business_name' => optional($payment->user->merchantSetting)->store_name ?? '',
+                'business_address' => optional($payment->user->merchantSetting)->business_address ?? '',
+                'merchant_name' => $payment->user->name ?? '',
+                'email' => $payment->user->email ?? '',
+                'phone' => $payment->user->phone ?? '',
+                'address' => optional($payment->user->merchantSetting)->business_address ?? '',
+            ],
+
+            'subscription_details' => [
+                'package' => optional($payment->subscription->plan)->name ?? '',
+                'duration' => $payment->subscription->plan->day . ' days',
+                'start_date' => Carbon::parse($payment->subscription->starts_at)->format('M d, Y'),
+                'end_date' => Carbon::parse($payment->subscription->ends_at)->format('M d, Y'),
+                'status' => $payment->subscription->status,
+            ],
+
+            'payment_details' => [
+                'payment_method' => ucfirst($payment->payment_method ?? ''),
+                'transaction_id' => $payment->transaction_id ?? '',
+                'status' => ucfirst($payment->status ?? ''),
+                'paid_at' => $payment->created_at
+                    ? $payment->created_at->format('M d, Y h:i A')
+                    : '',
+            ],
+
+            'summary' => [
+                'service_price' => $payment->amount,
+                'tax' => 0,
+                'discount' => 0,
+                'total_amount' => $payment->amount,
+                'currency' => 'SAR'
+            ]
+        ];
+
+        $pdf = Pdf::loadView('admin_invoice', compact('invoice'))
+            ->setPaper('A4', 'portrait')
+            ->setOptions(['isRemoteEnabled' => true]);
+
+        return $pdf->download('invoice-' . $payment->transaction_id . '.pdf');
     }
 }
