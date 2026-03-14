@@ -142,7 +142,7 @@
             <th>Booking Time</th>
         </tr>
 
-        <tr>
+        <tr style="text-align: center">
             <td>{{ data_get($invoice, 'booking_details.service', '') }}</td>
             <td>{{ data_get($invoice, 'booking_details.staff', '') }}</td>
             <td>{{ data_get($invoice, 'booking_details.duration', '') }}</td>
