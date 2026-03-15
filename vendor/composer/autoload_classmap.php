@@ -51,6 +51,7 @@ return array(
     'App\\Http\\Middleware\\EnsureEmailIsVerified' => $baseDir . '/app/Http/Middleware/EnsureEmailIsVerified.php',
     'App\\Http\\Middleware\\RolePermissionMiddleware' => $baseDir . '/app/Http/Middleware/RolePermissionMiddleware.php',
     'App\\Http\\Requests\\Auth\\LoginRequest' => $baseDir . '/app/Http/Requests/Auth/LoginRequest.php',
+    'App\\Mail\\BookingConfirmationMail' => $baseDir . '/app/Mail/BookingConfirmationMail.php',
     'App\\Mail\\TestMail' => $baseDir . '/app/Mail/TestMail.php',
     'App\\Models\\Booking' => $baseDir . '/app/Models/Booking.php',
     'App\\Models\\Brand' => $baseDir . '/app/Models/Brand.php',

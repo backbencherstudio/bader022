@@ -774,6 +774,7 @@ class ComposerStaticInit8aa4934c7d0098433825bea48f5aa226
         'App\\Http\\Middleware\\EnsureEmailIsVerified' => __DIR__ . '/../..' . '/app/Http/Middleware/EnsureEmailIsVerified.php',
         'App\\Http\\Middleware\\RolePermissionMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/RolePermissionMiddleware.php',
         'App\\Http\\Requests\\Auth\\LoginRequest' => __DIR__ . '/../..' . '/app/Http/Requests/Auth/LoginRequest.php',
+        'App\\Mail\\BookingConfirmationMail' => __DIR__ . '/../..' . '/app/Mail/BookingConfirmationMail.php',
         'App\\Mail\\TestMail' => __DIR__ . '/../..' . '/app/Mail/TestMail.php',
         'App\\Models\\Booking' => __DIR__ . '/../..' . '/app/Models/Booking.php',
         'App\\Models\\Brand' => __DIR__ . '/../..' . '/app/Models/Brand.php',
