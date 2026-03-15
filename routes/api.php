@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\{AdminSubscriptionController, BrandController, CategoryController, DashboardController, FaqCategoryController, FaqController, MerchantController, PaymentHistoryController, PermissionController, PlanController, RoleController, SettingController, SliderController, SubcategoryController};
 use App\Http\Controllers\Api\{AuthController, EmailController, GoogleAuthController, UserDashboardController};
 use App\Http\Controllers\Merchant\{AnalyticesController, BookingController, GlobalsettingController, MerchantDashboardContoller, MerchantSettingController, MinisiteController, ServicesController, StaffController, SubscriptionController, TapPaymentController, TransactionController, WhyChooseUsController};
-use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\{InvoiceController, NotificationController};
 
 
 
@@ -41,6 +41,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
    Route::get('dashboard-overview', [DashboardController::class, 'index'])->name('dashboard-overview');
    Route::get('monthlypaymentCount', [DashboardController::class, 'monthlypaymentCount'])->name('monthlypaymentCount');
    Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
+   Route::get('businessTypeAnalytics', [DashboardController::class, 'businessTypeAnalytics'])->name('businessTypeAnalytics');
 
 
     // Role
@@ -177,7 +178,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
     });
 
-    // ----- Admin/Subscription/Plan
+    // -----Admin/Subscription/Plan
     Route::prefix('plan')->group(function () {
         Route::get('index', [PlanController::class, 'index'])->name('plan.index');
         Route::post('store', [PlanController::class, 'store'])->name('plan.store');
@@ -187,10 +188,11 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::patch('update-status/{id}', [PlanController::class, 'updateStatus'])->name('plan.updateStatus');
     });
 
-    // ----- Admin/Payments
+    // -----Admin/Payments
     Route::prefix('payment-history')->group(function () {
         Route::get('index', [PaymentHistoryController::class, 'index'])->name('payment-history.index');
         Route::get('show/{id}', [PaymentHistoryController::class, 'show'])->name('payment-history.show');
+        Route::get('admin-invoice/{id}', [InvoiceController::class, 'adminInvoice'])->name('payment-history.adminInvoice');
         Route::post('update/{id}', [PaymentHistoryController::class, 'update'])->name('payment-history.update');
         Route::post('{id}/sendEmail', [PaymentHistoryController::class, 'sendEmail'])->name('payment-history.sendEmail');
         Route::patch('updateStatus/{id}', [PaymentHistoryController::class, 'updateStatus'])->name('payment-history.updateStatus');
@@ -200,14 +202,19 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::prefix('booking')->group(function () {
         Route::get('index', [BookingController::class, 'index'])->name('booking.index');
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
+        Route::get('booking-invoice/{id}', [BookingController::class, 'bookingInvoice'])->name('booking.bookingInvoice');
         Route::get('show/{id}', [BookingController::class, 'show'])->name('booking.show');
         Route::post('update/{id}', [BookingController::class, 'update'])->name('booking.update');
         Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
         Route::get('staff', [BookingController::class, 'getAvailableStaffByTime'])->name('booking.getAvailableStaffByTime');
         Route::post('service-booking', [BookingController::class, 'bookingByUser'])->name('booking.bookingByUser');
+        // Route::get('invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
+
+        // invoice generate route
+        Route::get('invoice/{id}', [InvoiceController::class, 'generate']);
     });
 
-    // ----- Admin/Merchants
+    //-----Admin/Merchants
     Route::prefix('merchant')->group(function () {
         Route::get('index', [MerchantController::class, 'index'])->name('merchant.index');
         Route::get('show/{id}', [MerchantController::class, 'show'])->name('merchant.show');
@@ -229,6 +236,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show/{id}', [UserDashboardController::class, 'show'])->name('dashboard.show');
         Route::get('payment-history', [UserDashboardController::class, 'paymentHistory'])->name('dashboard.paymentHistory');
         Route::get('show-payment/{id}', [UserDashboardController::class, 'showPayment'])->name('dashboard.showPayment');
+        Route::get('invoice/{id}', [UserDashboardController::class, 'userInvoice'])->name('dashboard.userInvoice');
         Route::get('view-order-details/{id}', [UserDashboardController::class, 'viewOrderDetails'])->name('dashboard.viewOrderDetails');
         Route::get('cancel-preview/{id}', [UserDashboardController::class, 'cancelPreview'])->name('dashboard.cancelPreview');
         Route::patch('cancel-booking/{id}', [UserDashboardController::class, 'cancelBooking'])->name('dashboard.cancelBooking');
@@ -270,6 +278,11 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
 Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->name('tap.callback');
 Route::get('/payment/callback', [BookingController::class, 'paymentCallback'])->name('payment.callback');
+Route::get('/tap-successregister', [AuthController::class, 'tapSuccessregister'])->name('tap-successregister');
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
 Route::get('bokli/{website_domain}', [MinisiteController::class, 'userView'])->name('mini-site.userView');
 
+// redirect to confirmation page
+Route::get('/tap-callback', [BookingController::class, 'tapCallbackbooking']);
+Route::get('/booking-details/{id}', [BookingController::class, 'bookingDetails']);
+Route::get('confirm-invoice/{id}', [InvoiceController::class, 'confirmationInvoice']);
