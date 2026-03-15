@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\{DB, Http, Log};
 use App\Http\Controllers\Controller;
 use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff};
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingConfirmationMail;
 
 class BookingController extends Controller
 {
@@ -110,8 +113,8 @@ class BookingController extends Controller
             'date'          => 'required|date',
             'time'          => 'required',
             'customer_name' => 'required|string',
-            'email'         => 'required|email',
-            'phone'         => 'required|string',
+            'email'         => 'nullable|email',
+            'phone'         => 'nullable|string',
             'special_note'  => 'nullable|string',
             'payment_method' => 'required|in:tap,cash',
         ]);
@@ -465,8 +468,7 @@ class BookingController extends Controller
                     ]
                 ], 201);
             }
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Payment callback error', ['error' => $e->getMessage()]);
 
             return response()->json([
@@ -477,6 +479,83 @@ class BookingController extends Controller
     }
 
 
+    public function bookingInvoice($bookingId)
+    {
+        $merchantId = auth()->id();
+
+        $booking = Booking::with([
+            'service:id,service_name,duration,price',
+            'staff:id,name',
+            'merchant:id,name,email,phone',
+            'merchantStore:id,user_id,store_name,business_address',
+            'merchantPayment'
+        ])
+            ->where('id', $bookingId)
+            ->where('user_id', $merchantId)
+            ->first();
+
+        if (!$booking) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invoice not found'
+            ], 404);
+        }
+
+        $payment = $booking->merchantPayment;
+
+        $invoice = [
+
+            'invoice_info' => [
+                'invoice_no' => 'INV-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
+                'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                'invoice_date' => $booking->created_at->format('M d, Y'),
+            ],
+
+            'merchant_info' => [
+                'business_logo' => $booking->merchantStore->business_logo ?? null,
+                'business_name' => $booking->merchantStore->store_name ?? null,
+                'merchant_name' => $booking->merchant->name ?? null,
+                'email' => $booking->merchant->email ?? null,
+                'phone' => $booking->merchant->phone ?? null,
+                'address' => $booking->merchantStore->business_address ?? null,
+            ],
+
+            'customer_info' => [
+                'name' => $booking->customer_name,
+                'email' => $booking->email,
+                'phone' => $booking->phone,
+            ],
+
+            'booking_details' => [
+                'service' => $booking->service->service_name,
+                'staff' => $booking->staff->name ?? 'Any Staff',
+                'duration' => $booking->service->duration . ' min',
+                'booking_time' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
+            ],
+
+            'payment_details' => [
+                'payment_method' => ucfirst($payment->payment_method),
+                'transaction_id' => $payment->transaction_id,
+                'status' => ucfirst($payment->payment_status),
+                'paid_at' => $payment->paid_at
+                    ? Carbon::parse($payment->paid_at)->format('M d, Y h:i A')
+                    : null,
+            ],
+
+            'summary' => [
+                'service_price' => $booking->service->price,
+                'tax' => 0,
+                'discount' => 0,
+                'total_amount' => $booking->service->price,
+                'currency' => 'SAR'
+            ]
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $invoice
+        ]);
+    }
 
 
     public function getAvailability(Request $request)
@@ -945,8 +1024,12 @@ class BookingController extends Controller
                         'id' => 'src_all',
                     ],
 
+                    // 'redirect' => [
+                    //     'url' => url('/api/tap-success?booking_id=' . $booking->id),
+                    // ],
+
                     'redirect' => [
-                        'url' => url('/api/tap-success?booking_id=' . $booking->id),
+                        'url' => url('/api/tap-callback?booking_id=' . $booking->id),
                     ],
                 ]);
 
@@ -974,10 +1057,110 @@ class BookingController extends Controller
         });
     }
 
+    // public function tapCallbackbooking(Request $request)
+    // {
+    //     $bookingId = $request->booking_id;
+    //     $tapChargeId = $request->tap_id ?? $request->charge_id ?? null;
+
+    //     if (! $bookingId) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Invalid callback data',
+    //         ], 400);
+    //     }
+
+    //     $payment = MerchantPayment::where('booking_id', $bookingId)->first();
+    //     $booking = Booking::with(['service', 'staff'])->find($bookingId);
+
+    //     if (! $payment) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Payment record not found',
+    //         ], 404);
+    //     }
+
+    //     $merchantId = $payment->user_id;
+
+    //     $tapPayment = DB::table('tap_payments')
+    //         ->where('user_id', $merchantId)
+    //         ->latest('updated_at')
+    //         ->first();
+
+    //     if (! $tapPayment) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Tap credentials not found',
+    //         ], 422);
+    //     }
+
+    //     $tapBaseUrl = 'https://api.tap.company/v2';
+
+    //     $tapResponse = Http::withHeaders([
+    //         'Authorization' => 'Bearer ' . $tapPayment->tap_secret_key,
+    //     ])->get($tapBaseUrl . '/charges/' . $payment->transaction_id);
+
+    //     if ($tapResponse->failed()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to verify Tap payment',
+    //             'error' => $tapResponse->body(),
+    //         ], 500);
+    //     }
+
+    //     $tapData = $tapResponse->json();
+
+    //     DB::transaction(function () use ($tapData, $payment, $bookingId) {
+
+    //         if ($tapData['status'] == 'CAPTURED') {
+
+    //             $payment->update([
+    //                 'payment_status' => 'paid',
+    //                 'paid_at' => now(),
+    //             ]);
+
+    //             Booking::where('id', $bookingId)->update([
+    //                 'status' => 'confirm',
+    //             ]);
+
+    //             $frontendUrl = "http://192.168.7.82:3000/booking-success?booking_id=" . $bookingId;
+    //         } else {
+
+    //             $payment->update([
+    //                 'payment_status' => 'failed',
+    //             ]);
+
+    //             Booking::where('id', $bookingId)->update([
+    //                 'status' => 'cancel',
+    //             ]);
+
+    //             $frontendUrl = "http://192.168.7.82:3000/booking-failed?booking_id=" . $bookingId;
+    //         }
+
+    //         return redirect($frontendUrl);
+    //     });
+
+    //     // $bookingData = [
+    //     //     'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+    //     //     'service' => $booking->service->service_name,
+    //     //     'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
+    //     //     'staff' => $booking->staff->name,
+    //     //     'duration' => $booking->service->duration . ' min',
+    //     //     'total_amount' => $payment->amount . ' SAR',
+    //     //     'pay' => $payment->payment_method,
+    //     //     'transaction_id' => $payment->transaction_id,
+    //     // ];
+
+    //     // return response()->json([
+    //     //     'success' => true,
+    //     //     'payment_status' => $tapData['status'],
+    //     //     'message' => 'Booking confirmed!',
+    //     //     'booking_info' => $bookingData,
+    //     // ]);
+    // }
+
     public function tapCallbackbooking(Request $request)
     {
         $bookingId = $request->booking_id;
-        $tapChargeId = $request->tap_id ?? $request->charge_id ?? null;
 
         if (! $bookingId) {
             return response()->json([
@@ -987,7 +1170,6 @@ class BookingController extends Controller
         }
 
         $payment = MerchantPayment::where('booking_id', $bookingId)->first();
-        $booking = Booking::with(['service', 'staff'])->find($bookingId);
 
         if (! $payment) {
             return response()->json([
@@ -1020,13 +1202,14 @@ class BookingController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to verify Tap payment',
-                'error' => $tapResponse->body(),
             ], 500);
         }
 
         $tapData = $tapResponse->json();
 
-        DB::transaction(function () use ($tapData, $payment, $bookingId) {
+        $booking = null;
+
+        DB::transaction(function () use ($tapData, $payment, $bookingId, &$booking) {
 
             if ($tapData['status'] == 'CAPTURED') {
 
@@ -1038,6 +1221,10 @@ class BookingController extends Controller
                 Booking::where('id', $bookingId)->update([
                     'status' => 'confirm',
                 ]);
+
+                $booking = Booking::with(['service', 'staff', 'merchantPayment'])
+                    ->find($bookingId);
+                    
             } else {
 
                 $payment->update([
@@ -1050,22 +1237,117 @@ class BookingController extends Controller
             }
         });
 
-        $bookingData = [
-            'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
-            'service' => $booking->service->service_name,
-            'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
-            'staff' => $booking->staff->name,
-            'duration' => $booking->service->duration . ' min',
-            'total_amount' => $payment->amount . ' SAR',
-            'pay' => $payment->payment_method,
-            'transaction_id' => $payment->transaction_id,
-        ];
+        if ($tapData['status'] == 'CAPTURED' && $booking) {
+
+            Mail::to($booking->email)
+                ->send(new BookingConfirmationMail($booking));
+        }
+
+        $frontendBaseUrl = env('FRONTEND_URL', 'http://localhost:3000');
+
+        if ($tapData['status'] == 'CAPTURED') {
+            $frontendUrl = $frontendBaseUrl . "/booking-success?booking_id=" . $bookingId;
+        } else {
+            $frontendUrl = $frontendBaseUrl . "/booking-failed?booking_id=" . $bookingId;
+        }
+
+        return redirect()->away($frontendUrl);
+    }
+
+    public function bookingDetails($id)
+    {
+        $booking = Booking::with(['service', 'staff', 'merchantPayment'])->findOrFail($id);
 
         return response()->json([
             'success' => true,
-            'payment_status' => $tapData['status'],
             'message' => 'Booking confirmed!',
-            'booking_info' => $bookingData,
+            'data' => [
+                'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                'service' => $booking->service->service_name,
+                'staff' => $booking->staff->name,
+                'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
+                'duration' => $booking->service->duration . ' min',
+                'amount' => $booking->merchantPayment->amount . ' SAR',
+                'payment_method' => $booking->merchantPayment->payment_method,
+                'transaction_id' => $booking->merchantPayment->transaction_id,
+            ]
         ]);
+    }
+
+    public function invoice($bookingId)
+    {
+        $userId = auth()->id();
+
+        $booking = Booking::with([
+            'service:id,service_name,duration,price',
+            'staff:id,name',
+            'merchant:id,name,email,phone',
+            'merchantStore:id,user_id,store_name,business_address,business_logo',
+            'merchantPayment'
+        ])
+            ->where('id', $bookingId)
+            ->where('booking_by', $userId)
+            ->first();
+
+        if (!$booking) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invoice not found'
+            ], 404);
+        }
+
+        $payment = $booking->merchantPayment;
+
+        $invoice = [
+
+            'invoice_info' => [
+                'invoice_no' => 'INV-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
+                'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                'invoice_date' => $booking->created_at->format('M d, Y'),
+            ],
+
+            'merchant_info' => [
+                'business_logo' => $booking->merchantStore->business_logo ?? null,
+                'business_name' => $booking->merchantStore->store_name ?? '',
+                'merchant_name' => $booking->merchant->name ?? '',
+                'email' => $booking->merchant->email ?? '',
+                'phone' => $booking->merchant->phone ?? '',
+                'address' => $booking->merchantStore->business_address ?? '',
+            ],
+
+            'customer_info' => [
+                'name' => $booking->customer_name,
+                'email' => $booking->email,
+                'phone' => $booking->phone,
+            ],
+
+            'booking_details' => [
+                'service' => $booking->service->service_name,
+                'staff' => $booking->staff->name ?? 'Any Staff',
+                'duration' => $booking->service->duration . ' min',
+                'booking_time' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
+            ],
+
+            'payment_details' => [
+                'payment_method' => ucfirst($payment->payment_method ?? ''),
+                'transaction_id' => $payment->transaction_id ?? '',
+                'status' => ucfirst($payment->payment_status ?? ''),
+                'paid_at' => $payment->paid_at
+                    ? Carbon::parse($payment->paid_at)->format('M d, Y h:i A')
+                    : '',
+            ],
+
+            'summary' => [
+                'service_price' => $booking->service->price,
+                'tax' => 0,
+                'discount' => 0,
+                'total_amount' => $booking->service->price,
+                'currency' => 'SAR'
+            ]
+        ];
+
+        $pdf = Pdf::loadView('invoice', compact('invoice'));
+
+        return $pdf->download('invoice-' . $booking->id . '.pdf');
     }
 }

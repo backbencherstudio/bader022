@@ -23,6 +23,7 @@ class MiniSite extends Model
         'about_description',
         'background_color',
         'about_padding',
+        'about_hero_image',
         'cta_title',
         'cta_subtitle',
         'cta_image',

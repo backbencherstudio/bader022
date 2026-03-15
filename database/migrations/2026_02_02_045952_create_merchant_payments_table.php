@@ -26,9 +26,11 @@ return new class extends Migration
 
             $table->decimal('amount', 10, 2);
             $table->string('transaction_id')->nullable();
-            $table->enum('payment_status', ['due', 'paid', 'failed'])
+            $table->enum('payment_status', ['due', 'paid', 'failed', 'refunded', 'refund_failed'])
                 ->default('due');
             $table->timestamp('paid_at')->nullable();
+            $table->string('refund_id')->nullable();
+            $table->timestamp('refund_date')->nullable();
             $table->timestamps();
         });
     }
