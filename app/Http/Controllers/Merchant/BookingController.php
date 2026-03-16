@@ -90,6 +90,9 @@ class BookingController extends Controller
 
         if ($payment) {
             $payment->payment_status = $request->payment_status;
+            if ($request->payment_status === 'paid') {
+                $payment->paid_at = now();
+            }
             $payment->save();
         }
 
@@ -1224,7 +1227,6 @@ class BookingController extends Controller
 
                 $booking = Booking::with(['service', 'staff', 'merchantPayment'])
                     ->find($bookingId);
-                    
             } else {
 
                 $payment->update([
