@@ -4,26 +4,25 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Service;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\User;
 
 class ServicesController extends Controller
 {
     public function index(Request $request)
     {
-
-        $query = Service::where('user_id', auth()->id());
+        $query = Service::query();
 
         if ($request->filled('service_name')) {
-            $query->where('service_name', 'like', '%' . $request->service_name . '%');
+            $query->where('service_name', 'like', '%'.$request->service_name.'%');
         }
 
         $services = $query->get();
 
         return response()->json([
             'success' => true,
-            'data' => $services
+            'data' => $services,
         ]);
     }
 
@@ -42,7 +41,7 @@ class ServicesController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -50,10 +49,10 @@ class ServicesController extends Controller
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imageName = time().'_'.$image->getClientOriginalName();
             $image->move(public_path('services/'), $imageName);
 
-            $imagePath = 'services/' . $imageName;
+            $imagePath = 'services/'.$imageName;
         }
 
         $service = Service::create([
@@ -69,7 +68,7 @@ class ServicesController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Service created successfully',
-            'data' => $service
+            'data' => $service,
         ], 201);
     }
 
@@ -77,7 +76,7 @@ class ServicesController extends Controller
     {
         $service = Service::where('id', $id)->where('user_id', auth()->id())->first();
 
-        if (!$service) {
+        if (! $service) {
             return response()->json([
                 'success' => false,
                 'message' => 'Service not found',
@@ -86,7 +85,7 @@ class ServicesController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $service
+            'data' => $service,
         ], 200);
     }
 
@@ -94,14 +93,14 @@ class ServicesController extends Controller
     {
         $service = Service::where('id', $id)->where('user_id', auth()->id())->first();
 
-        if (!$service) {
+        if (! $service) {
             return response()->json([
                 'success' => false,
-                'message' => 'Service not found'
+                'message' => 'Service not found',
             ], 404);
         }
 
-        $validator = validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'service_name' => 'sometimes|required|string|max:255',
             'duration' => 'sometimes|required|string',
             'price' => 'sometimes|required|numeric|min:0',
@@ -113,7 +112,7 @@ class ServicesController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -123,10 +122,10 @@ class ServicesController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imageName = time().'_'.$image->getClientOriginalName();
             $image->move(public_path('services'), $imageName);
 
-            $service->image = 'services/' . $imageName;
+            $service->image = 'services/'.$imageName;
         }
 
         $service->fill($request->only([
@@ -134,7 +133,7 @@ class ServicesController extends Controller
             'duration',
             'price',
             'description',
-            'status'
+            'status',
         ]));
 
         $service->save();
@@ -142,7 +141,7 @@ class ServicesController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Service updated successfully',
-            'data' => $service
+            'data' => $service,
         ], 200);
     }
 
@@ -150,10 +149,10 @@ class ServicesController extends Controller
     {
         $service = Service::where('id', $id)->where('user_id', auth()->id())->first();
 
-        if (!$service) {
+        if (! $service) {
             return response()->json([
                 'success' => false,
-                'message' => 'Service not found'
+                'message' => 'Service not found',
             ], 404);
         }
 
@@ -161,7 +160,7 @@ class ServicesController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Service deleted successfully'
+            'message' => 'Service deleted successfully',
         ], 200);
     }
 
@@ -169,7 +168,7 @@ class ServicesController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'User not found',
@@ -179,7 +178,7 @@ class ServicesController extends Controller
         $query = Service::where('user_id', $id);
 
         if ($request->filled('service_name')) {
-            $query->where('service_name', 'like', '%' . $request->service_name . '%');
+            $query->where('service_name', 'like', '%'.$request->service_name.'%');
         }
 
         $services = $query->get();
@@ -197,7 +196,7 @@ class ServicesController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $mapped
+            'data' => $mapped,
         ]);
     }
 }
