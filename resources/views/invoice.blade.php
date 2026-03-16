@@ -99,7 +99,7 @@
                         Merchant: {{ data_get($invoice, 'merchant_info.merchant_name', '') }} <br>
                         Email: {{ data_get($invoice, 'merchant_info.email', '') }} <br>
                         Phone: {{ data_get($invoice, 'merchant_info.phone', '') }} <br>
-                        {{ data_get($invoice, 'merchant_info.address', '') }}
+                        Address: {{ data_get($invoice, 'merchant_info.address', '') }}
                     </p>
 
                 </td>

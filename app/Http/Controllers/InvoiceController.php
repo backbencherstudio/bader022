@@ -7,6 +7,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Booking;
 use App\Models\Payment;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class InvoiceController extends Controller
 {
@@ -39,7 +40,7 @@ class InvoiceController extends Controller
             'invoice_info' => [
                 'invoice_no' => 'INV-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
                 'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
-                'invoice_date' => $booking->created_at->format('M d, Y'),
+                'invoice_date' => now()->format('M d, Y'),
             ],
 
             'merchant_info' => [
@@ -168,8 +169,14 @@ class InvoiceController extends Controller
                 'message' => 'Payment not found',
             ], 404);
         }
-
+        $adminUser = Auth::user();
         $invoice = [
+
+            'admin_info' => [
+                'email' => $adminUser->email ?? null,
+                'phone' => $adminUser->phone ?? null,
+                'address' => $adminUser->address ?? null,
+            ],
 
             'invoice_info' => [
                 'invoice_no' => 'INV-' . str_pad($payment->id, 6, '0', STR_PAD_LEFT),
