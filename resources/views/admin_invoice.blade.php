@@ -94,20 +94,20 @@
             <tr>
 
                 <td>
+                    @php
+                        $path = public_path('admin/bokli1.png');
+                        $type = pathinfo($path, PATHINFO_EXTENSION);
+                        $data = file_get_contents($path);
+                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                    @endphp
 
-                    @if (data_get($invoice, 'merchant_info.business_logo'))
-                        <img src="{{ public_path(data_get($invoice, 'merchant_info.business_logo', '')) }}" class="logo">
-                    @endif
-
-                    <h2>{{ data_get($invoice, 'merchant_info.business_name', '') }}</h2>
-
+                    <img src="{{ $base64 }}" class="logo">
                     <p>
-                        Merchant: {{ data_get($invoice, 'merchant_info.merchant_name', '') }} <br>
-                        Email: {{ data_get($invoice, 'merchant_info.email', '') }} <br>
-                        Phone: {{ data_get($invoice, 'merchant_info.phone', '') }} <br>
-                        {{ data_get($invoice, 'merchant_info.business_address', '') }}
-                    </p>
+                        Phone: {{ data_get($invoice, 'admin_info.phone', '') }} <br>
+                        Email: {{ data_get($invoice, 'admin_info.email', '') }} <br>
+                        Address: {{ data_get($invoice, 'admin_info.address', '') }}
 
+                    </p>
                 </td>
 
                 <td class="invoice-title">
@@ -126,6 +126,17 @@
         </table>
 
     </div>
+
+
+    <div class="section-title">Bill To</div>
+
+    <p>
+        <strong>{{ data_get($invoice, 'merchant_info.business_name', '') }}</strong><br>
+        Merchant: {{ data_get($invoice, 'merchant_info.merchant_name', '') }} <br>
+        Email: {{ data_get($invoice, 'merchant_info.email', '') }} <br>
+        Phone: {{ data_get($invoice, 'merchant_info.phone', '') }} <br>
+        Address: {{ data_get($invoice, 'merchant_info.business_address', '') }}
+    </p>
 
 
     <div class="section-title">Subscription Details</div>

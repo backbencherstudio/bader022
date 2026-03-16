@@ -112,6 +112,7 @@ class PlanController extends Controller
             'package' => 'sometimes|required|in:Free,Monthly,Annual',
             'features' => 'nullable|array',
             'features.*' => 'string',
+            'status' => 'nullable|boolean',
 
         ]);
 
@@ -128,7 +129,7 @@ class PlanController extends Controller
             'currency',
             'package',
             'features',
-
+            'status',
         ]));
 
 

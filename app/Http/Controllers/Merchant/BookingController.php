@@ -90,6 +90,9 @@ class BookingController extends Controller
 
         if ($payment) {
             $payment->payment_status = $request->payment_status;
+            if ($request->payment_status === 'paid') {
+                $payment->paid_at = now();
+            }
             $payment->save();
         }
 
@@ -289,7 +292,7 @@ class BookingController extends Controller
                 'email'          => $request->email,
                 'phone'          => $request->phone,
                 'date_time'      => $slotStart,
-                'status'         => 'pending',
+                'status'         => 'confirm',
                 'special_note'   => $request->special_note,
                 'booking_by'     => 'merchant',
             ]);
@@ -302,7 +305,8 @@ class BookingController extends Controller
                 'transaction_id' => $request->payment_method === 'cash'
                     ? 'cash-' . uniqid()
                     : null,
-                'payment_status' => 'due',
+                'payment_status' => 'paid',
+                'paid_at' => now(),
             ]);
 
             if ($request->payment_method === 'tap') {
@@ -1224,7 +1228,6 @@ class BookingController extends Controller
 
                 $booking = Booking::with(['service', 'staff', 'merchantPayment'])
                     ->find($bookingId);
-                    
             } else {
 
                 $payment->update([
