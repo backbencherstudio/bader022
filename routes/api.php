@@ -269,6 +269,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
     Route::prefix('tap-payment')->group(function () {
         Route::post('upsert', [TapPaymentController::class, 'upsert'])->name('tap-payment.upsert');
+        Route::get('show', [TapPaymentController::class, 'show'])->name('tap-payment.show');
     });
 
  });
