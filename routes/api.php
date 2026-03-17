@@ -166,7 +166,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show/{id}', [ServicesController::class, 'show'])->name('service.show');
         Route::put('update/{id}', [ServicesController::class, 'update'])->name('service.update');
         Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
-        Route::get('userindex/{id}', [ServicesController::class, 'userindex'])->name('service.userindex');
+        Route::get('userindex', [ServicesController::class, 'userindex'])->name('service.userindex');
     });
 
     // ----- Merchant/Staff
@@ -203,6 +203,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('index', [BookingController::class, 'index'])->name('booking.index');
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
         Route::get('booking-invoice/{id}', [BookingController::class, 'bookingInvoice'])->name('booking.bookingInvoice');
+        Route::get('invoice-by-merchant/{id}', [InvoiceController::class, 'invoiceBymerchant'])->name('booking.invoiceBymerchant');
         Route::get('show/{id}', [BookingController::class, 'show'])->name('booking.show');
         Route::post('update/{id}', [BookingController::class, 'update'])->name('booking.update');
         Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
@@ -269,6 +270,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
     Route::prefix('tap-payment')->group(function () {
         Route::post('upsert', [TapPaymentController::class, 'upsert'])->name('tap-payment.upsert');
+        Route::get('show', [TapPaymentController::class, 'show'])->name('tap-payment.show');
     });
 
  });

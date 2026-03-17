@@ -40,4 +40,28 @@ class TapPaymentController extends Controller
             'data' => $tapPayment
         ]);
     }
+
+    public function show()
+    {
+        $user = auth()->user();
+
+        if ($user->type != 2) {
+            return response()->json([
+                'message' => 'Only merchants can view Tap payment settings.'
+            ], 403);
+        }
+
+        $tapPayment = TapPayment::where('user_id', $user->id)->first();
+
+        if (!$tapPayment) {
+            return response()->json([
+                'message' => 'Tap payment settings not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Tap payment settings retrieved successfully.',
+            'data' => $tapPayment
+        ]);
+    }
 }
