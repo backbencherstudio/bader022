@@ -165,18 +165,10 @@ class ServicesController extends Controller
         ], 200);
     }
 
-    public function userindex(Request $request, $id)
+    public function userindex(Request $request)
     {
-        $user = User::find($id);
 
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User not found',
-            ], 404);
-        }
-
-        $query = Service::where('user_id', $id);
+        $query = Service::query();
 
         if ($request->filled('service_name')) {
             $query->where('service_name', 'like', '%' . $request->service_name . '%');
