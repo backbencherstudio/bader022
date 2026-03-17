@@ -13,6 +13,7 @@ class ServicesController extends Controller
     {
 
         $query = Service::where('user_id', auth()->id());
+        // $query = Service::where('user_id', auth()->id());
 
         if ($request->filled('service_name')) {
             $query->where('service_name', 'like', '%' . $request->service_name . '%');
