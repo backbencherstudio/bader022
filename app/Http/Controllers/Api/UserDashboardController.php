@@ -62,13 +62,14 @@ class UserDashboardController extends Controller
             'booking_id' => $booking->id,
             'service_id' => $booking->service->id ?? null,
             'service_name' => $booking->service->service_name ?? null,
+            'staff' => $booking->staff->name ?? null,
             'status' => ucfirst($booking->status),
             'address' => $booking->service->merchant->address ?? null,
 
             'booking_date' => $bookingDateTime->format('M d, Y'),
             'booking_time' => $bookingDateTime->format('h:i A'),
 
-            'service_price' => $booking->service->price ?? null,
+            'service_price' => $booking->service->price.' SAR'?? null,
             'merchant_phone' => $booking->service->merchant->phone ?? null,
         ];
 
