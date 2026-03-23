@@ -16,6 +16,7 @@ return [
         'http://192.168.7.82:3000',
         'http://localhost:3000',
         'http://192.168.7.102:3000',
+        'https://bader022-front-end.vercel.app',
 
     ],
 
