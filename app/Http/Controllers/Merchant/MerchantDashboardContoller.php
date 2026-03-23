@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Merchant;
 
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\{Booking, MerchantPayment};
+use App\Models\{Booking, MerchantPayment, Subscription};
 use Carbon\Carbon;
 
 class MerchantDashboardContoller extends Controller
@@ -16,6 +16,15 @@ class MerchantDashboardContoller extends Controller
         if ($user->type != 2) {
             return response()->json([
                 'message' => 'Unauthorized access',
+            ], 403);
+        }
+
+        // Check subscription
+        $subscription = Subscription::where('user_id', $user->id)->latest()->first();
+
+        if (! $subscription || $subscription->status == 'expired') {
+            return response()->json([
+                'message' => 'Subscription expired. Please renew your plan.',
             ], 403);
         }
 
