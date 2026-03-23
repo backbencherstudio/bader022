@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB, Hash, Http, Mail, Validator};
-use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
-use App\Models\{Payment, Plan, Subscription, User};
+use App\Models\Payment;
+use App\Models\Plan;
+use App\Models\Subscription;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -23,6 +31,45 @@ class AuthController extends Controller
         ]);
     }
 
+    // public function login(Request $request)
+    // {
+    //     $credentials = $request->only('email', 'password');
+
+    //     if (! $token = Auth::guard('api')->attempt($credentials)) {
+    //         return response()->json(['error' => 'Invalid credentials'], 401);
+    //     }
+
+    //     $user = Auth::guard('api')->user();
+    //     if ($user->type == 0) {
+    //         $role = 'User';
+    //     } elseif ($user->type == 1) {
+    //         $role = 'Admin';
+    //     } elseif ($user->type == 2) {
+    //         $role = 'Merchant';
+    //     } else {
+    //         return response()->json(['error' => 'Invalid user type'], 403);
+    //     }
+
+    //     if ($user->jwt_token) {
+    //         try {
+    //             JWTAuth::setToken($user->jwt_token)->invalidate();
+    //         } catch (\Exception $e) {
+    //         }
+    //     }
+
+    //     $user->update(['jwt_token' => $token]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => $role.' login successfully',
+    //         'data' => [
+    //             'user' => $user,
+    //             'user_type' => $role,
+    //         ],
+    //         'token' => $token,
+    //     ]);
+    // }
+
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
@@ -32,6 +79,18 @@ class AuthController extends Controller
         }
 
         $user = Auth::guard('api')->user();
+
+        if ($user->type == 2) {
+            $subscription = $user->subscription; // assuming you have a relation: User hasOne Subscription
+
+            if (! $subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+                return response()->json([
+                    'error' => 'Your subscription has expired. Please renew to login.',
+                ], 403);
+            }
+        }
+
+        // Determine user role
         if ($user->type == 0) {
             $role = 'User';
         } elseif ($user->type == 1) {
@@ -49,6 +108,7 @@ class AuthController extends Controller
             }
         }
 
+        // Save new token
         $user->update(['jwt_token' => $token]);
 
         return response()->json([
@@ -351,7 +411,7 @@ class AuthController extends Controller
         }
 
         return response()->json(['status' => false, 'message' => 'Payment failed or cancelled']);
-    } 
+    }
 
     public function getStoreDetails($subdomain)
     {
