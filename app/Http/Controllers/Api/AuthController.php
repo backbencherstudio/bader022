@@ -193,7 +193,6 @@ class AuthController extends Controller
             return response()->json(['status' => false, 'message' => 'This subdomain is already taken.'], 422);
         }
 
-        // --- CASE 1: FREE PLAN (ID = 1) ---
         if ($plan->id == 1) {
             DB::beginTransaction();
             try {
@@ -241,7 +240,7 @@ class AuthController extends Controller
             }
         }
 
-        // --- CASE 2: PAID PLAN (ID = 2, 3) ---
+
         $tapSetting = DB::table('settings')->latest()->first();
         if (! $tapSetting || ! $tapSetting->tap_secret_key) {
             return response()->json(['success' => false, 'message' => 'Payment config missing'], 422);
