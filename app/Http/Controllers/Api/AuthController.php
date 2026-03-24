@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Mail\PaymentCompletedMail;
 
 class AuthController extends Controller
 {
@@ -451,44 +452,14 @@ class AuthController extends Controller
 
                 Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/create-account?user_id=' . $merchant->id;
-
-                return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $merchant->id;
-
-                return redirect()->away($frontendUrl);
+                return response()->json(['status' => false, 'message' => 'Error saving data'], 500);
             }
         }
 
-        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $chargeId;
-
-        return redirect()->away($frontendUrl);
-    }
-
-
-    public function getPaymentStatus($user_id)
-    {
-        $user = User::find($user_id);
-
-        if (! $user) {
-            return response()->json(['status' => false, 'message' => 'User not found'], 404);
-        }
-
-        $payment = Payment::where('user_id', $user_id)
-            ->latest()
-            ->first();
-
-        if (! $payment) {
-            return response()->json(['status' => false, 'message' => 'No payment found for this user'], 404);
-        }
-
-        return response()->json([
-            'status' => true,
-            'data' => $payment,
-        ]);
+        return response()->json(['status' => false, 'message' => 'Payment failed or cancelled']);
     }
 
     public function getStoreDetails($subdomain)
