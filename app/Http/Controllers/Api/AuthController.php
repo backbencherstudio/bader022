@@ -49,8 +49,9 @@ class AuthController extends Controller
     //         return response()->json(['error' => 'Password Incorrect'], 401);
     //     }
 
-    //     if ($user->type == 2) {
-    //         $subscription = $user->subscription;
+        // Check subscription for merchants
+        if ($user->type == 2) {
+            $subscription = $user->subscription;
 
     //         if (! $subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
     //             return response()->json([
@@ -59,47 +60,7 @@ class AuthController extends Controller
     //         }
     //     }
 
-    //     if ($user->type == 0) {
-    //         $role = 'User';
-    //     } elseif ($user->type == 1) {
-    //         $role = 'Admin';
-    //     } elseif ($user->type == 2) {
-    //         $role = 'Merchant';
-    //     } else {
-    //         return response()->json(['error' => 'Invalid user type'], 403);
-    //     }
-
-    //     $token = Auth::guard('api')->login($user);
-
-    //     if ($user->jwt_token) {
-    //         try {
-    //             JWTAuth::setToken($user->jwt_token)->invalidate();
-    //         } catch (\Exception $e) {
-    //         }
-    //     }
-
-    //     $user->update(['jwt_token' => $token]);
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => $role . ' login successfully',
-    //         'data' => [
-    //             'user' => $user,
-    //             'user_type' => $role,
-    //         ],
-    //         'token' => $token,
-    //     ]);
-    // }
-
-    public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-
-        if (! $token = Auth::guard('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
-        }
-
-        $user = Auth::guard('api')->user();
+        // Determine user role
         if ($user->type == 0) {
             $role = 'User';
         } elseif ($user->type == 1) {
@@ -113,6 +74,9 @@ class AuthController extends Controller
                 'data' => null,
             ], 403);
         }
+
+        // Generate JWT token
+        $token = Auth::guard('api')->login($user);
 
         if ($user->jwt_token) {
             try {
@@ -351,6 +315,7 @@ class AuthController extends Controller
             }
         }
 
+        // --- CASE 2: PAID PLAN (ID = 2, 3) ---
         $tapSetting = DB::table('settings')->latest()->first();
         if (! $tapSetting || ! $tapSetting->tap_secret_key) {
             return response()->json(['success' => false, 'message' => 'Payment config missing'], 422);
@@ -397,7 +362,7 @@ class AuthController extends Controller
     }
 
 
-    
+
 
     public function tapSuccessregister(Request $request)
     {
