@@ -61,32 +61,37 @@ class GlobalsettingController extends Controller
             'turn_off' => 'nullable|boolean',
         ]);
 
+        // Handle branding logo upload
+    if ($request->hasFile('branding_logo')) {
+        $file = $request->file('branding_logo');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $destinationPath = public_path('branding_logos');
 
-        if ($request->hasFile('branding_logo')) {
-            $file = $request->file('branding_logo');
-            $filename = time().'_'.$file->getClientOriginalName();
-            $destinationPath = public_path('branding_logos');
-
-            if (! file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-            $file->move($destinationPath, $filename);
-
-            $validated['branding_logo'] = url('branding_logos/'.$filename);
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
         }
 
-        $exists = GlobalSetting::where('user_id', $user->id)->exists();
-        $branding = GlobalSetting::updateOrCreate(
-            ['user_id' => $user->id],
-            $validated
-        );
+        $file->move($destinationPath, $filename);
 
-        $message = $exists ? 'Global settings updated successfully.' : 'Global settings created successfully.';
+        // Store relative path in DB
+        $validated['branding_logo'] = 'branding_logos/' . $filename;
+    }
 
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-            'data' => $branding,
-        ]);
+    $exists = GlobalSetting::where('user_id', $user->id)->exists();
+
+    $branding = GlobalSetting::updateOrCreate(
+        ['user_id' => $user->id],
+        $validated
+    );
+
+    $message = $exists
+        ? 'Global settings updated successfully.'
+        : 'Global settings created successfully.';
+
+    return response()->json([
+        'success' => true,
+        'message' => $message,
+        'data' => $branding,
+    ]);
     }
 }

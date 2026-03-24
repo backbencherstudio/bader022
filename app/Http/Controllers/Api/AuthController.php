@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Payment, Plan, Subscription, User};
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Mail\PaymentCompletedMail;
 
 class AuthController extends Controller
 {
@@ -25,13 +26,31 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $email = $request->email;
+        $password = $request->password;
 
-        if (! $token = Auth::guard('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+        $user = User::where('email', $email)->first();
+
+        if (! $user) {
+            return response()->json(['error' => 'Email Incorrect'], 401);
         }
 
-        $user = Auth::guard('api')->user();
+        if (! Hash::check($password, $user->password)) {
+            return response()->json(['error' => 'Password Incorrect'], 401);
+        }
+
+        // Check subscription for merchants
+        if ($user->type == 2) {
+            $subscription = $user->subscription;
+
+            if (! $subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+                return response()->json([
+                    'error' => 'Your subscription has expired. Please renew to login.',
+                ], 403);
+            }
+        }
+
+        // Determine user role
         if ($user->type == 0) {
             $role = 'User';
         } elseif ($user->type == 1) {
@@ -41,6 +60,9 @@ class AuthController extends Controller
         } else {
             return response()->json(['error' => 'Invalid user type'], 403);
         }
+
+        // Generate JWT token
+        $token = Auth::guard('api')->login($user);
 
         if ($user->jwt_token) {
             try {
@@ -53,7 +75,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => $role.' login successfully',
+            'message' => $role . ' login successfully',
             'data' => [
                 'user' => $user,
                 'user_type' => $role,
@@ -83,10 +105,10 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
 
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -138,9 +160,9 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -233,7 +255,6 @@ class AuthController extends Controller
                 $token = auth('api')->login($merchant);
 
                 return response()->json(['success' => true, 'message' => 'Register is successfull', 'token' => $token], 201);
-
             } catch (\Exception $e) {
                 DB::rollBack();
 
@@ -248,7 +269,7 @@ class AuthController extends Controller
         }
 
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
             'Content-Type' => 'application/json',
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
@@ -290,11 +311,11 @@ class AuthController extends Controller
 
     public function tapSuccessregister(Request $request)
     {
-        $chargeId = $request->tap_id; // Tap provides charge ID in query string
+        $chargeId = $request->tap_id;
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/$chargeId");
 
         $data = $response->json();
@@ -341,8 +362,11 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                return response()->json(['status' => true, 'message' => 'Registration Successful']);
+                Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
 
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/create-account?user_id=" . $merchant->id;
+
+                return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
@@ -404,8 +428,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
             // 'role' => 'required|exists:roles,id',
@@ -424,9 +448,9 @@ class AuthController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $user->image = 'user/'.$imageName;
+            $user->image = 'user/' . $imageName;
         }
 
         $user->name = $request->name;
@@ -725,8 +749,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'address' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -761,11 +785,11 @@ class AuthController extends Controller
                 unlink(public_path($user->image));
             }
 
-            $imageName = time().'_'.$request->image->getClientOriginalName();
+            $imageName = time() . '_' . $request->image->getClientOriginalName();
 
             $request->image->move(public_path('uploads/users'), $imageName);
 
-            $data['image'] = 'uploads/users/'.$imageName;
+            $data['image'] = 'uploads/users/' . $imageName;
         }
 
         if (! empty($data)) {
@@ -778,102 +802,4 @@ class AuthController extends Controller
             'data' => $user->fresh()->only(['name', 'image', 'phone', 'address', 'email']),
         ], 200);
     }
-
-
-    public function renew(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'plan_id' => 'required|exists:plans,id',
-        'email'   => 'required|email|exists:users,email', // <-- add email validation
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
-    }
-
-    // --- Find user by email instead of auth ---
-    $user = User::where('email', $request->email)->first();
-
-    if (!$user) {
-        return response()->json(['status' => false, 'message' => 'User not found'], 404);
-    }
-
-    $plan = Plan::find($request->plan_id);
-
-    // --- CASE 1: FREE PLAN ---
-    if ($plan->id == 1) {
-        DB::beginTransaction();
-        try {
-            $subscription = Subscription::updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'plan_id' => $plan->id,
-                    'starts_at' => now(),
-                    'ends_at' => now()->addDays(7),
-                    'status' => 'active',
-                    'auto_renew' => 0,
-                ]
-            );
-
-            Payment::create([
-                'user_id' => $user->id,
-                'subscription_id' => $subscription->id,
-                'amount' => 0,
-                'currency' => 'SAR',
-                'payment_method' => 'free',
-                'transaction_id' => Str::uuid(),
-                'status' => 'paid',
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Subscription renewed successfully',
-                'subscription' => $subscription
-            ], 200);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-        }
-    }
-
-    // --- CASE 2: PAID PLAN ---
-    $tapSetting = DB::table('settings')->latest()->first();
-    if (!$tapSetting || !$tapSetting->tap_secret_key) {
-        return response()->json(['success' => false, 'message' => 'Payment config missing'], 422);
-    }
-
-    $tapResponse = Http::withHeaders([
-        'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
-        'Content-Type' => 'application/json',
-    ])->post('https://api.tap.company/v2/charges', [
-        'amount' => $plan->price,
-        'currency' => 'SAR',
-        'customer' => [
-            'first_name' => $user->name,
-            'email' => $user->email,
-            'phone' => ['country_code' => '966', 'number' => $user->phone],
-        ],
-        'source' => ['id' => 'src_all'],
-        'redirect' => [
-            'url' => url('/api/tap-renew-success'),
-        ],
-        'metadata' => [
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-        ],
-    ]);
-
-    if ($tapResponse->failed()) {
-        return response()->json(['success' => false, 'message' => 'Payment creation failed'], 500);
-    }
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Redirect to payment',
-        'tap_payment_url' => $tapResponse->json()['transaction']['url'],
-    ], 201);
-}
 }
