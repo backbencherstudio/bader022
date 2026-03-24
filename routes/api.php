@@ -303,7 +303,7 @@ Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->na
 Route::get('/payment/callback', [BookingController::class, 'paymentCallback'])->name('payment.callback');
 Route::get('/tap-successregister', [AuthController::class, 'tapSuccessregister'])->name('tap-successregister');
 
-//redirect to frontend
+//redirect to frontend url
 Route::get('/create-account', [AuthController::class, 'tapSuccessregister']);
 Route::get('/payment-status/{user_id}', [AuthController::class, 'getPaymentStatus']);
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
