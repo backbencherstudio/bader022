@@ -3698,6 +3698,7 @@ return array(
     'PHPUnit\\Event\\Code\\ClassMethod' => $vendorDir . '/phpunit/phpunit/src/Event/Value/ClassMethod.php',
     'PHPUnit\\Event\\Code\\ComparisonFailure' => $vendorDir . '/phpunit/phpunit/src/Event/Value/ComparisonFailure.php',
     'PHPUnit\\Event\\Code\\ComparisonFailureBuilder' => $vendorDir . '/phpunit/phpunit/src/Event/Value/ComparisonFailureBuilder.php',
+    'PHPUnit\\Event\\Code\\IssueTrigger\\Code' => $vendorDir . '/phpunit/phpunit/src/Event/Value/Test/Issue/Code.php',
     'PHPUnit\\Event\\Code\\IssueTrigger\\IssueTrigger' => $vendorDir . '/phpunit/phpunit/src/Event/Value/Test/Issue/IssueTrigger.php',
     'PHPUnit\\Event\\Code\\NoTestCaseObjectOnCallStackException' => $vendorDir . '/phpunit/phpunit/src/Event/Exception/NoTestCaseObjectOnCallStackException.php',
     'PHPUnit\\Event\\Code\\Phpt' => $vendorDir . '/phpunit/phpunit/src/Event/Value/Test/Phpt.php',
