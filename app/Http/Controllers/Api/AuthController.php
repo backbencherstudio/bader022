@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Payment, Plan, Subscription, User};
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Mail\PaymentCompletedMail;
 
 class AuthController extends Controller
 {
@@ -53,7 +54,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => $role.' login successfully',
+            'message' => $role . ' login successfully',
             'data' => [
                 'user' => $user,
                 'user_type' => $role,
@@ -83,10 +84,10 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
 
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -138,9 +139,9 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -233,7 +234,6 @@ class AuthController extends Controller
                 $token = auth('api')->login($merchant);
 
                 return response()->json(['success' => true, 'message' => 'Register is successfull', 'token' => $token], 201);
-
             } catch (\Exception $e) {
                 DB::rollBack();
 
@@ -248,7 +248,7 @@ class AuthController extends Controller
         }
 
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
             'Content-Type' => 'application/json',
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
@@ -290,11 +290,11 @@ class AuthController extends Controller
 
     public function tapSuccessregister(Request $request)
     {
-        $chargeId = $request->tap_id; // Tap provides charge ID in query string
+        $chargeId = $request->tap_id;
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/$chargeId");
 
         $data = $response->json();
@@ -341,17 +341,45 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                return response()->json(['status' => true, 'message' => 'Registration Successful']);
+                Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
 
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/create-account?user_id=" . $merchant->id;
+
+                return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                return response()->json(['status' => false, 'message' => 'Error saving data'], 500);
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/registration-failed?user_id=" . $merchant->id;
+
+                return redirect()->away($frontendUrl);
             }
         }
 
-        return response()->json(['status' => false, 'message' => 'Payment failed or cancelled']);
-    } 
+        $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/registration-failed?user_id=" . $chargeId;
+        return redirect()->away($frontendUrl);
+    }
+
+    public function getPaymentStatus($user_id)
+    {
+        $user = User::find($user_id);
+
+        if (!$user) {
+            return response()->json(['status' => false, 'message' => 'User not found'], 404);
+        }
+
+        $payment = Payment::where('user_id', $user_id)
+            ->latest()
+            ->first();
+
+        if (!$payment) {
+            return response()->json(['status' => false, 'message' => 'No payment found for this user'], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $payment,
+        ]);
+    }
 
     public function getStoreDetails($subdomain)
     {
@@ -404,8 +432,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
             // 'role' => 'required|exists:roles,id',
@@ -424,9 +452,9 @@ class AuthController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $user->image = 'user/'.$imageName;
+            $user->image = 'user/' . $imageName;
         }
 
         $user->name = $request->name;
@@ -725,8 +753,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'address' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -761,11 +789,11 @@ class AuthController extends Controller
                 unlink(public_path($user->image));
             }
 
-            $imageName = time().'_'.$request->image->getClientOriginalName();
+            $imageName = time() . '_' . $request->image->getClientOriginalName();
 
             $request->image->move(public_path('uploads/users'), $imageName);
 
-            $data['image'] = 'uploads/users/'.$imageName;
+            $data['image'] = 'uploads/users/' . $imageName;
         }
 
         if (! empty($data)) {
