@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Payment, Plan, Subscription, User};
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Mail\PaymentCompletedMail;
 
 class AuthController extends Controller
 {
@@ -287,13 +288,78 @@ class AuthController extends Controller
         ], 201);
     }
 
+    // public function tapSuccessregister(Request $request)
+    // {
+    //     $chargeId = $request->tap_id; // Tap provides charge ID in query string
+    //     $tapSetting = DB::table('settings')->latest()->first();
+
+    //     $response = Http::withHeaders([
+    //         'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+    //     ])->get("https://api.tap.company/v2/charges/$chargeId");
+
+    //     $data = $response->json();
+
+    //     if ($data['status'] === 'CAPTURED') {
+    //         $meta = $data['metadata'];
+
+    //         DB::beginTransaction();
+    //         try {
+
+    //             $merchant = User::create([
+    //                 'name' => $meta['udf1'],
+    //                 'email' => $meta['udf2'],
+    //                 'phone' => $meta['udf3'],
+    //                 'type' => 2,
+    //                 'password' => Hash::make($meta['udf4']),
+    //                 'business_name' => $meta['business_name'],
+    //                 'business_category' => $meta['business_category'],
+    //                 'website_domain' => $meta['subdomain'],
+    //                 'address' => $meta['address'] ?? null,
+    //                 'number_of_branches' => $meta['branches'] ?? null,
+    //             ]);
+
+    //             $endDate = ($meta['plan_id'] == 2) ? now()->addMonth() : now()->addYear();
+
+    //             $subscription = Subscription::create([
+    //                 'user_id' => $merchant->id,
+    //                 'plan_id' => $meta['plan_id'],
+    //                 'starts_at' => now(),
+    //                 'ends_at' => $endDate,
+    //                 'status' => 'active',
+    //                 'auto_renew' => 0,
+    //             ]);
+
+    //             Payment::create([
+    //                 'user_id' => $merchant->id,
+    //                 'subscription_id' => $subscription->id,
+    //                 'amount' => $data['amount'],
+    //                 'currency' => 'SAR',
+    //                 'payment_method' => 'tap',
+    //                 'transaction_id' => $chargeId,
+    //                 'status' => 'paid',
+    //             ]);
+
+    //             DB::commit();
+
+    //             return response()->json(['status' => true, 'message' => 'Registration Successful']);
+
+    //         } catch (\Exception $e) {
+    //             DB::rollBack();
+
+    //             return response()->json(['status' => false, 'message' => 'Error saving data'], 500);
+    //         }
+    //     }
+
+    //     return response()->json(['status' => false, 'message' => 'Payment failed or cancelled']);
+    // }
+
     public function tapSuccessregister(Request $request)
     {
-        $chargeId = $request->tap_id; // Tap provides charge ID in query string
+        $chargeId = $request->tap_id;
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/$chargeId");
 
         $data = $response->json();
@@ -340,16 +406,44 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                return response()->json(['status' => true, 'message' => 'Registration Successful']);
+                Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
 
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/create-account?user_id=" . $merchant->id;
+
+                return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                return response()->json(['status' => false, 'message' => 'Error saving data'], 500);
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/registration-failed?user_id=" . $merchant->id;
+
+                return redirect()->away($frontendUrl);
             }
         }
 
-        return response()->json(['status' => false, 'message' => 'Payment failed or cancelled']);
+        $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/registration-failed?user_id=" . $chargeId;
+        return redirect()->away($frontendUrl);
+    }
+
+    public function getPaymentStatus($user_id)
+    {
+        $user = User::find($user_id);
+
+        if (!$user) {
+            return response()->json(['status' => false, 'message' => 'User not found'], 404);
+        }
+
+        $payment = Payment::where('user_id', $user_id)
+            ->latest()
+            ->first();
+
+        if (!$payment) {
+            return response()->json(['status' => false, 'message' => 'No payment found for this user'], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $payment,
+        ]);
     }
 
     public function getStoreDetails($subdomain)
