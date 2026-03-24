@@ -41,6 +41,7 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
+Route::post('/renew', [SubscriptionController::class, 'renew'])->name('subscription.renew');
 
 // google login api
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);

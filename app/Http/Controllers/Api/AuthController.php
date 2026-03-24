@@ -799,4 +799,9 @@ class AuthController extends Controller
             'data' => $user->fresh()->only(['name', 'image', 'phone', 'address', 'email']),
         ], 200);
     }
+
+
+
+
+
 }
