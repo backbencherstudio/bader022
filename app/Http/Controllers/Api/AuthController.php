@@ -9,8 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Models\{Payment, Plan, Subscription, User};
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\Mail\PaymentCompletedMail;
-use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -495,11 +493,8 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
+                return response()->json(['status' => true, 'message' => 'Registration Successful']);
 
-                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/create-account?user_id=" . $merchant->id;
-
-                return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
