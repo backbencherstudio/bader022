@@ -39,7 +39,6 @@ class AuthController extends Controller
             return response()->json(['error' => 'Password Incorrect'], 401);
         }
 
-        // Check subscription for merchants
         if ($user->type == 2) {
             $subscription = $user->subscription;
 
@@ -50,7 +49,6 @@ class AuthController extends Controller
             }
         }
 
-        // Determine user role
         if ($user->type == 0) {
             $role = 'User';
         } elseif ($user->type == 1) {
@@ -61,7 +59,6 @@ class AuthController extends Controller
             return response()->json(['error' => 'Invalid user type'], 403);
         }
 
-        // Generate JWT token
         $token = Auth::guard('api')->login($user);
 
         if ($user->jwt_token) {
@@ -215,7 +212,6 @@ class AuthController extends Controller
             return response()->json(['status' => false, 'message' => 'This subdomain is already taken.'], 422);
         }
 
-        // --- CASE 1: FREE PLAN (ID = 1) ---
         if ($plan->id == 1) {
             DB::beginTransaction();
             try {
@@ -262,7 +258,7 @@ class AuthController extends Controller
             }
         }
 
-        // --- CASE 2: PAID PLAN (ID = 2, 3) ---
+
         $tapSetting = DB::table('settings')->latest()->first();
         if (! $tapSetting || ! $tapSetting->tap_secret_key) {
             return response()->json(['success' => false, 'message' => 'Payment config missing'], 422);
