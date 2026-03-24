@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit8aa4934c7d0098433825bea48f5aa226
+class ComposerStaticInit8466945e1a9c18c5c4fbe7c39e1c93cf
 {
     public static $files = array (
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
@@ -4421,6 +4421,7 @@ class ComposerStaticInit8aa4934c7d0098433825bea48f5aa226
         'PHPUnit\\Event\\Code\\ClassMethod' => __DIR__ . '/..' . '/phpunit/phpunit/src/Event/Value/ClassMethod.php',
         'PHPUnit\\Event\\Code\\ComparisonFailure' => __DIR__ . '/..' . '/phpunit/phpunit/src/Event/Value/ComparisonFailure.php',
         'PHPUnit\\Event\\Code\\ComparisonFailureBuilder' => __DIR__ . '/..' . '/phpunit/phpunit/src/Event/Value/ComparisonFailureBuilder.php',
+        'PHPUnit\\Event\\Code\\IssueTrigger\\Code' => __DIR__ . '/..' . '/phpunit/phpunit/src/Event/Value/Test/Issue/Code.php',
         'PHPUnit\\Event\\Code\\IssueTrigger\\IssueTrigger' => __DIR__ . '/..' . '/phpunit/phpunit/src/Event/Value/Test/Issue/IssueTrigger.php',
         'PHPUnit\\Event\\Code\\NoTestCaseObjectOnCallStackException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Event/Exception/NoTestCaseObjectOnCallStackException.php',
         'PHPUnit\\Event\\Code\\Phpt' => __DIR__ . '/..' . '/phpunit/phpunit/src/Event/Value/Test/Phpt.php',
@@ -8679,9 +8680,9 @@ class ComposerStaticInit8aa4934c7d0098433825bea48f5aa226
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit8aa4934c7d0098433825bea48f5aa226::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit8aa4934c7d0098433825bea48f5aa226::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit8aa4934c7d0098433825bea48f5aa226::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit8466945e1a9c18c5c4fbe7c39e1c93cf::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit8466945e1a9c18c5c4fbe7c39e1c93cf::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit8466945e1a9c18c5c4fbe7c39e1c93cf::$classMap;
 
         }, null, ClassLoader::class);
     }
