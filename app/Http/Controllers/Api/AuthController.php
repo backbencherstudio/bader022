@@ -351,7 +351,7 @@ class AuthController extends Controller
         }
 
         return response()->json(['status' => false, 'message' => 'Payment failed or cancelled']);
-    } 
+    }
 
     public function getStoreDetails($subdomain)
     {
@@ -778,4 +778,102 @@ class AuthController extends Controller
             'data' => $user->fresh()->only(['name', 'image', 'phone', 'address', 'email']),
         ], 200);
     }
+
+
+    public function renew(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'plan_id' => 'required|exists:plans,id',
+        'email'   => 'required|email|exists:users,email', // <-- add email validation
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
+    }
+
+    // --- Find user by email instead of auth ---
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
+        return response()->json(['status' => false, 'message' => 'User not found'], 404);
+    }
+
+    $plan = Plan::find($request->plan_id);
+
+    // --- CASE 1: FREE PLAN ---
+    if ($plan->id == 1) {
+        DB::beginTransaction();
+        try {
+            $subscription = Subscription::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'plan_id' => $plan->id,
+                    'starts_at' => now(),
+                    'ends_at' => now()->addDays(7),
+                    'status' => 'active',
+                    'auto_renew' => 0,
+                ]
+            );
+
+            Payment::create([
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'amount' => 0,
+                'currency' => 'SAR',
+                'payment_method' => 'free',
+                'transaction_id' => Str::uuid(),
+                'status' => 'paid',
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Subscription renewed successfully',
+                'subscription' => $subscription
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // --- CASE 2: PAID PLAN ---
+    $tapSetting = DB::table('settings')->latest()->first();
+    if (!$tapSetting || !$tapSetting->tap_secret_key) {
+        return response()->json(['success' => false, 'message' => 'Payment config missing'], 422);
+    }
+
+    $tapResponse = Http::withHeaders([
+        'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+        'Content-Type' => 'application/json',
+    ])->post('https://api.tap.company/v2/charges', [
+        'amount' => $plan->price,
+        'currency' => 'SAR',
+        'customer' => [
+            'first_name' => $user->name,
+            'email' => $user->email,
+            'phone' => ['country_code' => '966', 'number' => $user->phone],
+        ],
+        'source' => ['id' => 'src_all'],
+        'redirect' => [
+            'url' => url('/api/tap-renew-success'),
+        ],
+        'metadata' => [
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+        ],
+    ]);
+
+    if ($tapResponse->failed()) {
+        return response()->json(['success' => false, 'message' => 'Payment creation failed'], 500);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Redirect to payment',
+        'tap_payment_url' => $tapResponse->json()['transaction']['url'],
+    ], 201);
+}
 }
