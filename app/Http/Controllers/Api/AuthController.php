@@ -102,10 +102,10 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
 
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -157,9 +157,9 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -251,7 +251,6 @@ class AuthController extends Controller
                 $token = auth('api')->login($merchant);
 
                 return response()->json(['success' => true, 'message' => 'Register is successfull', 'token' => $token], 201);
-
             } catch (\Exception $e) {
                 DB::rollBack();
 
@@ -266,7 +265,7 @@ class AuthController extends Controller
         }
 
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
             'Content-Type' => 'application/json',
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
@@ -515,8 +514,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
             // 'role' => 'required|exists:roles,id',
@@ -535,9 +534,9 @@ class AuthController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $user->image = 'user/'.$imageName;
+            $user->image = 'user/' . $imageName;
         }
 
         $user->name = $request->name;
@@ -836,8 +835,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'address' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -872,11 +871,11 @@ class AuthController extends Controller
                 unlink(public_path($user->image));
             }
 
-            $imageName = time().'_'.$request->image->getClientOriginalName();
+            $imageName = time() . '_' . $request->image->getClientOriginalName();
 
             $request->image->move(public_path('uploads/users'), $imageName);
 
-            $data['image'] = 'uploads/users/'.$imageName;
+            $data['image'] = 'uploads/users/' . $imageName;
         }
 
         if (! empty($data)) {
@@ -893,172 +892,164 @@ class AuthController extends Controller
 
     public function renew(Request $request)
     {
-    $validator = Validator::make($request->all(), [
-        'plan_id' => 'required|exists:plans,id',
-        'email'   => 'required|email|exists:users,email',
-    ]);
+        $validator = Validator::make($request->all(), [
+            'plan_id' => 'required|exists:plans,id',
+            'email'   => 'required|email|exists:users,email',
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
-    }
-
-    // --- Find user by email instead of auth ---
-    $user = User::where('email', $request->email)->first();
-
-    if (!$user) {
-        return response()->json(['status' => false, 'message' => 'User not found'], 404);
-    }
-
-    $plan = Plan::find($request->plan_id);
-
-    // --- CASE 1: FREE PLAN ---
-    if ($plan->id == 1) {
-        DB::beginTransaction();
-        try {
-            $subscription = Subscription::updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'plan_id' => $plan->id,
-                    'starts_at' => now(),
-                    'ends_at' => now()->addDays(7),
-                    'status' => 'active',
-                    'auto_renew' => 0,
-                ]
-            );
-
-            Payment::create([
-                'user_id' => $user->id,
-                'subscription_id' => $subscription->id,
-                'amount' => 0,
-                'currency' => 'SAR',
-                'payment_method' => 'free',
-                'transaction_id' => Str::uuid(),
-                'status' => 'paid',
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Subscription renewed successfully',
-                'subscription' => $subscription
-            ], 200);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
         }
-    }
 
-    // --- CASE 2: PAID PLAN ---
-    $tapSetting = DB::table('settings')->latest()->first();
-    if (!$tapSetting || !$tapSetting->tap_secret_key) {
-        return response()->json(['success' => false, 'message' => 'Payment config missing'], 422);
-    }
+        // --- Find user by email instead of auth ---
+        $user = User::where('email', $request->email)->first();
 
-    $tapResponse = Http::withHeaders([
-        'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
-        'Content-Type' => 'application/json',
-    ])->post('https://api.tap.company/v2/charges', [
-        'amount' => $plan->price,
-        'currency' => 'SAR',
-        'customer' => [
-            'first_name' => $user->name,
-            'email' => $user->email,
-            'phone' => ['country_code' => '966', 'number' => $user->phone],
-        ],
-        'source' => ['id' => 'src_all'],
-        'redirect' => [
-            'url' => url('/api/tap-renew-success'),
-        ],
-        'metadata' => [
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-        ],
-    ]);
+        if (!$user) {
+            return response()->json(['status' => false, 'message' => 'User not found'], 404);
+        }
 
-    if ($tapResponse->failed()) {
-        return response()->json(['success' => false, 'message' => 'Payment creation failed'], 500);
-    }
+        $plan = Plan::find($request->plan_id);
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Redirect to payment',
-        'tap_payment_url' => $tapResponse->json()['transaction']['url'],
-    ], 201);
+        // --- CASE 1: FREE PLAN ---
+        if ($plan->id == 1) {
+            DB::beginTransaction();
+            try {
+                $subscription = Subscription::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'plan_id' => $plan->id,
+                        'starts_at' => now(),
+                        'ends_at' => now()->addDays(7),
+                        'status' => 'active',
+                        'auto_renew' => 0,
+                    ]
+                );
+
+                Payment::create([
+                    'user_id' => $user->id,
+                    'subscription_id' => $subscription->id,
+                    'amount' => 0,
+                    'currency' => 'SAR',
+                    'payment_method' => 'free',
+                    'transaction_id' => Str::uuid(),
+                    'status' => 'paid',
+                ]);
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Subscription renewed successfully',
+                    'subscription' => $subscription
+                ], 200);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+        }
+
+        // --- CASE 2: PAID PLAN ---
+        $tapSetting = DB::table('settings')->latest()->first();
+        if (!$tapSetting || !$tapSetting->tap_secret_key) {
+            return response()->json(['success' => false, 'message' => 'Payment config missing'], 422);
+        }
+
+        $tapResponse = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+            'Content-Type' => 'application/json',
+        ])->post('https://api.tap.company/v2/charges', [
+            'amount' => $plan->price,
+            'currency' => 'SAR',
+            'customer' => [
+                'first_name' => $user->name,
+                'email' => $user->email,
+                'phone' => ['country_code' => '966', 'number' => $user->phone],
+            ],
+            'source' => ['id' => 'src_all'],
+            'redirect' => [
+                'url' => url('/api/tap-renew-success'),
+            ],
+            'metadata' => [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ],
+        ]);
+
+        if ($tapResponse->failed()) {
+            return response()->json(['success' => false, 'message' => 'Payment creation failed'], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Redirect to payment',
+            'tap_payment_url' => $tapResponse->json()['transaction']['url'],
+        ], 201);
     }
 
 
     public function tapRenewSuccess(Request $request)
-   {
-    $tap_id = $request->input('tap_id');
+    {
+        $tap_id = $request->input('tap_id');
 
-    if (!$tap_id) {
-        return response()->json(['success' => false, 'message' => 'Invalid payment ID'], 400);
-    }
-
-
-    $tapSetting = DB::table('settings')->latest()->first();
-
-
-    $response = Http::withHeaders([
-        'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
-    ])->get("https://api.tap.company/v2/charges/{$tap_id}");
-
-    $paymentData = $response->json();
-
-    if ($response->successful() && $paymentData['status'] === 'CAPTURED') {
-
-
-        $userId = $paymentData['metadata']['user_id'];
-        $planId = $paymentData['metadata']['plan_id'];
-        $plan = Plan::find($planId);
-
-        DB::beginTransaction();
-        try {
-            // 3. Update or Create Subscription
-            $subscription = Subscription::updateOrCreate(
-                ['user_id' => $userId],
-                [
-                    'plan_id'    => $planId,
-                    'starts_at'  => now(),
-                    'ends_at'    => now()->addMonths(1), // Or based on your plan duration
-                    'status'     => 'active',
-                    'auto_renew' => 1,
-                ]
-            );
-
-            // 4. Record the Payment
-            Payment::create([
-                'user_id'         => $userId,
-                'subscription_id' => $subscription->id,
-                'amount'          => $paymentData['amount'],
-                'currency'        => $paymentData['currency'],
-                'payment_method'  => 'tap',
-                'transaction_id'  => $tap_id,
-                'status'          => 'paid',
-            ]);
-
-            DB::commit();
-
-            // If this is a web redirect, you might want to redirect to a 'Success' frontend page
-            return response()->json([
-                'success' => true,
-                'message' => 'Subscription renewed successfully',
-                // 'data'    => $subscription
-            ], 200);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Internal Error: ' . $e->getMessage()], 500);
+        if (!$tap_id) {
+            return response()->json(['success' => false, 'message' => 'Invalid payment ID'], 400);
         }
+
+
+        $tapSetting = DB::table('settings')->latest()->first();
+
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+        ])->get("https://api.tap.company/v2/charges/{$tap_id}");
+
+        $paymentData = $response->json();
+
+        if ($response->successful() && $paymentData['status'] === 'CAPTURED') {
+
+
+            $userId = $paymentData['metadata']['user_id'];
+            $planId = $paymentData['metadata']['plan_id'];
+            $plan = Plan::find($planId);
+
+            DB::beginTransaction();
+            try {
+                // 3. Update or Create Subscription
+                $subscription = Subscription::updateOrCreate(
+                    ['user_id' => $userId],
+                    [
+                        'plan_id'    => $planId,
+                        'starts_at'  => now(),
+                        'ends_at'    => now()->addMonths(1), // Or based on your plan duration
+                        'status'     => 'active',
+                        'auto_renew' => 1,
+                    ]
+                );
+
+                // 4. Record the Payment
+                Payment::create([
+                    'user_id'         => $userId,
+                    'subscription_id' => $subscription->id,
+                    'amount'          => $paymentData['amount'],
+                    'currency'        => $paymentData['currency'],
+                    'payment_method'  => 'tap',
+                    'transaction_id'  => $tap_id,
+                    'status'          => 'paid',
+                ]);
+
+                DB::commit();
+
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/login";
+
+                return redirect()->away($frontendUrl);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/login";
+
+                return redirect()->away($frontendUrl);
+            }
+        }
+
+        return response()->json(['success' => false, 'message' => 'Payment verification failed or was cancelled.'], 400);
     }
-
-    return response()->json(['success' => false, 'message' => 'Payment verification failed or was cancelled.'], 400);
-   }
-
-
-
-
-
 }
