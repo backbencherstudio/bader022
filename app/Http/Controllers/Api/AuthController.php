@@ -10,6 +10,7 @@ use App\Models\{Payment, Plan, Subscription, User};
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Mail\PaymentCompletedMail;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -981,20 +982,45 @@ class AuthController extends Controller
 
         $plan = Plan::find($request->plan_id);
 
+        if (!$plan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Plan not found'
+            ], 404);
+        }
+
         // --- CASE 1: FREE PLAN ---
         if ($plan->id == 1) {
+            $alreadyUsedFree = Subscription::where('user_id', $user->id)
+                ->where('plan_id', 1)
+                ->exists();
+
+            if ($alreadyUsedFree) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You have already used the free plan'
+                ], 403);
+            }
             DB::beginTransaction();
             try {
-                $subscription = Subscription::updateOrCreate(
-                    ['user_id' => $user->id],
-                    [
-                        'plan_id' => $plan->id,
-                        'starts_at' => now(),
-                        'ends_at' => now()->addDays(7),
-                        'status' => 'active',
-                        'auto_renew' => 0,
-                    ]
-                );
+                $existingSub = Subscription::where('user_id', $user->id)->first();
+
+                $startDate = Carbon::now();
+
+                if ($existingSub && $existingSub->ends_at > Carbon::now()) {
+                    $startDate = Carbon::parse($existingSub->ends_at);
+                }
+
+                $endDate = $startDate->copy()->addDays(7);
+
+                $subscription = Subscription::create([
+                    'user_id' => $user->id,
+                    'plan_id' => $plan->id,
+                    'starts_at' => $startDate,
+                    'ends_at' => $endDate,
+                    'status' => 'active',
+                    'auto_renew' => 0,
+                ]);
 
                 Payment::create([
                     'user_id' => $user->id,
@@ -1050,10 +1076,19 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Payment creation failed'], 500);
         }
 
+        $tapData = $tapResponse->json();
+
+        if (!isset($tapData['transaction']['url'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid payment response'
+            ], 500);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Redirect to payment',
-            'tap_payment_url' => $tapResponse->json()['transaction']['url'],
+            'tap_payment_url' => $tapData['transaction']['url'],
         ], 201);
     }
 
