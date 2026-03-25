@@ -25,8 +25,11 @@ class MerchantDashboardContoller extends Controller
 
         return response()->json([
 
-            'revenue' => MerchantPayment::where('user_id', $merchantId)
+            'revenue' => (int) MerchantPayment::where('user_id', $merchantId)
                 ->where('payment_status', 'paid')
+                ->whereHas('booking', function ($query) {
+                    $query->where('status', 'complete');
+                })
                 ->sum('amount'),
 
             'total_bookings' => Booking::where('user_id', $merchantId)
@@ -46,13 +49,15 @@ class MerchantDashboardContoller extends Controller
 
     public function monthlypaymentrevenue()
     {
-
+        $user = auth()->user();
+        $merchantId = $user->id;
         $year = date('Y');
 
-        $userId = Auth::id();
-
         $revenues = MerchantPayment::where('payment_status', 'paid')
-            ->where('user_id', $userId)
+            ->where('merchant_payments.user_id', $merchantId)
+            ->whereHas('booking', function ($query) {
+                $query->where('status', 'complete');
+            })
             ->whereYear('created_at', $year)
             ->select(
                 DB::raw('MONTH(created_at) as month'),
@@ -62,9 +67,18 @@ class MerchantDashboardContoller extends Controller
             ->pluck('total_revenue', 'month');
 
         $months = [
-            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
-            5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
-            9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec',
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
+            5 => 'May',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Aug',
+            9 => 'Sep',
+            10 => 'Oct',
+            11 => 'Nov',
+            12 => 'Dec',
         ];
 
         $result = [];
@@ -81,13 +95,16 @@ class MerchantDashboardContoller extends Controller
 
     public function weeklyPaymentrevenue()
     {
+        $user = auth()->user();
+        $merchantId = $user->id;
         $year = date('Y');
         $month = date('m');
 
-        $userId = Auth::id();
-
         $revenues = MerchantPayment::where('payment_status', 'paid')
-            ->where('user_id', $userId)
+            ->where('user_id', $merchantId)
+            ->whereHas('booking', function ($query) {
+                $query->where('status', 'complete');
+            })
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->select(

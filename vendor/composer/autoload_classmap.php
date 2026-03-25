@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'App\\Console\\Commands\\SubscriptionStatusUpdate' => $baseDir . '/app/Console/Commands/SubscriptionStatusUpdate.php',
+    'App\\Console\\Commands\\UpdateBookingStatus' => $baseDir . '/app/Console/Commands/UpdateBookingStatus.php',
     'App\\Events\\TestEvent' => $baseDir . '/app/Events/TestEvent.php',
     'App\\Http\\Controllers\\Admin\\AdminSubscriptionController' => $baseDir . '/app/Http/Controllers/Admin/AdminSubscriptionController.php',
     'App\\Http\\Controllers\\Admin\\BrandController' => $baseDir . '/app/Http/Controllers/Admin/BrandController.php',

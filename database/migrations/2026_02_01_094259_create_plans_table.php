@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->enum('name', ['Basic', 'Premium', 'Enterprise']);
             $table->string('title')->nullable();
-            $table->decimal('price', 10, 2);
+            $table->decimal('price', 10, 0);
             $table->string('currency')->default('SAR');
             $table->enum('package', ['Free', 'Monthly', 'Annual']);
             $table->integer('day')->comment('Plan validity in days');
@@ -25,7 +25,7 @@ return new class extends Migration
         });
     }
 
-    
+
     public function down(): void
     {
         Schema::dropIfExists('plans');

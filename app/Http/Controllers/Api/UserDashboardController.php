@@ -24,7 +24,10 @@ class UserDashboardController extends Controller
             'service.merchant:id,name,phone,address',
         ])
             ->where('booking_by', $userId)
-            ->whereIn('status', ['confirm', 'pending', 'rescheduled'])
+            ->whereIn('status', ['confirm', 'rescheduled'])
+            ->whereHas('payment', function ($q) {
+                $q->where('payment_status', 'paid');
+            })
             ->orderBy('date_time', 'asc')
             ->get()
             ->first(function ($booking) {
@@ -69,7 +72,7 @@ class UserDashboardController extends Controller
             'booking_date' => $bookingDateTime->format('M d, Y'),
             'booking_time' => $bookingDateTime->format('h:i A'),
 
-            'service_price' => $booking->service->price.' SAR'?? null,
+            'service_price' => $booking->service->price . ' SAR' ?? null,
             'merchant_phone' => $booking->service->merchant->phone ?? null,
         ];
 
@@ -116,7 +119,7 @@ class UserDashboardController extends Controller
         $bookingIds = $bookings->pluck('id')->toArray();
 
         $payments = MerchantPayment::whereIn('booking_id', $bookingIds)
-            ->whereIn('payment_status', ['completed', 'paid'])
+            ->whereIn('payment_status', ['paid'])
             ->select('amount', 'paid_at')
             ->get();
         foreach ($payments as $payment) {
@@ -185,7 +188,7 @@ class UserDashboardController extends Controller
                 'customer' => $booking->bookedUser->name ?? null,
                 'service_name' => $booking->service->service_name ?? null,
                 'amount' => $booking->service->price ?? null,
-                'booking_date' => Carbon::parse($booking->date_time)->format('M d, Y'),
+                'booking_date' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
                 'status' => ucfirst($booking->status),
             ];
         });

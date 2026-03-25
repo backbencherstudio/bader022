@@ -730,6 +730,7 @@ class ComposerStaticInit8466945e1a9c18c5c4fbe7c39e1c93cf
 
     public static $classMap = array (
         'App\\Console\\Commands\\SubscriptionStatusUpdate' => __DIR__ . '/../..' . '/app/Console/Commands/SubscriptionStatusUpdate.php',
+        'App\\Console\\Commands\\UpdateBookingStatus' => __DIR__ . '/../..' . '/app/Console/Commands/UpdateBookingStatus.php',
         'App\\Events\\TestEvent' => __DIR__ . '/../..' . '/app/Events/TestEvent.php',
         'App\\Http\\Controllers\\Admin\\AdminSubscriptionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/AdminSubscriptionController.php',
         'App\\Http\\Controllers\\Admin\\BrandController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/BrandController.php',

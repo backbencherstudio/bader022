@@ -20,8 +20,13 @@ class Plan extends Model
     ];
 
     protected $casts = [
-        'features' => 'array',   
+        'features' => 'array',
         'status' => 'boolean',
         'price' => 'decimal:2',
     ];
+
+    public function getPriceAttribute($value)
+    {
+        return (int) $value;
+    }
 }

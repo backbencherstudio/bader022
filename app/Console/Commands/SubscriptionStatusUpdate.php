@@ -13,7 +13,7 @@ class SubscriptionStatusUpdate extends Command
 
     public function handle()
     {
-        $today = Carbon::now();
+        $today = Carbon::now('Asia/Riyadh');
 
         Subscription::where('status', 'active')
             ->where('ends_at', '<', $today)
@@ -23,4 +23,6 @@ class SubscriptionStatusUpdate extends Command
 
         $this->info('Subscription status updated successfully');
     }
+
+
 }

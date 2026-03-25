@@ -22,7 +22,7 @@ class MerchantSettingController extends Controller
         }
 
         $validated = $request->validate([
-            'store_name' => 'required|string|max:255',
+            'store_name' => 'nullable|string|max:255',
             'business_logo' => 'nullable|image|mimes:jpg,jpeg,png,svg|max:2048',
             'business_category' => 'nullable|in:salon_beauty,home_services,health,fitness_pro_gym,others',
             'business_address' => 'nullable|string',
@@ -30,7 +30,7 @@ class MerchantSettingController extends Controller
             'city' => 'nullable|string|max:100',
             'time_zone' => 'nullable|string|max:100',
             'currency' => 'nullable|string|max:10',
-            'business_hours' => 'required|array',
+            'business_hours' => 'nullable|array',
         ]);
 
         $store = MerchantSetting::where('user_id', $user->id)->first();
@@ -55,8 +55,8 @@ class MerchantSettingController extends Controller
         } else {
             $store = MerchantSetting::create($validated + [
                 'user_id' => $user->id,
-                'time_zone' => $request->time_zone ?? 'UTC',
-                'currency' => $request->currency ?? 'USD',
+                'time_zone' => $request->time_zone ?? 'Asia/Riyadh',
+                'currency' => $request->currency ?? 'SAR',
             ]);
             $message = 'Store created successfully';
         }
