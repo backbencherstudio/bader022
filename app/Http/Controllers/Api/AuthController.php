@@ -816,7 +816,7 @@ class AuthController extends Controller
         if (! empty($data)) {
             $user->update($data);
         }
-
+        //return
         return response()->json([
             'success' => true,
             'message' => 'Personal information updated successfully',
