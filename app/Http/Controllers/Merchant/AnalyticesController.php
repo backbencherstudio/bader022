@@ -44,9 +44,12 @@ class AnalyticesController extends Controller
             ->count('email');
 
         return response()->json([
-            'revenue' => number_format(MerchantPayment::where('user_id', $merchantId)
+            'revenue' => (int) MerchantPayment::where('user_id', $merchantId)
                 ->where('payment_status', 'paid')
-                ->sum('amount'), 0, ';', ''),
+                ->whereHas('booking', function ($query) {
+                    $query->where('status', 'complete');
+                })
+                ->sum('amount'),
 
             'total_bookings' => Booking::where('user_id', $merchantId)->count(),
 
@@ -57,9 +60,15 @@ class AnalyticesController extends Controller
 
     public function monthlypaymentrevenue()
     {
+        $user = auth()->user();
+        $merchantId = $user->id;
         $year = date('Y');
 
         $revenues = MerchantPayment::where('payment_status', 'paid')
+            ->where('merchant_payments.user_id', $merchantId)
+            ->whereHas('booking', function ($query) {
+                $query->where('status', 'complete');
+            })
             ->whereYear('created_at', $year)
             ->select(
                 DB::raw('MONTH(created_at) as month'),
@@ -69,9 +78,18 @@ class AnalyticesController extends Controller
             ->pluck('total_revenue', 'month');
 
         $months = [
-            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
-            5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
-            9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec',
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
+            5 => 'May',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Aug',
+            9 => 'Sep',
+            10 => 'Oct',
+            11 => 'Nov',
+            12 => 'Dec',
         ];
 
         $result = [];
@@ -88,10 +106,16 @@ class AnalyticesController extends Controller
 
     public function weeklyPaymentrevenue()
     {
+        $user = auth()->user();
+        $merchantId = $user->id;
         $year = date('Y');
         $month = date('m');
 
         $revenues = MerchantPayment::where('payment_status', 'paid')
+            ->where('user_id', $merchantId)
+            ->whereHas('booking', function ($query) {
+                $query->where('status', 'complete');
+            })
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->select(
@@ -102,13 +126,13 @@ class AnalyticesController extends Controller
             ->pluck('total_revenue', 'weekday');
 
         $weekDays = [
-            1 => 'Saturday',
-            2 => 'Sunday',
-            3 => 'Monday',
-            4 => 'Tuesday',
-            5 => 'Wednesday',
-            6 => 'Thursday',
-            7 => 'Friday',
+            1 => 'Sunday',
+            2 => 'Monday',
+            3 => 'Tuesday',
+            4 => 'Wednesday',
+            5 => 'Thursday',
+            6 => 'Friday',
+            7 => 'Saturday',
         ];
 
         $result = [];
@@ -158,7 +182,9 @@ class AnalyticesController extends Controller
             ->join('merchant_payments', 'bookings.id', '=', 'merchant_payments.booking_id')
             ->with(['staff:id,name', 'service'])
             ->select('bookings.staff_id', 'bookings.service_id')
-            ->selectRaw('SUM(case when merchant_payments.payment_status = "paid" then merchant_payments.amount else 0 end) as total_revenue')
+            ->where('merchant_payments.payment_status', 'paid')
+            ->where('bookings.status', 'complete')
+            ->selectRaw('SUM(merchant_payments.amount) as total_revenue')
             ->groupBy('bookings.staff_id', 'bookings.service_id')
             ->get();
 
