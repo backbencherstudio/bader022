@@ -81,13 +81,29 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $email = $request->email;
+        $password = $request->password;
 
-        if (! $token = Auth::guard('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+        $user = User::where('email', $email)->first();
+
+        if (! $user) {
+            return response()->json(['error' => 'Email Incorrect'], 401);
         }
 
-        $user = Auth::guard('api')->user();
+        if (! Hash::check($password, $user->password)) {
+            return response()->json(['error' => 'Password Incorrect'], 401);
+        }
+
+        if ($user->type == 2) {
+            $subscription = $user->subscription;
+
+            if (! $subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+                return response()->json([
+                    'error' => 'Your subscription has expired. Please renew to login.',
+                ], 403);
+            }
+        }
+
 
         if ($user->type == 0) {
             $role = 'User';
@@ -115,6 +131,8 @@ class AuthController extends Controller
             $hasMiniSiteMenu = false;
         }
 
+        $token = Auth::guard('api')->login($user);
+
         if ($user->jwt_token) {
             try {
                 JWTAuth::setToken($user->jwt_token)->invalidate();
@@ -126,6 +144,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
+            'message' => $role . ' login successfully',
             'message' => $role . ' login successfully',
             'data' => [
                 'user' => $user,
