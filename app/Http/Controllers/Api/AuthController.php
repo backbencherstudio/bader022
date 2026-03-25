@@ -82,74 +82,75 @@ class AuthController extends Controller
     // }
 
     public function login(Request $request)
-{
-    $email = $request->email;
-    $password = $request->password;
+    {
+        $email = $request->email;
+        $password = $request->password;
 
-    $user = User::where('email', $email)->first();
+        $user = User::where('email', $email)->first();
 
-    if (!$user) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Email incorrect',
-            'data' => null
-        ], 401);
-    }
-
-    if (!Hash::check($password, $user->password)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Password incorrect',
-            'data' => null
-        ], 401);
-    }
-
-    if ($user->type == 2) {
-        $subscription = $user->subscription;
-
-        if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+        if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Your subscription has expired. Please renew to login.',
+                'message' => 'Email incorrect',
+                'data' => null
+            ], 401);
+        }
+
+        if (!Hash::check($password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Password incorrect',
+                'data' => null
+            ], 401);
+        }
+
+        if ($user->type == 2) {
+            $subscription = $user->subscription;
+
+            if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your subscription has expired. Please renew to login.',
+                    'data' => null
+                ], 403);
+            }
+        }
+
+        if ($user->type == 0) {
+            $role = 'User';
+        } elseif ($user->type == 1) {
+            $role = 'Admin';
+        } elseif ($user->type == 2) {
+            $role = 'Merchant';
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid user type',
                 'data' => null
             ], 403);
         }
-    }
 
-    if ($user->type == 0) {
-        $role = 'User';
-    } elseif ($user->type == 1) {
-        $role = 'Admin';
-    } elseif ($user->type == 2) {
-        $role = 'Merchant';
-    } else {
+        $token = Auth::guard('api')->login($user);
+
+        if ($user->jwt_token) {
+            try {
+                JWTAuth::setToken($user->jwt_token)->invalidate();
+            } catch (\Exception $e) {
+            }
+        }
+
+        $user->update(['jwt_token' => $token]);
+
         return response()->json([
-            'success' => false,
-            'message' => 'Invalid user type',
-            'data' => null
-        ], 403);
+            'success' => true,
+            'message' => $role . ' login successfully',
+            'data' => [
+                'user' => $user,
+                'user_type' => $role,
+            ],
+            'token' => $token,
+        ]);
     }
-
-    $token = Auth::guard('api')->login($user);
-
-    if ($user->jwt_token) {
-        try {
-            JWTAuth::setToken($user->jwt_token)->invalidate();
-        } catch (\Exception $e) {}
-    }
-
-    $user->update(['jwt_token' => $token]);
-
-    return response()->json([
-        'success' => true,
-        'message' => $role . ' login successfully',
-        'data' => [
-            'user' => $user,
-            'user_type' => $role,
-        ],
-        'token' => $token,
-    ]);
-}
 
     public function register(Request $request)
     {
@@ -1114,9 +1115,10 @@ class AuthController extends Controller
                 return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
-                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/login";
-
-                return redirect()->away($frontendUrl);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Internal server error: ' . $e->getMessage()
+                ], 500);
             }
         }
 
