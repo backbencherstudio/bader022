@@ -11,7 +11,7 @@ class DashboardController extends Controller
 {
     public function index(): JsonResponse
     {
-        $merchantsCount = User::where('type', 1)->count();
+        $merchantsCount = User::where('type', 2)->count();
 
         $revenue = Payment::where('status', 'paid')->sum('amount');
 
