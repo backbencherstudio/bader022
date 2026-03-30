@@ -1,12 +1,38 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminSubscriptionController;
+use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FaqCategoryController;
+use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\MerchantController;
+use App\Http\Controllers\Admin\PaymentHistoryController;
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SliderController;
+use App\Http\Controllers\Admin\SubcategoryController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EmailController;
+use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\UserDashboardController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\Merchant\AnalyticesController;
+use App\Http\Controllers\Merchant\BookingController;
+use App\Http\Controllers\Merchant\GlobalsettingController;
+use App\Http\Controllers\Merchant\MerchantDashboardContoller;
+use App\Http\Controllers\Merchant\MerchantSettingController;
+use App\Http\Controllers\Merchant\MinisiteController;
+use App\Http\Controllers\Merchant\ServicesController;
+use App\Http\Controllers\Merchant\StaffController;
+use App\Http\Controllers\Merchant\SubscriptionController;
+use App\Http\Controllers\Merchant\TapPaymentController;
+use App\Http\Controllers\Merchant\TransactionController;
+use App\Http\Controllers\Merchant\WhyChooseUsController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\{AdminSubscriptionController, BrandController, CategoryController, DashboardController, FaqCategoryController, FaqController, MerchantController, PaymentHistoryController, PermissionController, PlanController, RoleController, SettingController, SliderController, SubcategoryController};
-use App\Http\Controllers\Api\{AuthController, EmailController, GoogleAuthController, UserDashboardController};
-use App\Http\Controllers\Merchant\{AnalyticesController, BookingController, GlobalsettingController, MerchantDashboardContoller, MerchantSettingController, MinisiteController, ServicesController, StaffController, SubscriptionController, TapPaymentController, TransactionController, WhyChooseUsController};
-use App\Http\Controllers\{InvoiceController, NotificationController};
-
-
 
 // user login
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -15,8 +41,8 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
-
-
+Route::post('/renew', [AuthController::class, 'renew'])->name('subscription.renew');
+Route::get('/tap-renew-success', [AuthController::class, 'tapRenewSuccess'])->name('subscription.tap.success');
 
 // google login api
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
@@ -38,11 +64,10 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::post('saveinfo', [AuthController::class, 'saveInfo'])->name('saveInfo');
 
     // dashboard
-   Route::get('dashboard-overview', [DashboardController::class, 'index'])->name('dashboard-overview');
-   Route::get('monthlypaymentCount', [DashboardController::class, 'monthlypaymentCount'])->name('monthlypaymentCount');
-   Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
-   Route::get('businessTypeAnalytics', [DashboardController::class, 'businessTypeAnalytics'])->name('businessTypeAnalytics');
-
+    Route::get('dashboard-overview', [DashboardController::class, 'index'])->name('dashboard-overview');
+    Route::get('monthlypaymentCount', [DashboardController::class, 'monthlypaymentCount'])->name('monthlypaymentCount');
+    Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
+    Route::get('businessTypeAnalytics', [DashboardController::class, 'businessTypeAnalytics'])->name('businessTypeAnalytics');
 
     // Role
     Route::prefix('role')->group(function () {
@@ -215,21 +240,21 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('invoice/{id}', [InvoiceController::class, 'generate']);
     });
 
-    //-----Admin/Merchants
+    // -----Admin/Merchants
     Route::prefix('merchant')->group(function () {
         Route::get('index', [MerchantController::class, 'index'])->name('merchant.index');
         Route::get('show/{id}', [MerchantController::class, 'show'])->name('merchant.show');
         Route::put('update/{id}', [MerchantController::class, 'update'])->name('merchant.update');
     });
 
-      // Globalsetting
+    // Globalsetting
     Route::prefix('global-setting')->group(function () {
         Route::get('index', [GlobalsettingController::class, 'index'])->name('global-setting.index');
         Route::get('show/{id}', [GlobalsettingController::class, 'show'])->name('global-setting.show');
         Route::post('store', [GlobalsettingController::class, 'store'])->name('global-setting.store');
     });
 
-    //----- User/Dashboard/Booking History.....
+    // ----- User/Dashboard/Booking History.....
     Route::prefix('dashboard')->group(function () {
         Route::get('upcoming', [UserDashboardController::class, 'Upcoming'])->name('dashboard.upcoming');
         Route::get('history', [UserDashboardController::class, 'History'])->name('dashboard.history');
@@ -273,14 +298,16 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show', [TapPaymentController::class, 'show'])->name('tap-payment.show');
     });
 
- });
-
-
+});
 
 Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
 Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->name('tap.callback');
 Route::get('/payment/callback', [BookingController::class, 'paymentCallback'])->name('payment.callback');
 Route::get('/tap-successregister', [AuthController::class, 'tapSuccessregister'])->name('tap-successregister');
+
+//redirect to frontend url
+Route::get('/create-account', [AuthController::class, 'tapSuccessregister']);
+Route::get('/payment-status/{user_id}', [AuthController::class, 'getPaymentStatus']);
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
 Route::get('bokli/{website_domain}', [MinisiteController::class, 'userView'])->name('mini-site.userView');
 
