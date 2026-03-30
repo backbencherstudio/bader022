@@ -23,15 +23,29 @@ class MiniSite extends Model
         'about_description',
         'background_color',
         'about_padding',
+        'about_hero_image',
         'cta_title',
         'cta_subtitle',
         'cta_image',
         'cta_overlay_color',
         'cta_padding',
+        'service_title',
+        'service_description',
+        'service_background',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function whychooseus()
+    {
+        return $this->hasOne(WhyChooseUs::class, 'user_id', 'user_id');
+    }
+
+    public function service()
+    {
+        return $this->hasMany(Service::class, 'user_id', 'user_id');
     }
 }

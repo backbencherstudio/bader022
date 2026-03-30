@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqCategoryController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\MerchantController;
@@ -11,28 +13,26 @@ use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
-use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SubcategoryController;
-use App\Http\Controllers\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\UserDashboardController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\UserDashboardController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\Merchant\AnalyticesController;
 use App\Http\Controllers\Merchant\BookingController;
+use App\Http\Controllers\Merchant\GlobalsettingController;
+use App\Http\Controllers\Merchant\MerchantDashboardContoller;
 use App\Http\Controllers\Merchant\MerchantSettingController;
 use App\Http\Controllers\Merchant\MinisiteController;
 use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\Merchant\StaffController;
 use App\Http\Controllers\Merchant\SubscriptionController;
-use App\Http\Controllers\Merchant\GlobalsettingController;
-use App\Http\Controllers\Merchant\TransactionController;
-use App\Http\Controllers\Merchant\MerchantDashboardContoller;
 use App\Http\Controllers\Merchant\TapPaymentController;
-use App\Http\Controllers\Merchant\AnalyticesController;
+use App\Http\Controllers\Merchant\TransactionController;
+use App\Http\Controllers\Merchant\WhyChooseUsController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
-
-
 
 // user login
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -41,8 +41,8 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
-
-
+Route::post('/renew', [AuthController::class, 'renew'])->name('subscription.renew');
+Route::get('/tap-renew-success', [AuthController::class, 'tapRenewSuccess'])->name('subscription.tap.success');
 
 // google login api
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
@@ -64,10 +64,10 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::post('saveinfo', [AuthController::class, 'saveInfo'])->name('saveInfo');
 
     // dashboard
-   Route::get('dashboard-overview', [DashboardController::class, 'index'])->name('dashboard-overview');
-   Route::get('monthlypaymentCount', [DashboardController::class, 'monthlypaymentCount'])->name('monthlypaymentCount');
-   Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
-
+    Route::get('dashboard-overview', [DashboardController::class, 'index'])->name('dashboard-overview');
+    Route::get('monthlypaymentCount', [DashboardController::class, 'monthlypaymentCount'])->name('monthlypaymentCount');
+    Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
+    Route::get('businessTypeAnalytics', [DashboardController::class, 'businessTypeAnalytics'])->name('businessTypeAnalytics');
 
     // Role
     Route::prefix('role')->group(function () {
@@ -142,6 +142,11 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show', [MinisiteController::class, 'show'])->name('mini-sites.show');
         Route::post('update', [MinisiteController::class, 'update'])->name('mini-sites.update');
     });
+
+    Route::prefix('whychooseus')->group(function () {
+        Route::post('upsert', [WhyChooseUsController::class, 'upsert'])->name('whychoseus.upsert');
+    });
+
     // merchant-setting
     Route::prefix('merchant-setting')->group(function () {
         Route::post('store', [MerchantSettingController::class, 'store'])->name('merchant.store');
@@ -158,7 +163,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
     // admin subscription
     Route::prefix('subscription')->group(function () {
-        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('process.index');
+        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('processs.index');
         Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('process.edit');
         Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('process.update');
         Route::get('summary', [AdminSubscriptionController::class, 'summary'])->name('process.summary');
@@ -186,6 +191,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show/{id}', [ServicesController::class, 'show'])->name('service.show');
         Route::put('update/{id}', [ServicesController::class, 'update'])->name('service.update');
         Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
+        Route::get('userindex', [ServicesController::class, 'userindex'])->name('service.userindex');
     });
 
     // ----- Merchant/Staff
@@ -197,7 +203,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
     });
 
-    // ----- Admin/Subscription/Plan
+    // -----Admin/Subscription/Plan
     Route::prefix('plan')->group(function () {
         Route::get('index', [PlanController::class, 'index'])->name('plan.index');
         Route::post('store', [PlanController::class, 'store'])->name('plan.store');
@@ -207,10 +213,11 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::patch('update-status/{id}', [PlanController::class, 'updateStatus'])->name('plan.updateStatus');
     });
 
-    // ----- Admin/Payments
+    // -----Admin/Payments
     Route::prefix('payment-history')->group(function () {
         Route::get('index', [PaymentHistoryController::class, 'index'])->name('payment-history.index');
         Route::get('show/{id}', [PaymentHistoryController::class, 'show'])->name('payment-history.show');
+        Route::get('admin-invoice/{id}', [InvoiceController::class, 'adminInvoice'])->name('payment-history.adminInvoice');
         Route::post('update/{id}', [PaymentHistoryController::class, 'update'])->name('payment-history.update');
         Route::post('{id}/sendEmail', [PaymentHistoryController::class, 'sendEmail'])->name('payment-history.sendEmail');
         Route::patch('updateStatus/{id}', [PaymentHistoryController::class, 'updateStatus'])->name('payment-history.updateStatus');
@@ -220,28 +227,34 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::prefix('booking')->group(function () {
         Route::get('index', [BookingController::class, 'index'])->name('booking.index');
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
+        Route::get('booking-invoice/{id}', [BookingController::class, 'bookingInvoice'])->name('booking.bookingInvoice');
+        Route::get('invoice-by-merchant/{id}', [InvoiceController::class, 'invoiceBymerchant'])->name('booking.invoiceBymerchant');
         Route::get('show/{id}', [BookingController::class, 'show'])->name('booking.show');
         Route::post('update/{id}', [BookingController::class, 'update'])->name('booking.update');
         Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
         Route::get('staff', [BookingController::class, 'getAvailableStaffByTime'])->name('booking.getAvailableStaffByTime');
         Route::post('service-booking', [BookingController::class, 'bookingByUser'])->name('booking.bookingByUser');
+        // Route::get('invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
+
+        // invoice generate route
+        Route::get('invoice/{id}', [InvoiceController::class, 'generate']);
     });
 
-    // ----- Admin/Merchants
+    // -----Admin/Merchants
     Route::prefix('merchant')->group(function () {
         Route::get('index', [MerchantController::class, 'index'])->name('merchant.index');
         Route::get('show/{id}', [MerchantController::class, 'show'])->name('merchant.show');
         Route::put('update/{id}', [MerchantController::class, 'update'])->name('merchant.update');
     });
 
-      // Globalsetting
+    // Globalsetting
     Route::prefix('global-setting')->group(function () {
         Route::get('index', [GlobalsettingController::class, 'index'])->name('global-setting.index');
         Route::get('show/{id}', [GlobalsettingController::class, 'show'])->name('global-setting.show');
         Route::post('store', [GlobalsettingController::class, 'store'])->name('global-setting.store');
     });
 
-    //----- User/Dashboard/Booking History.....
+    // ----- User/Dashboard/Booking History.....
     Route::prefix('dashboard')->group(function () {
         Route::get('upcoming', [UserDashboardController::class, 'Upcoming'])->name('dashboard.upcoming');
         Route::get('history', [UserDashboardController::class, 'History'])->name('dashboard.history');
@@ -249,6 +262,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show/{id}', [UserDashboardController::class, 'show'])->name('dashboard.show');
         Route::get('payment-history', [UserDashboardController::class, 'paymentHistory'])->name('dashboard.paymentHistory');
         Route::get('show-payment/{id}', [UserDashboardController::class, 'showPayment'])->name('dashboard.showPayment');
+        Route::get('invoice/{id}', [UserDashboardController::class, 'userInvoice'])->name('dashboard.userInvoice');
         Route::get('view-order-details/{id}', [UserDashboardController::class, 'viewOrderDetails'])->name('dashboard.viewOrderDetails');
         Route::get('cancel-preview/{id}', [UserDashboardController::class, 'cancelPreview'])->name('dashboard.cancelPreview');
         Route::patch('cancel-booking/{id}', [UserDashboardController::class, 'cancelBooking'])->name('dashboard.cancelBooking');
@@ -281,11 +295,23 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
     Route::prefix('tap-payment')->group(function () {
         Route::post('upsert', [TapPaymentController::class, 'upsert'])->name('tap-payment.upsert');
+        Route::get('show', [TapPaymentController::class, 'show'])->name('tap-payment.show');
     });
 
- });
-
+});
 
 Route::get('/admin/process/callback', [SubscriptionController::class, 'tapCallback'])->name('admin.process.callback');
 Route::get('/tap-success', [BookingController::class, 'tapCallbackbooking'])->name('tap.callback');
 Route::get('/payment/callback', [BookingController::class, 'paymentCallback'])->name('payment.callback');
+Route::get('/tap-successregister', [AuthController::class, 'tapSuccessregister'])->name('tap-successregister');
+
+//redirect to frontend url
+Route::get('/create-account', [AuthController::class, 'tapSuccessregister']);
+Route::get('/payment-status/{user_id}', [AuthController::class, 'getPaymentStatus']);
+Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
+Route::get('bokli/{website_domain}', [MinisiteController::class, 'userView'])->name('mini-site.userView');
+
+// redirect to confirmation page
+Route::get('/tap-callback', [BookingController::class, 'tapCallbackbooking']);
+Route::get('/booking-details/{id}', [BookingController::class, 'bookingDetails']);
+Route::get('confirm-invoice/{id}', [InvoiceController::class, 'confirmationInvoice']);

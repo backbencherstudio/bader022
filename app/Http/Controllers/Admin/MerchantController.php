@@ -49,9 +49,10 @@ class MerchantController extends Controller
         ]);
     }
 
+    
+
     public function update(Request $request, $id)
     {
-        
         $subscription = Subscription::find($id);
 
         if (! $subscription) {
@@ -71,13 +72,14 @@ class MerchantController extends Controller
         }
 
         $validatedData = $request->validate([
-            'status' => 'nullable|in:1,0',
+            'status' => 'nullable|in:pending,active,expired,cancelled',
             'platform_access' => 'nullable|in:1,0',
             'platform_status' => 'nullable|string',
         ]);
 
         if (isset($validatedData['status'])) {
-            $merchant->status = $validatedData['status'];
+            $subscription->status = $validatedData['status'];
+            $subscription->save();
         }
 
         if (isset($validatedData['platform_access'])) {
@@ -92,7 +94,8 @@ class MerchantController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Merchant updated successfully via subscription',
+            'message' => 'Subscription & Merchant updated successfully',
+            'subscription' => $subscription,
             'merchant' => $merchant,
         ]);
     }

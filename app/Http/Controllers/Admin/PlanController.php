@@ -11,7 +11,13 @@ class PlanController extends Controller
 {
     public function index(Request $request)
     {
-        $plans = Plan::all();
+        $query = Plan::query();
+
+        if ($request->has('name') && $request->name != '') {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        $plans = $query->get();
 
         return response()->json([
             'success' => true,
@@ -106,6 +112,7 @@ class PlanController extends Controller
             'package' => 'sometimes|required|in:Free,Monthly,Annual',
             'features' => 'nullable|array',
             'features.*' => 'string',
+            'status' => 'nullable|boolean',
 
         ]);
 
@@ -122,7 +129,7 @@ class PlanController extends Controller
             'currency',
             'package',
             'features',
-          
+            'status',
         ]));
 
 
