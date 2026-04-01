@@ -43,36 +43,6 @@ class MerchantDashboardContoller extends Controller
         ]);
     }
 
-    // public function monthlypaymentrevenue()
-    // {
-    //     $year = date('Y');
-
-    //     $revenues = MerchantPayment::where('payment_status', 'paid')
-    //         ->whereYear('created_at', $year)
-    //         ->select(
-    //             DB::raw('MONTH(created_at) as month'),
-    //             DB::raw('SUM(amount) as total_revenue')
-    //         )
-    //         ->groupBy('month')
-    //         ->pluck('total_revenue', 'month');
-
-    //     $months = [
-    //         1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
-    //         5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
-    //         9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec',
-    //     ];
-
-    //     $result = [];
-
-    //     foreach ($months as $monthNumber => $monthName) {
-    //         $result[] = [
-    //             'name' => $monthName,
-    //             'revenue' => (float) ($revenues[$monthNumber] ?? 0),
-    //         ];
-    //     }
-
-    //     return response()->json($result);
-    // }
 
     public function monthlypaymentrevenue()
     {
