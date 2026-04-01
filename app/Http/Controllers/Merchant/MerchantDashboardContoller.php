@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\{Booking, MerchantPayment};
+use App\Models\Booking;
+use App\Models\MerchantPayment;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MerchantDashboardContoller extends Controller
 {
@@ -41,11 +43,16 @@ class MerchantDashboardContoller extends Controller
         ]);
     }
 
+
     public function monthlypaymentrevenue()
     {
+
         $year = date('Y');
 
+        $userId = Auth::id();
+
         $revenues = MerchantPayment::where('payment_status', 'paid')
+            ->where('user_id', $userId)
             ->whereYear('created_at', $year)
             ->select(
                 DB::raw('MONTH(created_at) as month'),
@@ -77,7 +84,10 @@ class MerchantDashboardContoller extends Controller
         $year = date('Y');
         $month = date('m');
 
+        $userId = Auth::id();
+
         $revenues = MerchantPayment::where('payment_status', 'paid')
+            ->where('user_id', $userId)
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->select(
@@ -88,13 +98,13 @@ class MerchantDashboardContoller extends Controller
             ->pluck('total_revenue', 'weekday');
 
         $weekDays = [
-            1 => 'Saturday',
-            2 => 'Sunday',
-            3 => 'Monday',
-            4 => 'Tuesday',
-            5 => 'Wednesday',
-            6 => 'Thursday',
-            7 => 'Friday',
+            7 => 'Saturday',
+            1 => 'Sunday',
+            2 => 'Monday',
+            3 => 'Tuesday',
+            4 => 'Wednesday',
+            5 => 'Thursday',
+            6 => 'Friday',
         ];
 
         $result = [];
