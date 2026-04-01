@@ -306,7 +306,7 @@ class BookingController extends Controller
                     ? 'cash-' . uniqid()
                     : null,
                 'payment_status' => 'paid',
-                'paid_at' => now(),
+                'paid_at' => Carbon::now($merchantTimeZone),
             ]);
 
             if ($request->payment_method === 'tap') {
@@ -1184,6 +1184,12 @@ class BookingController extends Controller
 
         $merchantId = $payment->user_id;
 
+        $storeSetting = DB::table('merchant_store_settings')
+            ->where('user_id', $merchantId)
+            ->first();
+
+        $merchantTimeZone = $storeSetting->time_zone ?? 'UTC';
+
         $tapPayment = DB::table('tap_payments')
             ->where('user_id', $merchantId)
             ->latest('updated_at')
@@ -1213,13 +1219,13 @@ class BookingController extends Controller
 
         $booking = null;
 
-        DB::transaction(function () use ($tapData, $payment, $bookingId, &$booking) {
+        DB::transaction(function () use ($tapData, $payment, $bookingId, &$booking, $merchantTimeZone) {
 
             if ($tapData['status'] == 'CAPTURED') {
 
                 $payment->update([
                     'payment_status' => 'paid',
-                    'paid_at' => now(),
+                    'paid_at' => Carbon::now($merchantTimeZone),
                 ]);
 
                 Booking::where('id', $bookingId)->update([
