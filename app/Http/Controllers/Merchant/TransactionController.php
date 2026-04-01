@@ -11,7 +11,7 @@ class TransactionController extends Controller
     {
         $userId = auth()->id();
 
-        $payments = MerchantPayment::with(['user', 'booking','service'])
+        $payments = MerchantPayment::with(['user', 'booking.service'])
             ->where('user_id', $userId)
             ->latest()
             ->get();
@@ -36,7 +36,7 @@ class TransactionController extends Controller
     {
         $userId = auth()->id();
 
-        $payment = MerchantPayment::with(['user', 'booking','service'])
+        $payment = MerchantPayment::with(['user', 'booking'])
             ->where('user_id', $userId)
             ->where('id', $id)
             ->first();
