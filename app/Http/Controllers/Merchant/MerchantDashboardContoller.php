@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\{Booking, MerchantPayment};
+use App\Models\Booking;
+use App\Models\MerchantPayment;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MerchantDashboardContoller extends Controller
 {
@@ -41,11 +43,46 @@ class MerchantDashboardContoller extends Controller
         ]);
     }
 
+    // public function monthlypaymentrevenue()
+    // {
+    //     $year = date('Y');
+
+    //     $revenues = MerchantPayment::where('payment_status', 'paid')
+    //         ->whereYear('created_at', $year)
+    //         ->select(
+    //             DB::raw('MONTH(created_at) as month'),
+    //             DB::raw('SUM(amount) as total_revenue')
+    //         )
+    //         ->groupBy('month')
+    //         ->pluck('total_revenue', 'month');
+
+    //     $months = [
+    //         1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
+    //         5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
+    //         9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec',
+    //     ];
+
+    //     $result = [];
+
+    //     foreach ($months as $monthNumber => $monthName) {
+    //         $result[] = [
+    //             'name' => $monthName,
+    //             'revenue' => (float) ($revenues[$monthNumber] ?? 0),
+    //         ];
+    //     }
+
+    //     return response()->json($result);
+    // }
+
     public function monthlypaymentrevenue()
     {
+
         $year = date('Y');
 
+        $userId = Auth::id();
+
         $revenues = MerchantPayment::where('payment_status', 'paid')
+            ->where('user_id', $userId)
             ->whereYear('created_at', $year)
             ->select(
                 DB::raw('MONTH(created_at) as month'),
@@ -77,7 +114,10 @@ class MerchantDashboardContoller extends Controller
         $year = date('Y');
         $month = date('m');
 
+        $userId = Auth::id();
+
         $revenues = MerchantPayment::where('payment_status', 'paid')
+            ->where('user_id', $userId)
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->select(
@@ -88,13 +128,13 @@ class MerchantDashboardContoller extends Controller
             ->pluck('total_revenue', 'weekday');
 
         $weekDays = [
-            1 => 'Saturday',
-            2 => 'Sunday',
-            3 => 'Monday',
-            4 => 'Tuesday',
-            5 => 'Wednesday',
-            6 => 'Thursday',
-            7 => 'Friday',
+            7 => 'Saturday',
+            1 => 'Sunday',
+            2 => 'Monday',
+            3 => 'Tuesday',
+            4 => 'Wednesday',
+            5 => 'Thursday',
+            6 => 'Friday',
         ];
 
         $result = [];
