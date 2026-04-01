@@ -306,7 +306,7 @@ class BookingController extends Controller
                     ? 'cash-' . uniqid()
                     : null,
                 'payment_status' => 'paid',
-                'paid_at' => now(),
+                'paid_at' => Carbon::now($merchantTimeZone),
             ]);
 
             if ($request->payment_method === 'tap') {
