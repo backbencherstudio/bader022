@@ -6,10 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-<<<<<<< HEAD
-=======
     'App\\Console\\Commands\\SubscriptionStatusUpdate' => $baseDir . '/app/Console/Commands/SubscriptionStatusUpdate.php',
->>>>>>> dev
     'App\\Events\\TestEvent' => $baseDir . '/app/Events/TestEvent.php',
     'App\\Http\\Controllers\\Admin\\AdminSubscriptionController' => $baseDir . '/app/Http/Controllers/Admin/AdminSubscriptionController.php',
     'App\\Http\\Controllers\\Admin\\BrandController' => $baseDir . '/app/Http/Controllers/Admin/BrandController.php',
@@ -56,10 +53,7 @@ return array(
     'App\\Http\\Middleware\\RolePermissionMiddleware' => $baseDir . '/app/Http/Middleware/RolePermissionMiddleware.php',
     'App\\Http\\Requests\\Auth\\LoginRequest' => $baseDir . '/app/Http/Requests/Auth/LoginRequest.php',
     'App\\Mail\\BookingConfirmationMail' => $baseDir . '/app/Mail/BookingConfirmationMail.php',
-<<<<<<< HEAD
-=======
     'App\\Mail\\PaymentCompletedMail' => $baseDir . '/app/Mail/PaymentCompletedMail.php',
->>>>>>> dev
     'App\\Mail\\TestMail' => $baseDir . '/app/Mail/TestMail.php',
     'App\\Models\\Booking' => $baseDir . '/app/Models/Booking.php',
     'App\\Models\\Brand' => $baseDir . '/app/Models/Brand.php',
@@ -1421,10 +1415,7 @@ return array(
     'Illuminate\\Console\\Scheduling\\CacheSchedulingMutex' => $vendorDir . '/laravel/framework/src/Illuminate/Console/Scheduling/CacheSchedulingMutex.php',
     'Illuminate\\Console\\Scheduling\\CallbackEvent' => $vendorDir . '/laravel/framework/src/Illuminate/Console/Scheduling/CallbackEvent.php',
     'Illuminate\\Console\\Scheduling\\CommandBuilder' => $vendorDir . '/laravel/framework/src/Illuminate/Console/Scheduling/CommandBuilder.php',
-<<<<<<< HEAD
-=======
     'Illuminate\\Console\\Scheduling\\CronExpressionTimezoneConverter' => $vendorDir . '/laravel/framework/src/Illuminate/Console/Scheduling/CronExpressionTimezoneConverter.php',
->>>>>>> dev
     'Illuminate\\Console\\Scheduling\\Event' => $vendorDir . '/laravel/framework/src/Illuminate/Console/Scheduling/Event.php',
     'Illuminate\\Console\\Scheduling\\EventMutex' => $vendorDir . '/laravel/framework/src/Illuminate/Console/Scheduling/EventMutex.php',
     'Illuminate\\Console\\Scheduling\\ManagesAttributes' => $vendorDir . '/laravel/framework/src/Illuminate/Console/Scheduling/ManagesAttributes.php',
@@ -2603,10 +2594,7 @@ return array(
     'Illuminate\\Validation\\Rules\\Email' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/Email.php',
     'Illuminate\\Validation\\Rules\\Enum' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/Enum.php',
     'Illuminate\\Validation\\Rules\\ExcludeIf' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/ExcludeIf.php',
-<<<<<<< HEAD
-=======
     'Illuminate\\Validation\\Rules\\ExcludeUnless' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/ExcludeUnless.php',
->>>>>>> dev
     'Illuminate\\Validation\\Rules\\Exists' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/Exists.php',
     'Illuminate\\Validation\\Rules\\File' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/File.php',
     'Illuminate\\Validation\\Rules\\ImageFile' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/ImageFile.php',
@@ -2615,14 +2603,10 @@ return array(
     'Illuminate\\Validation\\Rules\\Numeric' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/Numeric.php',
     'Illuminate\\Validation\\Rules\\Password' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/Password.php',
     'Illuminate\\Validation\\Rules\\ProhibitedIf' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/ProhibitedIf.php',
-<<<<<<< HEAD
-    'Illuminate\\Validation\\Rules\\RequiredIf' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/RequiredIf.php',
-=======
     'Illuminate\\Validation\\Rules\\ProhibitedUnless' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/ProhibitedUnless.php',
     'Illuminate\\Validation\\Rules\\RequiredIf' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/RequiredIf.php',
     'Illuminate\\Validation\\Rules\\RequiredUnless' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/RequiredUnless.php',
     'Illuminate\\Validation\\Rules\\StringRule' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/StringRule.php',
->>>>>>> dev
     'Illuminate\\Validation\\Rules\\Unique' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/Rules/Unique.php',
     'Illuminate\\Validation\\UnauthorizedException' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/UnauthorizedException.php',
     'Illuminate\\Validation\\ValidatesWhenResolvedTrait' => $vendorDir . '/laravel/framework/src/Illuminate/Validation/ValidatesWhenResolvedTrait.php',
@@ -2705,10 +2689,7 @@ return array(
     'Laravel\\Pail\\ValueObjects\\Origin\\Console' => $vendorDir . '/laravel/pail/src/ValueObjects/Origin/Console.php',
     'Laravel\\Pail\\ValueObjects\\Origin\\Http' => $vendorDir . '/laravel/pail/src/ValueObjects/Origin/Http.php',
     'Laravel\\Pail\\ValueObjects\\Origin\\Queue' => $vendorDir . '/laravel/pail/src/ValueObjects/Origin/Queue.php',
-<<<<<<< HEAD
-=======
     'Laravel\\Prompts\\AutoCompletePrompt' => $vendorDir . '/laravel/prompts/src/AutoCompletePrompt.php',
->>>>>>> dev
     'Laravel\\Prompts\\Clear' => $vendorDir . '/laravel/prompts/src/Clear.php',
     'Laravel\\Prompts\\Concerns\\Colors' => $vendorDir . '/laravel/prompts/src/Concerns/Colors.php',
     'Laravel\\Prompts\\Concerns\\Cursor' => $vendorDir . '/laravel/prompts/src/Concerns/Cursor.php',
@@ -2716,11 +2697,8 @@ return array(
     'Laravel\\Prompts\\Concerns\\Events' => $vendorDir . '/laravel/prompts/src/Concerns/Events.php',
     'Laravel\\Prompts\\Concerns\\FakesInputOutput' => $vendorDir . '/laravel/prompts/src/Concerns/FakesInputOutput.php',
     'Laravel\\Prompts\\Concerns\\Fallback' => $vendorDir . '/laravel/prompts/src/Concerns/Fallback.php',
-<<<<<<< HEAD
-=======
     'Laravel\\Prompts\\Concerns\\HasInfo' => $vendorDir . '/laravel/prompts/src/Concerns/HasInfo.php',
     'Laravel\\Prompts\\Concerns\\HasSpinner' => $vendorDir . '/laravel/prompts/src/Concerns/HasSpinner.php',
->>>>>>> dev
     'Laravel\\Prompts\\Concerns\\Interactivity' => $vendorDir . '/laravel/prompts/src/Concerns/Interactivity.php',
     'Laravel\\Prompts\\Concerns\\Scrolling' => $vendorDir . '/laravel/prompts/src/Concerns/Scrolling.php',
     'Laravel\\Prompts\\Concerns\\Termwind' => $vendorDir . '/laravel/prompts/src/Concerns/Termwind.php',
@@ -2728,10 +2706,7 @@ return array(
     'Laravel\\Prompts\\Concerns\\Truncation' => $vendorDir . '/laravel/prompts/src/Concerns/Truncation.php',
     'Laravel\\Prompts\\Concerns\\TypedValue' => $vendorDir . '/laravel/prompts/src/Concerns/TypedValue.php',
     'Laravel\\Prompts\\ConfirmPrompt' => $vendorDir . '/laravel/prompts/src/ConfirmPrompt.php',
-<<<<<<< HEAD
-=======
     'Laravel\\Prompts\\DataTablePrompt' => $vendorDir . '/laravel/prompts/src/DataTablePrompt.php',
->>>>>>> dev
     'Laravel\\Prompts\\Exceptions\\FormRevertedException' => $vendorDir . '/laravel/prompts/src/Exceptions/FormRevertedException.php',
     'Laravel\\Prompts\\Exceptions\\NonInteractiveValidationException' => $vendorDir . '/laravel/prompts/src/Exceptions/NonInteractiveValidationException.php',
     'Laravel\\Prompts\\FormBuilder' => $vendorDir . '/laravel/prompts/src/FormBuilder.php',
@@ -2741,10 +2716,7 @@ return array(
     'Laravel\\Prompts\\MultiSearchPrompt' => $vendorDir . '/laravel/prompts/src/MultiSearchPrompt.php',
     'Laravel\\Prompts\\MultiSelectPrompt' => $vendorDir . '/laravel/prompts/src/MultiSelectPrompt.php',
     'Laravel\\Prompts\\Note' => $vendorDir . '/laravel/prompts/src/Note.php',
-<<<<<<< HEAD
-=======
     'Laravel\\Prompts\\NotifyPrompt' => $vendorDir . '/laravel/prompts/src/NotifyPrompt.php',
->>>>>>> dev
     'Laravel\\Prompts\\NumberPrompt' => $vendorDir . '/laravel/prompts/src/NumberPrompt.php',
     'Laravel\\Prompts\\Output\\BufferedConsoleOutput' => $vendorDir . '/laravel/prompts/src/Output/BufferedConsoleOutput.php',
     'Laravel\\Prompts\\Output\\ConsoleOutput' => $vendorDir . '/laravel/prompts/src/Output/ConsoleOutput.php',
@@ -2755,12 +2727,6 @@ return array(
     'Laravel\\Prompts\\SearchPrompt' => $vendorDir . '/laravel/prompts/src/SearchPrompt.php',
     'Laravel\\Prompts\\SelectPrompt' => $vendorDir . '/laravel/prompts/src/SelectPrompt.php',
     'Laravel\\Prompts\\Spinner' => $vendorDir . '/laravel/prompts/src/Spinner.php',
-<<<<<<< HEAD
-    'Laravel\\Prompts\\SuggestPrompt' => $vendorDir . '/laravel/prompts/src/SuggestPrompt.php',
-    'Laravel\\Prompts\\Support\\Result' => $vendorDir . '/laravel/prompts/src/Support/Result.php',
-    'Laravel\\Prompts\\Support\\Utils' => $vendorDir . '/laravel/prompts/src/Support/Utils.php',
-    'Laravel\\Prompts\\Table' => $vendorDir . '/laravel/prompts/src/Table.php',
-=======
     'Laravel\\Prompts\\Stream' => $vendorDir . '/laravel/prompts/src/Stream.php',
     'Laravel\\Prompts\\SuggestPrompt' => $vendorDir . '/laravel/prompts/src/SuggestPrompt.php',
     'Laravel\\Prompts\\Support\\Logger' => $vendorDir . '/laravel/prompts/src/Support/Logger.php',
@@ -2768,24 +2734,17 @@ return array(
     'Laravel\\Prompts\\Support\\Utils' => $vendorDir . '/laravel/prompts/src/Support/Utils.php',
     'Laravel\\Prompts\\Table' => $vendorDir . '/laravel/prompts/src/Table.php',
     'Laravel\\Prompts\\Task' => $vendorDir . '/laravel/prompts/src/Task.php',
->>>>>>> dev
     'Laravel\\Prompts\\Terminal' => $vendorDir . '/laravel/prompts/src/Terminal.php',
     'Laravel\\Prompts\\TextPrompt' => $vendorDir . '/laravel/prompts/src/TextPrompt.php',
     'Laravel\\Prompts\\TextareaPrompt' => $vendorDir . '/laravel/prompts/src/TextareaPrompt.php',
     'Laravel\\Prompts\\Themes\\Contracts\\Scrolling' => $vendorDir . '/laravel/prompts/src/Themes/Contracts/Scrolling.php',
-<<<<<<< HEAD
-=======
     'Laravel\\Prompts\\Themes\\Default\\AutoCompletePromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/AutoCompletePromptRenderer.php',
->>>>>>> dev
     'Laravel\\Prompts\\Themes\\Default\\ClearRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/ClearRenderer.php',
     'Laravel\\Prompts\\Themes\\Default\\Concerns\\DrawsBoxes' => $vendorDir . '/laravel/prompts/src/Themes/Default/Concerns/DrawsBoxes.php',
     'Laravel\\Prompts\\Themes\\Default\\Concerns\\DrawsScrollbars' => $vendorDir . '/laravel/prompts/src/Themes/Default/Concerns/DrawsScrollbars.php',
     'Laravel\\Prompts\\Themes\\Default\\Concerns\\InteractsWithStrings' => $vendorDir . '/laravel/prompts/src/Themes/Default/Concerns/InteractsWithStrings.php',
     'Laravel\\Prompts\\Themes\\Default\\ConfirmPromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/ConfirmPromptRenderer.php',
-<<<<<<< HEAD
-=======
     'Laravel\\Prompts\\Themes\\Default\\DataTableRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/DataTableRenderer.php',
->>>>>>> dev
     'Laravel\\Prompts\\Themes\\Default\\GridRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/GridRenderer.php',
     'Laravel\\Prompts\\Themes\\Default\\MultiSearchPromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/MultiSearchPromptRenderer.php',
     'Laravel\\Prompts\\Themes\\Default\\MultiSelectPromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/MultiSelectPromptRenderer.php',
@@ -2798,12 +2757,6 @@ return array(
     'Laravel\\Prompts\\Themes\\Default\\SearchPromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/SearchPromptRenderer.php',
     'Laravel\\Prompts\\Themes\\Default\\SelectPromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/SelectPromptRenderer.php',
     'Laravel\\Prompts\\Themes\\Default\\SpinnerRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/SpinnerRenderer.php',
-<<<<<<< HEAD
-    'Laravel\\Prompts\\Themes\\Default\\SuggestPromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/SuggestPromptRenderer.php',
-    'Laravel\\Prompts\\Themes\\Default\\TableRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/TableRenderer.php',
-    'Laravel\\Prompts\\Themes\\Default\\TextPromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/TextPromptRenderer.php',
-    'Laravel\\Prompts\\Themes\\Default\\TextareaPromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/TextareaPromptRenderer.php',
-=======
     'Laravel\\Prompts\\Themes\\Default\\StreamRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/StreamRenderer.php',
     'Laravel\\Prompts\\Themes\\Default\\SuggestPromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/SuggestPromptRenderer.php',
     'Laravel\\Prompts\\Themes\\Default\\TableRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/TableRenderer.php',
@@ -2812,7 +2765,6 @@ return array(
     'Laravel\\Prompts\\Themes\\Default\\TextareaPromptRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/TextareaPromptRenderer.php',
     'Laravel\\Prompts\\Themes\\Default\\TitleRenderer' => $vendorDir . '/laravel/prompts/src/Themes/Default/TitleRenderer.php',
     'Laravel\\Prompts\\Title' => $vendorDir . '/laravel/prompts/src/Title.php',
->>>>>>> dev
     'Laravel\\Sail\\Console\\AddCommand' => $vendorDir . '/laravel/sail/src/Console/AddCommand.php',
     'Laravel\\Sail\\Console\\Concerns\\InteractsWithDockerComposeServices' => $vendorDir . '/laravel/sail/src/Console/Concerns/InteractsWithDockerComposeServices.php',
     'Laravel\\Sail\\Console\\InstallCommand' => $vendorDir . '/laravel/sail/src/Console/InstallCommand.php',
@@ -3750,10 +3702,7 @@ return array(
     'PHPUnit\\Event\\Code\\ClassMethod' => $vendorDir . '/phpunit/phpunit/src/Event/Value/ClassMethod.php',
     'PHPUnit\\Event\\Code\\ComparisonFailure' => $vendorDir . '/phpunit/phpunit/src/Event/Value/ComparisonFailure.php',
     'PHPUnit\\Event\\Code\\ComparisonFailureBuilder' => $vendorDir . '/phpunit/phpunit/src/Event/Value/ComparisonFailureBuilder.php',
-<<<<<<< HEAD
-=======
     'PHPUnit\\Event\\Code\\IssueTrigger\\Code' => $vendorDir . '/phpunit/phpunit/src/Event/Value/Test/Issue/Code.php',
->>>>>>> dev
     'PHPUnit\\Event\\Code\\IssueTrigger\\IssueTrigger' => $vendorDir . '/phpunit/phpunit/src/Event/Value/Test/Issue/IssueTrigger.php',
     'PHPUnit\\Event\\Code\\NoTestCaseObjectOnCallStackException' => $vendorDir . '/phpunit/phpunit/src/Event/Exception/NoTestCaseObjectOnCallStackException.php',
     'PHPUnit\\Event\\Code\\Phpt' => $vendorDir . '/phpunit/phpunit/src/Event/Value/Test/Phpt.php',
@@ -5100,15 +5049,12 @@ return array(
     'Psr\\SimpleCache\\CacheException' => $vendorDir . '/psr/simple-cache/src/CacheException.php',
     'Psr\\SimpleCache\\CacheInterface' => $vendorDir . '/psr/simple-cache/src/CacheInterface.php',
     'Psr\\SimpleCache\\InvalidArgumentException' => $vendorDir . '/psr/simple-cache/src/InvalidArgumentException.php',
-<<<<<<< HEAD
-=======
     'Psy\\Clipboard\\ClipboardMethod' => $vendorDir . '/psy/psysh/src/Clipboard/ClipboardMethod.php',
     'Psy\\Clipboard\\CommandClipboardMethod' => $vendorDir . '/psy/psysh/src/Clipboard/CommandClipboardMethod.php',
     'Psy\\Clipboard\\NullClipboardMethod' => $vendorDir . '/psy/psysh/src/Clipboard/NullClipboardMethod.php',
     'Psy\\Clipboard\\Osc52ClipboardMethod' => $vendorDir . '/psy/psysh/src/Clipboard/Osc52ClipboardMethod.php',
     'Psy\\CodeAnalysis\\BufferAnalysis' => $vendorDir . '/psy/psysh/src/CodeAnalysis/BufferAnalysis.php',
     'Psy\\CodeAnalysis\\BufferAnalyzer' => $vendorDir . '/psy/psysh/src/CodeAnalysis/BufferAnalyzer.php',
->>>>>>> dev
     'Psy\\CodeCleaner' => $vendorDir . '/psy/psysh/src/CodeCleaner.php',
     'Psy\\CodeCleanerAware' => $vendorDir . '/psy/psysh/src/CodeCleanerAware.php',
     'Psy\\CodeCleaner\\AbstractClassPass' => $vendorDir . '/psy/psysh/src/CodeCleaner/AbstractClassPass.php',
@@ -5140,26 +5086,19 @@ return array(
     'Psy\\CodeCleaner\\ValidClassNamePass' => $vendorDir . '/psy/psysh/src/CodeCleaner/ValidClassNamePass.php',
     'Psy\\CodeCleaner\\ValidConstructorPass' => $vendorDir . '/psy/psysh/src/CodeCleaner/ValidConstructorPass.php',
     'Psy\\CodeCleaner\\ValidFunctionNamePass' => $vendorDir . '/psy/psysh/src/CodeCleaner/ValidFunctionNamePass.php',
-<<<<<<< HEAD
-    'Psy\\CommandAware' => $vendorDir . '/psy/psysh/src/CommandAware.php',
-=======
     'Psy\\CommandArgumentCompletionAware' => $vendorDir . '/psy/psysh/src/CommandArgumentCompletionAware.php',
     'Psy\\CommandAware' => $vendorDir . '/psy/psysh/src/CommandAware.php',
     'Psy\\CommandMapTrait' => $vendorDir . '/psy/psysh/src/CommandMapTrait.php',
->>>>>>> dev
     'Psy\\Command\\BufferCommand' => $vendorDir . '/psy/psysh/src/Command/BufferCommand.php',
     'Psy\\Command\\ClearCommand' => $vendorDir . '/psy/psysh/src/Command/ClearCommand.php',
     'Psy\\Command\\CodeArgumentParser' => $vendorDir . '/psy/psysh/src/Command/CodeArgumentParser.php',
     'Psy\\Command\\Command' => $vendorDir . '/psy/psysh/src/Command/Command.php',
-<<<<<<< HEAD
-=======
     'Psy\\Command\\ConfigCommand' => $vendorDir . '/psy/psysh/src/Command/ConfigCommand.php',
     'Psy\\Command\\Config\\AbstractConfigCommand' => $vendorDir . '/psy/psysh/src/Command/Config/AbstractConfigCommand.php',
     'Psy\\Command\\Config\\ConfigGetCommand' => $vendorDir . '/psy/psysh/src/Command/Config/ConfigGetCommand.php',
     'Psy\\Command\\Config\\ConfigListCommand' => $vendorDir . '/psy/psysh/src/Command/Config/ConfigListCommand.php',
     'Psy\\Command\\Config\\ConfigSetCommand' => $vendorDir . '/psy/psysh/src/Command/Config/ConfigSetCommand.php',
     'Psy\\Command\\CopyCommand' => $vendorDir . '/psy/psysh/src/Command/CopyCommand.php',
->>>>>>> dev
     'Psy\\Command\\DocCommand' => $vendorDir . '/psy/psysh/src/Command/DocCommand.php',
     'Psy\\Command\\DumpCommand' => $vendorDir . '/psy/psysh/src/Command/DumpCommand.php',
     'Psy\\Command\\EditCommand' => $vendorDir . '/psy/psysh/src/Command/EditCommand.php',
@@ -5195,10 +5134,6 @@ return array(
     'Psy\\Completion\\ContextAnalyzer' => $vendorDir . '/psy/psysh/src/Completion/ContextAnalyzer.php',
     'Psy\\Completion\\DeepestNodeVisitor' => $vendorDir . '/psy/psysh/src/Completion/DeepestNodeVisitor.php',
     'Psy\\Completion\\FuzzyMatcher' => $vendorDir . '/psy/psysh/src/Completion/FuzzyMatcher.php',
-<<<<<<< HEAD
-    'Psy\\Completion\\Source\\CatalogSource' => $vendorDir . '/psy/psysh/src/Completion/Source/CatalogSource.php',
-    'Psy\\Completion\\Source\\ClassConstantSource' => $vendorDir . '/psy/psysh/src/Completion/Source/ClassConstantSource.php',
-=======
     'Psy\\Completion\\Refiner\\AnalysisRefinerInterface' => $vendorDir . '/psy/psysh/src/Completion/Refiner/AnalysisRefinerInterface.php',
     'Psy\\Completion\\Refiner\\CommandContextRefiner' => $vendorDir . '/psy/psysh/src/Completion/Refiner/CommandContextRefiner.php',
     'Psy\\Completion\\Refiner\\CommandSyntaxRefiner' => $vendorDir . '/psy/psysh/src/Completion/Refiner/CommandSyntaxRefiner.php',
@@ -5206,7 +5141,6 @@ return array(
     'Psy\\Completion\\Source\\CatalogSource' => $vendorDir . '/psy/psysh/src/Completion/Source/CatalogSource.php',
     'Psy\\Completion\\Source\\ClassConstantSource' => $vendorDir . '/psy/psysh/src/Completion/Source/ClassConstantSource.php',
     'Psy\\Completion\\Source\\CommandArgumentSource' => $vendorDir . '/psy/psysh/src/Completion/Source/CommandArgumentSource.php',
->>>>>>> dev
     'Psy\\Completion\\Source\\CommandOptionSource' => $vendorDir . '/psy/psysh/src/Completion/Source/CommandOptionSource.php',
     'Psy\\Completion\\Source\\CommandSource' => $vendorDir . '/psy/psysh/src/Completion/Source/CommandSource.php',
     'Psy\\Completion\\Source\\HistorySource' => $vendorDir . '/psy/psysh/src/Completion/Source/HistorySource.php',
@@ -5381,10 +5315,7 @@ return array(
     'Psy\\Readline\\Interactive\\Actions\\TabAction' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Actions/TabAction.php',
     'Psy\\Readline\\Interactive\\Helper\\ArgumentExtractorVisitor' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Helper/ArgumentExtractorVisitor.php',
     'Psy\\Readline\\Interactive\\Helper\\BracketPair' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Helper/BracketPair.php',
-<<<<<<< HEAD
-=======
     'Psy\\Readline\\Interactive\\Helper\\CommandHighlighter' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Helper/CommandHighlighter.php',
->>>>>>> dev
     'Psy\\Readline\\Interactive\\Helper\\CompletionRenderer' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Helper/CompletionRenderer.php',
     'Psy\\Readline\\Interactive\\Helper\\CurrentWord' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Helper/CurrentWord.php',
     'Psy\\Readline\\Interactive\\Helper\\DebugLog' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Helper/DebugLog.php',
@@ -5397,11 +5328,6 @@ return array(
     'Psy\\Readline\\Interactive\\Input\\InputQueue' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Input/InputQueue.php',
     'Psy\\Readline\\Interactive\\Input\\Key' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Input/Key.php',
     'Psy\\Readline\\Interactive\\Input\\KeyBindings' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Input/KeyBindings.php',
-<<<<<<< HEAD
-    'Psy\\Readline\\Interactive\\Input\\ParseSnapshot' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Input/ParseSnapshot.php',
-    'Psy\\Readline\\Interactive\\Input\\ParseSnapshotCache' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Input/ParseSnapshotCache.php',
-=======
->>>>>>> dev
     'Psy\\Readline\\Interactive\\Input\\StatementCompletenessPolicy' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Input/StatementCompletenessPolicy.php',
     'Psy\\Readline\\Interactive\\Input\\StdinReader' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Input/StdinReader.php',
     'Psy\\Readline\\Interactive\\Input\\TokenNavigationPolicy' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Input/TokenNavigationPolicy.php',
@@ -5423,18 +5349,12 @@ return array(
     'Psy\\Readline\\Interactive\\Suggestion\\SuggestionResult' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Suggestion/SuggestionResult.php',
     'Psy\\Readline\\Interactive\\Suggestion\\WordExtractor' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Suggestion/WordExtractor.php',
     'Psy\\Readline\\Interactive\\Terminal' => $vendorDir . '/psy/psysh/src/Readline/Interactive/Terminal.php',
-<<<<<<< HEAD
-    'Psy\\Readline\\Libedit' => $vendorDir . '/psy/psysh/src/Readline/Libedit.php',
-    'Psy\\Readline\\Readline' => $vendorDir . '/psy/psysh/src/Readline/Readline.php',
-    'Psy\\Readline\\ReadlineAware' => $vendorDir . '/psy/psysh/src/Readline/ReadlineAware.php',
-=======
     'Psy\\Readline\\Interactive\\TerminalOutput' => $vendorDir . '/psy/psysh/src/Readline/Interactive/TerminalOutput.php',
     'Psy\\Readline\\LegacyReadline' => $vendorDir . '/psy/psysh/src/Readline/LegacyReadline.php',
     'Psy\\Readline\\Libedit' => $vendorDir . '/psy/psysh/src/Readline/Libedit.php',
     'Psy\\Readline\\Readline' => $vendorDir . '/psy/psysh/src/Readline/Readline.php',
     'Psy\\Readline\\ReadlineAware' => $vendorDir . '/psy/psysh/src/Readline/ReadlineAware.php',
     'Psy\\Readline\\ShellReadlineInterface' => $vendorDir . '/psy/psysh/src/Readline/ShellReadlineInterface.php',
->>>>>>> dev
     'Psy\\Readline\\Transient' => $vendorDir . '/psy/psysh/src/Readline/Transient.php',
     'Psy\\Readline\\Userland' => $vendorDir . '/psy/psysh/src/Readline/Userland.php',
     'Psy\\Reflection\\ReflectionConstant' => $vendorDir . '/psy/psysh/src/Reflection/ReflectionConstant.php',
@@ -5446,10 +5366,7 @@ return array(
     'Psy\\Shell' => $vendorDir . '/psy/psysh/src/Shell.php',
     'Psy\\ShellAware' => $vendorDir . '/psy/psysh/src/ShellAware.php',
     'Psy\\ShellLogger' => $vendorDir . '/psy/psysh/src/ShellLogger.php',
-<<<<<<< HEAD
-=======
     'Psy\\Shell\\PendingInputState' => $vendorDir . '/psy/psysh/src/Shell/PendingInputState.php',
->>>>>>> dev
     'Psy\\Sudo' => $vendorDir . '/psy/psysh/src/Sudo.php',
     'Psy\\Sudo\\SudoVisitor' => $vendorDir . '/psy/psysh/src/Sudo/SudoVisitor.php',
     'Psy\\SuperglobalsEnv' => $vendorDir . '/psy/psysh/src/SuperglobalsEnv.php',
@@ -5486,10 +5403,7 @@ return array(
     'Psy\\Util\\Tty' => $vendorDir . '/psy/psysh/src/Util/Tty.php',
     'Psy\\VarDumper\\Cloner' => $vendorDir . '/psy/psysh/src/VarDumper/Cloner.php',
     'Psy\\VarDumper\\Dumper' => $vendorDir . '/psy/psysh/src/VarDumper/Dumper.php',
-<<<<<<< HEAD
-=======
     'Psy\\VarDumper\\DumperBase' => $vendorDir . '/psy/psysh/src/VarDumper/DumperBase.php',
->>>>>>> dev
     'Psy\\VarDumper\\Presenter' => $vendorDir . '/psy/psysh/src/VarDumper/Presenter.php',
     'Psy\\VarDumper\\PresenterAware' => $vendorDir . '/psy/psysh/src/VarDumper/PresenterAware.php',
     'Psy\\VersionUpdater\\Checker' => $vendorDir . '/psy/psysh/src/VersionUpdater/Checker.php',
