@@ -46,7 +46,7 @@ class DashboardController extends Controller
     {
         $year = date('Y');
 
-        $revenues = Payment::where('status', 'successfull')
+        $revenues = Payment::where('status', 'paid')
             ->whereYear('created_at', $year)
             ->select(
                 DB::raw('MONTH(created_at) as month'),
@@ -87,7 +87,7 @@ class DashboardController extends Controller
         $year = date('Y');
         $month = date('m');
 
-        $revenues = Payment::where('status', 'successfull')
+        $revenues = Payment::where('status', 'paid')
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->select(
