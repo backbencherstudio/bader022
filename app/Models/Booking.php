@@ -28,7 +28,7 @@ class Booking extends Model
 
     public function service()
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Service::class, 'service_id');
     }
 
     public function bookedUser()
@@ -59,9 +59,12 @@ class Booking extends Model
     {
         return $this->hasOne(MerchantPayment::class, 'booking_id', 'id');
     }
-    
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
 }

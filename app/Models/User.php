@@ -66,6 +66,10 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+    // public function getJWTCustomClaims()
+    // {
+    //     return [];
+    // }
 
     public function services()
     {
