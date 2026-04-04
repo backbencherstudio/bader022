@@ -92,12 +92,20 @@
                 <td>
 
                     @php
-                        $logoPath = public_path(data_get($invoice, 'merchant_info.business_logo', ''));
-                        $logoBase64 = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : '';
+                        $logo = data_get($invoice, 'merchant_info.business_logo', '');
+                        $logoPath = public_path($logo);
+
+                        $logoBase64 = '';
+
+                        if (!empty($logo) && file_exists($logoPath) && is_file($logoPath)) {
+                            $mimeType = mime_content_type($logoPath) ?: 'image/png';
+                            $logoBase64 =
+                                'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($logoPath));
+                        }
                     @endphp
 
                     @if ($logoBase64)
-                        <img src="data:image/png;base64,{{ $logoBase64 }}" class="logo">
+                        <img src="{{ $logoBase64 }}" class="logo">
                     @endif
 
                     <h2>{{ data_get($invoice, 'merchant_info.business_name', '') }}</h2>
