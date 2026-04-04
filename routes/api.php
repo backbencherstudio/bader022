@@ -34,6 +34,8 @@ use App\Http\Controllers\Merchant\WhyChooseUsController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
+
+
 // user login
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/marchant/register', [AuthController::class, 'marchantregister'])->name('marchant.register');

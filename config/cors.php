@@ -19,6 +19,7 @@ return [
         'https://bader022-front-end.vercel.app',
         'http://192.168.7.66:3000',
         'https://bokli.io',
+        // 'https://bokli.io',
 
     ],
 
