@@ -497,19 +497,19 @@ class AuthController extends Controller
 
                 Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
 
-                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/create-account?user_id=" . $merchant->id;
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . "/create-account?user_id=" . $merchant->id;
 
                 return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/registration-failed?user_id=" . $merchant->id;
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . "/registration-failed?user_id=" . $merchant->id;
 
                 return redirect()->away($frontendUrl);
             }
         }
 
-        $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/registration-failed?user_id=" . $chargeId;
+        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . "/registration-failed?user_id=" . $chargeId;
         return redirect()->away($frontendUrl);
     }
 
