@@ -436,6 +436,7 @@ class AuthController extends Controller
                     'business_category' => $merchant->business_category,
                     'business_address' => $merchant->address ?? null,
                     'country' => 'Saudi Arabia',
+                    'city' => 'Riyadh',
                     'time_zone' => 'Asia/Riyadh',
                     'currency' => 'SAR',
                 ]);
@@ -715,6 +716,7 @@ class AuthController extends Controller
                     'business_category' => $merchant->business_category,
                     'business_address' => $merchant->address ?? null,
                     'country' => 'Saudi Arabia',
+                    'city' => 'Riyadh',
                     'time_zone' => 'Asia/Riyadh',
                     'currency' => 'SAR',
                 ]);
