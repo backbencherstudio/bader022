@@ -123,7 +123,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => $role.' login successfully',
+            'message' => $role . ' login successfully',
             'data' => [
                 'user' => $user,
                 'user_type' => $role,
@@ -153,10 +153,10 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
 
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -208,9 +208,9 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -256,8 +256,14 @@ class AuthController extends Controller
         }
 
         $plan = Plan::find($request->plan_id);
-        $rawSubdomain = Str::before($request->email, '@');
-        $subdomain = Str::slug($rawSubdomain);
+        $subdomain = strtolower(Str::slug($request->business_name, ''));
+
+        if (empty($subdomain)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid business name for subdomain'
+            ], 422);
+        }
 
         if (User::where('website_domain', $subdomain)->exists()) {
             return response()->json(['status' => false, 'message' => 'This subdomain is already taken.'], 422);
@@ -302,7 +308,6 @@ class AuthController extends Controller
                 $token = auth('api')->login($merchant);
 
                 return response()->json(['success' => true, 'message' => 'Register is successfull', 'token' => $token], 201);
-
             } catch (\Exception $e) {
                 DB::rollBack();
 
@@ -316,7 +321,7 @@ class AuthController extends Controller
         }
 
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
             'Content-Type' => 'application/json',
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
@@ -335,7 +340,6 @@ class AuthController extends Controller
                 'udf1' => $request->name,
                 'udf2' => $request->email,
                 'udf3' => $request->phone,
-                'udf4' => $request->password,
                 'business_name' => $request->business_name,
                 'business_category' => $request->business_category,
                 'plan_id' => $plan->id,
@@ -430,7 +434,7 @@ class AuthController extends Controller
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/$chargeId");
 
         $data = $response->json();
@@ -479,19 +483,19 @@ class AuthController extends Controller
 
                 Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/create-account?user_id='.$merchant->id;
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/create-account?user_id=' . $merchant->id;
 
                 return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/registration-failed?user_id='.$merchant->id;
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $merchant->id;
 
                 return redirect()->away($frontendUrl);
             }
         }
 
-        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/registration-failed?user_id='.$chargeId;
+        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $chargeId;
 
         return redirect()->away($frontendUrl);
     }
@@ -569,8 +573,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
             // 'role' => 'required|exists:roles,id',
@@ -589,9 +593,9 @@ class AuthController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $user->image = 'user/'.$imageName;
+            $user->image = 'user/' . $imageName;
         }
 
         $user->name = $request->name;
@@ -890,8 +894,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'address' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -926,11 +930,11 @@ class AuthController extends Controller
                 unlink(public_path($user->image));
             }
 
-            $imageName = time().'_'.$request->image->getClientOriginalName();
+            $imageName = time() . '_' . $request->image->getClientOriginalName();
 
             $request->image->move(public_path('uploads/users'), $imageName);
 
-            $data['image'] = 'uploads/users/'.$imageName;
+            $data['image'] = 'uploads/users/' . $imageName;
         }
 
         if (! empty($data)) {
@@ -997,7 +1001,6 @@ class AuthController extends Controller
                     'message' => 'Subscription renewed successfully',
                     'subscription' => $subscription,
                 ], 200);
-
             } catch (\Exception $e) {
                 DB::rollBack();
 
@@ -1012,7 +1015,7 @@ class AuthController extends Controller
         }
 
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
             'Content-Type' => 'application/json',
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
@@ -1054,7 +1057,7 @@ class AuthController extends Controller
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/{$tap_id}");
 
         $paymentData = $response->json();
@@ -1098,11 +1101,10 @@ class AuthController extends Controller
                     'message' => 'Subscription renewed successfully',
                     // 'data'    => $subscription
                 ], 200);
-
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                return response()->json(['success' => false, 'message' => 'Internal Error: '.$e->getMessage()], 500);
+                return response()->json(['success' => false, 'message' => 'Internal Error: ' . $e->getMessage()], 500);
             }
         }
 
