@@ -21,7 +21,7 @@ return new class extends Migration
             $table->integer('duration');
             $table->decimal('price', 10, 2);
             $table->text('description')->nullable();
-            $table->string('image');
+            $table->string('image')->nullable();
 
             $table->boolean('status')->default(1);
 

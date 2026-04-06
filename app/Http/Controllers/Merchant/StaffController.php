@@ -15,7 +15,7 @@ class StaffController extends Controller
         $query = Staff::where('user_id', auth()->id())->with('service')->orderBy('id', 'desc');
 
         if ($request->filled('name')) {
-            $query->where('name', 'like', '%'.$request->name.'%');
+            $query->where('name', 'like', '%' . $request->name . '%');
         }
 
         $staffs = $query->get();
@@ -77,8 +77,6 @@ class StaffController extends Controller
         ], 201);
     }
 
-
-
     public function show($id)
     {
         $staff = Staff::where('id', $id)->where('user_id', auth()->id())->with('service')->first();
@@ -111,7 +109,7 @@ class StaffController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'role' => 'sometimes|required|string|in:staff,admin',
             'service_id' => 'sometimes|required|string',
-            'image' => 'sometimes|required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'sometimes|nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'nullable|boolean',
         ]);
 
@@ -139,10 +137,10 @@ class StaffController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time().'_'.$image->getClientOriginalName();
+            $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('staffs'), $imageName);
 
-            $staff->image = 'staffs/'.$imageName;
+            $staff->image = 'staffs/' . $imageName;
         }
 
         $staff->fill($request->only([

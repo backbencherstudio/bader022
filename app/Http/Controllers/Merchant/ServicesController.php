@@ -34,7 +34,7 @@ class ServicesController extends Controller
             'duration' => 'required|string',
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
-            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'nullable|boolean',
         ]);
 
@@ -51,7 +51,7 @@ class ServicesController extends Controller
 
             $image = $request->file('image');
 
-            $imageName = uniqid().'.'.$image->getClientOriginalExtension();
+            $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
 
             $destination = public_path('services');
 
@@ -61,7 +61,7 @@ class ServicesController extends Controller
 
             $image->move($destination, $imageName);
 
-            $imagePath = 'services/'.$imageName;
+            $imagePath = 'services/' . $imageName;
         }
 
         $service = Service::create([
@@ -115,7 +115,7 @@ class ServicesController extends Controller
             'duration' => 'sometimes|required|string',
             'price' => 'sometimes|required|numeric|min:0',
             'description' => 'nullable|string',
-            'image' => 'sometimes|required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'sometimes|nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'nullable|boolean',
         ]);
 
