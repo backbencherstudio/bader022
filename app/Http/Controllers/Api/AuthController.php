@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\PaymentCompletedMail;
+use App\Models\BusinessHour;
+use App\Models\MerchantSetting;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Subscription;
@@ -123,7 +125,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => $role . ' login successfully',
+            'message' => $role.' login successfully',
             'data' => [
                 'user' => $user,
                 'user_type' => $role,
@@ -153,10 +155,10 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
 
-            $imagePath = 'user/' . $imageName;
+            $imagePath = 'user/'.$imageName;
         }
 
         $user = User::create([
@@ -208,9 +210,9 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $imagePath = 'user/' . $imageName;
+            $imagePath = 'user/'.$imageName;
         }
 
         $user = User::create([
@@ -236,6 +238,9 @@ class AuthController extends Controller
             'token' => $token,
         ], 201);
     }
+
+
+
 
     public function marchantregister(Request $request)
     {
@@ -360,81 +365,13 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // public function tapSuccessregister(Request $request)
-    // {
-    //     $chargeId = $request->tap_id; // Tap provides charge ID in query string
-    //     $tapSetting = DB::table('settings')->latest()->first();
-
-    //     $response = Http::withHeaders([
-    //         'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
-    //     ])->get("https://api.tap.company/v2/charges/$chargeId");
-
-    //     $data = $response->json();
-
-    //     if ($data['status'] === 'CAPTURED') {
-    //         $meta = $data['metadata'];
-
-    //         DB::beginTransaction();
-    //         try {
-
-    //             $merchant = User::create([
-    //                 'name' => $meta['udf1'],
-    //                 'email' => $meta['udf2'],
-    //                 'phone' => $meta['udf3'],
-    //                 'type' => 2,
-    //                 'password' => Hash::make($meta['udf4']),
-    //                 'business_name' => $meta['business_name'],
-    //                 'business_category' => $meta['business_category'],
-    //                 'website_domain' => $meta['subdomain'],
-    //                 'address' => $meta['address'] ?? null,
-    //                 'number_of_branches' => $meta['branches'] ?? null,
-    //             ]);
-
-    //             $endDate = ($meta['plan_id'] == 2) ? now()->addMonth() : now()->addYear();
-
-    //             $subscription = Subscription::create([
-    //                 'user_id' => $merchant->id,
-    //                 'plan_id' => $meta['plan_id'],
-    //                 'starts_at' => now(),
-    //                 'ends_at' => $endDate,
-    //                 'status' => 'active',
-    //                 'auto_renew' => 0,
-    //             ]);
-
-    //             Payment::create([
-    //                 'user_id' => $merchant->id,
-    //                 'subscription_id' => $subscription->id,
-    //                 'amount' => $data['amount'],
-    //                 'currency' => 'SAR',
-    //                 'payment_method' => 'tap',
-    //                 'transaction_id' => $chargeId,
-    //                 'status' => 'paid',
-    //             ]);
-
-    //             DB::commit();
-
-    //             return response()->json(['status' => true, 'message' => 'Registration Successful']);
-
-    //         } catch (\Exception $e) {
-    //             DB::rollBack();
-
-    //             $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/registration-failed?user_id=" . $merchant->id;
-
-    //             return redirect()->away($frontendUrl);
-    //         }
-    //     }
-
-    //     $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/registration-failed?user_id=" . $chargeId;
-    //     return redirect()->away($frontendUrl);
-    // }
-
     public function tapSuccessregister(Request $request)
     {
         $chargeId = $request->tap_id;
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/$chargeId");
 
         $data = $response->json();
@@ -483,19 +420,19 @@ class AuthController extends Controller
 
                 Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/create-account?user_id=' . $merchant->id;
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/create-account?user_id='.$merchant->id;
 
                 return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $merchant->id;
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/registration-failed?user_id='.$merchant->id;
 
                 return redirect()->away($frontendUrl);
             }
         }
 
-        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $chargeId;
+        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/registration-failed?user_id='.$chargeId;
 
         return redirect()->away($frontendUrl);
     }
@@ -573,8 +510,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
             // 'role' => 'required|exists:roles,id',
@@ -593,9 +530,9 @@ class AuthController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $user->image = 'user/' . $imageName;
+            $user->image = 'user/'.$imageName;
         }
 
         $user->name = $request->name;
@@ -894,8 +831,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
+            'email' => 'nullable|email|unique:users,email,'.$user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
             'address' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -930,11 +867,11 @@ class AuthController extends Controller
                 unlink(public_path($user->image));
             }
 
-            $imageName = time() . '_' . $request->image->getClientOriginalName();
+            $imageName = time().'_'.$request->image->getClientOriginalName();
 
             $request->image->move(public_path('uploads/users'), $imageName);
 
-            $data['image'] = 'uploads/users/' . $imageName;
+            $data['image'] = 'uploads/users/'.$imageName;
         }
 
         if (! empty($data)) {
@@ -1015,7 +952,7 @@ class AuthController extends Controller
         }
 
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
             'Content-Type' => 'application/json',
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
@@ -1057,7 +994,7 @@ class AuthController extends Controller
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/{$tap_id}");
 
         $paymentData = $response->json();
@@ -1104,7 +1041,7 @@ class AuthController extends Controller
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                return response()->json(['success' => false, 'message' => 'Internal Error: ' . $e->getMessage()], 500);
+                return response()->json(['success' => false, 'message' => 'Internal Error: '.$e->getMessage()], 500);
             }
         }
 
