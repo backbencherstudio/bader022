@@ -442,13 +442,13 @@ class AuthController extends Controller
                 ]);
 
                 $defaultHours = [
-                    'monday' => ['open' => '00:00', 'close' => '23:59'],
-                    'tuesday' => ['open' => '00:00', 'close' => '23:59'],
-                    'wednesday' => ['open' => '00:00', 'close' => '23:59'],
-                    'thursday' => ['open' => '00:00', 'close' => '23:59'],
-                    'friday' => ['open' => '00:00', 'close' => '23:59'],
-                    'saturday' => ['open' => '00:00', 'close' => '23:59'],
-                    'sunday' => ['open' => '00:00', 'close' => '23:59'],
+                    'monday' => ['open' => '00:00', 'close' => '24:00'],
+                    'tuesday' => ['open' => '00:00', 'close' => '24:00'],
+                    'wednesday' => ['open' => '00:00', 'close' => '24:00'],
+                    'thursday' => ['open' => '00:00', 'close' => '24:00'],
+                    'friday' => ['open' => '00:00', 'close' => '24:00'],
+                    'saturday' => ['open' => '00:00', 'close' => '24:00'],
+                    'sunday' => ['open' => '00:00', 'close' => '24:00'],
                 ];
 
                 foreach ($defaultHours as $day => $time) {
@@ -722,13 +722,13 @@ class AuthController extends Controller
                 ]);
 
                 $defaultHours = [
-                    'monday' => ['open' => '00:00', 'close' => '23:59'],
-                    'tuesday' => ['open' => '00:00', 'close' => '23:59'],
-                    'wednesday' => ['open' => '00:00', 'close' => '23:59'],
-                    'thursday' => ['open' => '00:00', 'close' => '23:59'],
-                    'friday' => ['open' => '00:00', 'close' => '23:59'],
-                    'saturday' => ['open' => '00:00', 'close' => '23:59'],
-                    'sunday' => ['open' => '00:00', 'close' => '23:59'],
+                    'monday' => ['open' => '00:00', 'close' => '24:00'],
+                    'tuesday' => ['open' => '00:00', 'close' => '24:00'],
+                    'wednesday' => ['open' => '00:00', 'close' => '24:00'],
+                    'thursday' => ['open' => '00:00', 'close' => '24:00'],
+                    'friday' => ['open' => '00:00', 'close' => '24:00'],
+                    'saturday' => ['open' => '00:00', 'close' => '24:00'],
+                    'sunday' => ['open' => '00:00', 'close' => '24:00'],
                 ];
 
                 foreach ($defaultHours as $day => $time) {
