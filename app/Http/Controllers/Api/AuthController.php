@@ -34,62 +34,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // public function login(Request $request)
-    // {
-    //     $email = $request->email;
-    //     $password = $request->password;
-
-    //     $user = User::where('email', $email)->first();
-
-    //     if (! $user) {
-    //         return response()->json(['error' => 'Email Incorrect'], 401);
-    //     }
-
-    //     if (! Hash::check($password, $user->password)) {
-    //         return response()->json(['error' => 'Password Incorrect'], 401);
-    //     }
-
-    //     if ($user->type == 2) {
-    //         $subscription = $user->subscription;
-
-    //         if (! $subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
-    //             return response()->json([
-    //                 'error' => 'Your subscription has expired. Please renew to login.',
-    //             ], 403);
-    //         }
-    //     }
-
-    //     if ($user->type == 0) {
-    //         $role = 'User';
-    //     } elseif ($user->type == 1) {
-    //         $role = 'Admin';
-    //     } elseif ($user->type == 2) {
-    //         $role = 'Merchant';
-    //     } else {
-    //         return response()->json(['error' => 'Invalid user type'], 403);
-    //     }
-
-    //     $token = Auth::guard('api')->login($user);
-
-    //     if ($user->jwt_token) {
-    //         try {
-    //             JWTAuth::setToken($user->jwt_token)->invalidate();
-    //         } catch (\Exception $e) {
-    //         }
-    //     }
-
-    //     $user->update(['jwt_token' => $token]);
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => $role . ' login successfully',
-    //         'data' => [
-    //             'user' => $user,
-    //             'user_type' => $role,
-    //         ],
-    //         'token' => $token,
-    //     ]);
-    // }
 
     public function login(Request $request)
     {
