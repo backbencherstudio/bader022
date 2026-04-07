@@ -8,3 +8,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('subscription:update-status')->everyMinute();
+Schedule::command('booking:update-status')->everyMinute();
