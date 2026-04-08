@@ -8,30 +8,42 @@ use App\Models\Booking;
 
 class UpdateBookingStatus extends Command
 {
-
+   
     protected $signature = 'booking:update-status';
 
 
-    protected $description = 'Update the status of bookings that are past their date_time';
+    protected $description = 'Update the status of bookings that are past their date_time to complete';
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     public function handle()
     {
 
-        $bookings = Booking::whereIn('status', ['confirm', 'rescheduled'])
-            ->where('date_time', '<', Carbon::now())
-            ->get();
+        $now = Carbon::now('Asia/Riyadh');
+        $this->info("Current System Time (Riyadh): " . $now->toDateTimeString());
 
-        foreach ($bookings as $booking) {
-            $booking->status = 'complete';
-            $booking->save();
-            $this->info("Booking ID {$booking->id} status updated to 'complete'");
+
+        $query = Booking::whereIn('status', ['confirm', 'rescheduled'])
+                        ->where('date_time', '<', $now);
+
+        $count = $query->count();
+
+        if ($count === 0) {
+            $this->warn('No eligible bookings found to update.');
+            return;
         }
 
-        $this->info('Booking statuses updated successfully!');
+        $this->info("Found {$count} bookings to update.");
+
+
+        $query->chunk(100, function ($bookings) {
+            foreach ($bookings as $booking) {
+                $booking->update([
+                    'status' => 'complete'
+                ]);
+                $this->line("ID: {$booking->id} -> Status changed to complete.");
+            }
+        });
+
+        $this->info('All eligible booking statuses updated successfully!');
     }
 }

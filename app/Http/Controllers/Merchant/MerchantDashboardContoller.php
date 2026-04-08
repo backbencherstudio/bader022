@@ -25,9 +25,9 @@ class MerchantDashboardContoller extends Controller
 
         return response()->json([
 
-            'revenue' => MerchantPayment::where('user_id', $merchantId)
+            'revenue' => number_format(MerchantPayment::where('user_id', $merchantId)
                 ->where('payment_status', 'paid')
-                ->sum('amount'),
+                ->sum('amount'), 0, '.', ''),
 
             'total_bookings' => Booking::where('user_id', $merchantId)
                 ->count(),

@@ -44,9 +44,9 @@ class AnalyticesController extends Controller
             ->count('email');
 
         return response()->json([
-            'revenue' => MerchantPayment::where('user_id', $merchantId)
+            'revenue' => number_format(MerchantPayment::where('user_id', $merchantId)
                 ->where('payment_status', 'paid')
-                ->sum('amount'),
+                ->sum('amount'), 0, ';', ''),
 
             'total_bookings' => Booking::where('user_id', $merchantId)->count(),
 
@@ -167,7 +167,7 @@ class AnalyticesController extends Controller
                 'staff_name' => $item->staff ? $item->staff->name : 'Unknown Staff',
 
                 'service' => $item->service ? ($item->service->name ?? $item->service->service_name ?? 'N/A') : 'N/A',
-                'revenue_generated' => $item->total_revenue,
+                'revenue_generated' => (int) $item->total_revenue,
             ];
         });
 

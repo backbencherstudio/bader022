@@ -19,7 +19,7 @@ return new class extends Migration
 
             $table->string('service_name');
             $table->integer('duration');
-            $table->decimal('price', 10, 2);
+            $table->decimal('price', 10, 0);
             $table->text('description')->nullable();
             $table->string('image')->nullable();
 

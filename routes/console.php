@@ -7,4 +7,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('subscription:update-status')->hourly();
+Schedule::command('subscription:update-status')->everyMinute();
+Schedule::command('booking:update-status')->everyMinute();
