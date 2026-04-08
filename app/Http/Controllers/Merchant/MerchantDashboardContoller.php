@@ -25,9 +25,12 @@ class MerchantDashboardContoller extends Controller
 
         return response()->json([
 
-            'revenue' => number_format(MerchantPayment::where('user_id', $merchantId)
+            'revenue' => (int) MerchantPayment::where('user_id', $merchantId)
                 ->where('payment_status', 'paid')
-                ->sum('amount'), 0, '.', ''),
+                ->whereHas('booking', function ($query) {
+                    $query->where('status', 'complete');
+                })
+                ->sum('amount'),
 
             'total_bookings' => Booking::where('user_id', $merchantId)
                 ->count(),
@@ -62,9 +65,18 @@ class MerchantDashboardContoller extends Controller
             ->pluck('total_revenue', 'month');
 
         $months = [
-            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
-            5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
-            9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec',
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
+            5 => 'May',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Aug',
+            9 => 'Sep',
+            10 => 'Oct',
+            11 => 'Nov',
+            12 => 'Dec',
         ];
 
         $result = [];
