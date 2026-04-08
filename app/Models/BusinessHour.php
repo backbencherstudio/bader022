@@ -37,10 +37,15 @@ class BusinessHour extends Model
     }
 
     public function store()
-{
-    return $this->belongsTo(
-        MerchantSetting::class,
-        'merchant_store_setting_id'
-    );
-}
+    {
+        return $this->belongsTo(
+            MerchantSetting::class,
+            'merchant_store_setting_id'
+        );
+    }
+
+    public function getCloseTimeAttribute($value)
+    {
+        return $value === '00:00:00' ? '24:00' : substr($value, 0, 5);
+    }
 }
