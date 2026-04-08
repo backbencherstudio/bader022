@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
@@ -68,5 +69,8 @@ class Booking extends Model
     //     return $this->belongsTo(User::class);
     // }
 
- 
+    public function getDateTimeAttribute($value)
+    {
+        return Carbon::parse($value)->format('Y-m-d h:i A');
+    }
 }
