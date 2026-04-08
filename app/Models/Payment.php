@@ -26,5 +26,8 @@ class Payment extends Model
         return $this->belongsTo(Subscription::class);
     }
 
-
+    public function getAmountAttribute($value)
+    {
+        return (int) $value;
+    }
 }
