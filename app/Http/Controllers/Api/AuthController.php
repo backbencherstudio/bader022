@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\Mail\PaymentCompletedMail;
 
 class AuthController extends Controller
 {
@@ -50,9 +49,8 @@ class AuthController extends Controller
     //         return response()->json(['error' => 'Password Incorrect'], 401);
     //     }
 
-        // Check subscription for merchants
-        if ($user->type == 2) {
-            $subscription = $user->subscription;
+    //     if ($user->type == 2) {
+    //         $subscription = $user->subscription;
 
     //         if (! $subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
     //             return response()->json([
@@ -61,7 +59,47 @@ class AuthController extends Controller
     //         }
     //     }
 
-        // Determine user role
+    //     if ($user->type == 0) {
+    //         $role = 'User';
+    //     } elseif ($user->type == 1) {
+    //         $role = 'Admin';
+    //     } elseif ($user->type == 2) {
+    //         $role = 'Merchant';
+    //     } else {
+    //         return response()->json(['error' => 'Invalid user type'], 403);
+    //     }
+
+    //     $token = Auth::guard('api')->login($user);
+
+    //     if ($user->jwt_token) {
+    //         try {
+    //             JWTAuth::setToken($user->jwt_token)->invalidate();
+    //         } catch (\Exception $e) {
+    //         }
+    //     }
+
+    //     $user->update(['jwt_token' => $token]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => $role . ' login successfully',
+    //         'data' => [
+    //             'user' => $user,
+    //             'user_type' => $role,
+    //         ],
+    //         'token' => $token,
+    //     ]);
+    // }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        if (! $token = Auth::guard('api')->attempt($credentials)) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
+        }
+
+        $user = Auth::guard('api')->user();
         if ($user->type == 0) {
             $role = 'User';
         } elseif ($user->type == 1) {
@@ -75,9 +113,6 @@ class AuthController extends Controller
                 'data' => null,
             ], 403);
         }
-
-        // Generate JWT token
-        $token = Auth::guard('api')->login($user);
 
         if ($user->jwt_token) {
             try {
@@ -204,7 +239,128 @@ class AuthController extends Controller
         ], 201);
     }
 
+    // public function marchantregister(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required|string|max:255',
+    //         'business_name' => 'required|string|max:255',
+    //         'email' => 'required|email|unique:users,email',
+    //         'phone' => 'required|string|max:20|unique:users,phone',
+    //         'password' => 'required|string|min:6|confirmed',
+    //         'business_category' => 'required|in:salon_beauty,home_services,health,fitness_pro_gym,others',
+    //         'plan_id' => 'required|exists:plans,id',
+    //         'number_of_branches' => 'nullable|integer',
+    //         'address' => 'nullable|string|max:500',
+    //     ]);
 
+    //     if ($validator->fails()) {
+    //         return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
+    //     }
+
+    //     $plan = Plan::find($request->plan_id);
+    //     $subdomain = strtolower(Str::slug($request->business_name, ''));
+
+    //     if (empty($subdomain)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid business name for subdomain'
+    //         ], 422);
+    //     }
+
+    //     if (User::where('website_domain', $subdomain)->exists()) {
+    //         return response()->json(['status' => false, 'message' => 'This subdomain is already taken.'], 422);
+    //     }
+
+    //     if ($plan->id == 1) {
+    //         DB::beginTransaction();
+    //         try {
+    //             $merchant = User::create([
+    //                 'name' => $request->name,
+    //                 'email' => $request->email,
+    //                 'phone' => $request->phone,
+    //                 'type' => 2,
+    //                 'password' => Hash::make($request->password),
+    //                 'business_category' => $request->business_category,
+    //                 'number_of_branches' => $request->number_of_branches,
+    //                 'address' => $request->address,
+    //                 'business_name' => $request->business_name,
+    //                 'website_domain' => $subdomain,
+    //             ]);
+
+    //             $subscription = Subscription::create([
+    //                 'user_id' => $merchant->id,
+    //                 'plan_id' => $plan->id,
+    //                 'starts_at' => now(),
+    //                 'ends_at' => now()->addDays(7),
+    //                 'status' => 'active',
+    //                 'auto_renew' => 0,
+    //             ]);
+
+    //             Payment::create([
+    //                 'user_id' => $merchant->id,
+    //                 'subscription_id' => $subscription->id,
+    //                 'amount' => 0,
+    //                 'currency' => 'SAR',
+    //                 'payment_method' => 'free',
+    //                 'transaction_id' => Str::uuid(),
+    //                 'status' => 'paid',
+    //             ]);
+
+    //             DB::commit();
+    //             $token = auth('api')->login($merchant);
+
+    //             return response()->json(['success' => true, 'message' => 'Register is successfull', 'token' => $token], 201);
+    //         } catch (\Exception $e) {
+    //             DB::rollBack();
+
+    //             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    //         }
+    //     }
+
+    //     $tapSetting = DB::table('settings')->latest()->first();
+    //     if (! $tapSetting || ! $tapSetting->tap_secret_key) {
+    //         return response()->json(['success' => false, 'message' => 'Payment config missing'], 422);
+    //     }
+
+    //     $tapResponse = Http::withHeaders([
+    //         'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+    //         'Content-Type' => 'application/json',
+    //     ])->post('https://api.tap.company/v2/charges', [
+    //         'amount' => $plan->price,
+    //         'currency' => 'SAR',
+    //         'customer' => [
+    //             'first_name' => $request->name,
+    //             'email' => $request->email,
+    //             'phone' => ['country_code' => '966', 'number' => $request->phone],
+    //         ],
+    //         'source' => ['id' => 'src_all'],
+    //         'redirect' => [
+    //             'url' => url('/api/tap-successregister'),
+    //         ],
+
+    //         'metadata' => [
+    //             'udf1' => $request->name,
+    //             'udf2' => $request->email,
+    //             'udf3' => $request->phone,
+    //             'business_name' => $request->business_name,
+    //             'business_category' => $request->business_category,
+    //             'plan_id' => $plan->id,
+    //             'subdomain' => $subdomain,
+    //             'address' => $request->address,
+    //             'branches' => $request->number_of_branches,
+    //         ],
+    //     ]);
+
+    //     if ($tapResponse->failed()) {
+    //         return response()->json(['success' => false, 'message' => 'Payment creation failed'], 500);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Redirect to payment',
+    //         'tap_payment_url' => $tapResponse->json()['transaction']['url'],
+    //     ], 201);
+    // }
 
 
     public function marchantregister(Request $request)
@@ -316,7 +472,6 @@ class AuthController extends Controller
             }
         }
 
-        // --- CASE 2: PAID PLAN (ID = 2, 3) ---
         $tapSetting = DB::table('settings')->latest()->first();
         if (! $tapSetting || ! $tapSetting->tap_secret_key) {
             return response()->json(['success' => false, 'message' => 'Payment config missing'], 422);
@@ -363,6 +518,145 @@ class AuthController extends Controller
     }
 
 
+    // public function tapSuccessregister(Request $request)
+    // {
+    //     $chargeId = $request->tap_id; // Tap provides charge ID in query string
+    //     $tapSetting = DB::table('settings')->latest()->first();
+
+    //     $response = Http::withHeaders([
+    //         'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+    //     ])->get("https://api.tap.company/v2/charges/$chargeId");
+
+    //     $data = $response->json();
+
+    //     if ($data['status'] === 'CAPTURED') {
+    //         $meta = $data['metadata'];
+
+    //         DB::beginTransaction();
+    //         try {
+
+    //             $merchant = User::create([
+    //                 'name' => $meta['udf1'],
+    //                 'email' => $meta['udf2'],
+    //                 'phone' => $meta['udf3'],
+    //                 'type' => 2,
+    //                 'password' => Hash::make($meta['udf4']),
+    //                 'business_name' => $meta['business_name'],
+    //                 'business_category' => $meta['business_category'],
+    //                 'website_domain' => $meta['subdomain'],
+    //                 'address' => $meta['address'] ?? null,
+    //                 'number_of_branches' => $meta['branches'] ?? null,
+    //             ]);
+
+    //             $endDate = ($meta['plan_id'] == 2) ? now()->addMonth() : now()->addYear();
+
+    //             $subscription = Subscription::create([
+    //                 'user_id' => $merchant->id,
+    //                 'plan_id' => $meta['plan_id'],
+    //                 'starts_at' => now(),
+    //                 'ends_at' => $endDate,
+    //                 'status' => 'active',
+    //                 'auto_renew' => 0,
+    //             ]);
+
+    //             Payment::create([
+    //                 'user_id' => $merchant->id,
+    //                 'subscription_id' => $subscription->id,
+    //                 'amount' => $data['amount'],
+    //                 'currency' => 'SAR',
+    //                 'payment_method' => 'tap',
+    //                 'transaction_id' => $chargeId,
+    //                 'status' => 'paid',
+    //             ]);
+
+    //             DB::commit();
+
+    //             return response()->json(['status' => true, 'message' => 'Registration Successful']);
+
+    //         } catch (\Exception $e) {
+    //             DB::rollBack();
+
+    //             $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/registration-failed?user_id=" . $merchant->id;
+
+    //             return redirect()->away($frontendUrl);
+    //         }
+    //     }
+
+    //     $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000') . "/registration-failed?user_id=" . $chargeId;
+    //     return redirect()->away($frontendUrl);
+    // }
+
+    // public function tapSuccessregister(Request $request)
+    // {
+    //     $chargeId = $request->tap_id;
+    //     $tapSetting = DB::table('settings')->latest()->first();
+
+    //     $response = Http::withHeaders([
+    //         'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+    //     ])->get("https://api.tap.company/v2/charges/$chargeId");
+
+    //     $data = $response->json();
+
+    //     if ($data['status'] === 'CAPTURED') {
+    //         $meta = $data['metadata'];
+
+    //         DB::beginTransaction();
+    //         try {
+
+    //             $merchant = User::create([
+    //                 'name' => $meta['udf1'],
+    //                 'email' => $meta['udf2'],
+    //                 'phone' => $meta['udf3'],
+    //                 'type' => 2,
+    //                 'password' => Hash::make($meta['udf4']),
+    //                 'business_name' => $meta['business_name'],
+    //                 'business_category' => $meta['business_category'],
+    //                 'website_domain' => $meta['subdomain'],
+    //                 'address' => $meta['address'] ?? null,
+    //                 'number_of_branches' => $meta['branches'] ?? null,
+    //             ]);
+
+    //             $endDate = ($meta['plan_id'] == 2) ? now()->addMonth() : now()->addYear();
+
+    //             $subscription = Subscription::create([
+    //                 'user_id' => $merchant->id,
+    //                 'plan_id' => $meta['plan_id'],
+    //                 'starts_at' => now(),
+    //                 'ends_at' => $endDate,
+    //                 'status' => 'active',
+    //                 'auto_renew' => 0,
+    //             ]);
+
+    //             Payment::create([
+    //                 'user_id' => $merchant->id,
+    //                 'subscription_id' => $subscription->id,
+    //                 'amount' => $data['amount'],
+    //                 'currency' => 'SAR',
+    //                 'payment_method' => 'tap',
+    //                 'transaction_id' => $chargeId,
+    //                 'status' => 'paid',
+    //             ]);
+
+    //             DB::commit();
+
+    //             Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
+
+    //             $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/create-account?user_id=' . $merchant->id;
+
+    //             return redirect()->away($frontendUrl);
+    //         } catch (\Exception $e) {
+    //             DB::rollBack();
+
+    //             $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $merchant->id;
+
+    //             return redirect()->away($frontendUrl);
+    //         }
+    //     }
+
+    //     $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $chargeId;
+
+    //     return redirect()->away($frontendUrl);
+    // }
 
 
     public function tapSuccessregister(Request $request)
@@ -452,14 +746,44 @@ class AuthController extends Controller
 
                 Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
 
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/create-account?user_id=' . $merchant->id;
+
+                return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                return response()->json(['status' => false, 'message' => 'Error saving data'], 500);
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $merchant->id;
+
+                return redirect()->away($frontendUrl);
             }
         }
 
-        return response()->json(['status' => false, 'message' => 'Payment failed or cancelled']);
+        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $chargeId;
+
+        return redirect()->away($frontendUrl);
+    }
+
+
+    public function getPaymentStatus($user_id)
+    {
+        $user = User::find($user_id);
+
+        if (! $user) {
+            return response()->json(['status' => false, 'message' => 'User not found'], 404);
+        }
+
+        $payment = Payment::where('user_id', $user_id)
+            ->latest()
+            ->first();
+
+        if (! $payment) {
+            return response()->json(['status' => false, 'message' => 'No payment found for this user'], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $payment,
+        ]);
     }
 
     public function getStoreDetails($subdomain)
@@ -880,12 +1204,8 @@ class AuthController extends Controller
         if (! empty($data)) {
             $user->update($data);
         }
-<<<<<<< HEAD
 
         // return
-=======
-        //return
->>>>>>> e2011ce (update for invalid login)
         return response()->json([
             'success' => true,
             'message' => 'Personal information updated successfully',
