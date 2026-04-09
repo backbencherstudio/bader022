@@ -185,7 +185,7 @@ class UserDashboardController extends Controller
                 'customer' => $booking->bookedUser->name ?? null,
                 'service_name' => $booking->service->service_name ?? null,
                 'amount' => $booking->service->price ?? null,
-                'booking_date' => Carbon::parse($booking->date_time)->format('M d, Y'),
+                'booking_date' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
                 'status' => ucfirst($booking->status),
             ];
         });
