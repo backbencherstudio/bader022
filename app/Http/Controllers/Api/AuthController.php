@@ -1044,5 +1044,15 @@ class AuthController extends Controller
 
         $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
         return redirect()->away($frontendUrl);
-    }
-}
+ess' => true,
+                    'message' => 'Subscription renewed successfully',
+                    // 'data'    => $subscription
+                ], 200);
+            } catch (\Exception $e) {
+                DB::rollBack();
+
+                return response()->json(['success' => false, 'message' => 'Internal Error: ' . $e->getMessage()], 500);
+            }
+        }
+
+        return response()->json(['success' => false, 'message' => 'Payment verification failed or was cancelled.'], 400);
