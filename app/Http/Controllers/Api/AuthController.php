@@ -490,13 +490,13 @@ class AuthController extends Controller
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $merchant->id;
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
 
                 return redirect()->away($frontendUrl);
             }
         }
 
-        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/registration-failed?user_id=' . $chargeId;
+        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
 
         return redirect()->away($frontendUrl);
     }
@@ -1008,19 +1008,18 @@ class AuthController extends Controller
 
             DB::beginTransaction();
             try {
-                // 3. Update or Create Subscription
+
                 $subscription = Subscription::updateOrCreate(
                     ['user_id' => $userId],
                     [
                         'plan_id' => $planId,
                         'starts_at' => now(),
-                        'ends_at' => now()->addMonths(1), // Or based on your plan duration
+                        'ends_at' => now()->addMonths(1),
                         'status' => 'active',
                         'auto_renew' => 1,
                     ]
                 );
 
-                // 4. Record the Payment
                 Payment::create([
                     'user_id' => $userId,
                     'subscription_id' => $subscription->id,
@@ -1033,19 +1032,17 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                // If this is a web redirect, you might want to redirect to a 'Success' frontend page
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Subscription renewed successfully',
-                    // 'data'    => $subscription
-                ], 200);
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/login';
+                return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                return response()->json(['success' => false, 'message' => 'Internal Error: ' . $e->getMessage()], 500);
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
+                return redirect()->away($frontendUrl);
             }
         }
 
-        return response()->json(['success' => false, 'message' => 'Payment verification failed or was cancelled.'], 400);
+        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
+        return redirect()->away($frontendUrl);
     }
 }
