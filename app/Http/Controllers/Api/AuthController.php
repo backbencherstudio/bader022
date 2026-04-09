@@ -880,8 +880,12 @@ class AuthController extends Controller
         if (! empty($data)) {
             $user->update($data);
         }
+<<<<<<< HEAD
 
         // return
+=======
+        //return
+>>>>>>> e2011ce (update for invalid login)
         return response()->json([
             'success' => true,
             'message' => 'Personal information updated successfully',
