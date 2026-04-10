@@ -49,13 +49,15 @@ class MerchantDashboardContoller extends Controller
 
     public function monthlypaymentrevenue()
     {
-
+        $user = auth()->user();
+        $merchantId = $user->id;
         $year = date('Y');
 
-        $userId = Auth::id();
-
         $revenues = MerchantPayment::where('payment_status', 'paid')
-            ->where('user_id', $userId)
+            ->where('merchant_payments.user_id', $merchantId)
+            ->whereHas('booking', function ($query) {
+                $query->where('status', 'complete');
+            })
             ->whereYear('created_at', $year)
             ->select(
                 DB::raw('MONTH(created_at) as month'),
@@ -93,13 +95,16 @@ class MerchantDashboardContoller extends Controller
 
     public function weeklyPaymentrevenue()
     {
+        $user = auth()->user();
+        $merchantId = $user->id;
         $year = date('Y');
         $month = date('m');
 
-        $userId = Auth::id();
-
         $revenues = MerchantPayment::where('payment_status', 'paid')
-            ->where('user_id', $userId)
+            ->where('user_id', $merchantId)
+            ->whereHas('booking', function ($query) {
+                $query->where('status', 'complete');
+            })
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->select(
