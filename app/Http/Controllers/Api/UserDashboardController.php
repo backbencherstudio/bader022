@@ -119,7 +119,7 @@ class UserDashboardController extends Controller
         $bookingIds = $bookings->pluck('id')->toArray();
 
         $payments = MerchantPayment::whereIn('booking_id', $bookingIds)
-            ->whereIn('payment_status', ['completed', 'paid'])
+            ->whereIn('payment_status', ['paid'])
             ->select('amount', 'paid_at')
             ->get();
         foreach ($payments as $payment) {
