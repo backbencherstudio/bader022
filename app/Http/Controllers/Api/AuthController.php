@@ -427,7 +427,7 @@ class AuthController extends Controller
                     'email' => $meta['udf2'],
                     'phone' => $meta['udf3'],
                     'type' => 2,
-                    'password' => Hash::make(Str::random(10)),
+                    'password' => Hash::make($meta['udf4']),
                     'business_name' => $meta['business_name'],
                     'business_category' => $meta['business_category'],
                     'website_domain' => $meta['subdomain'],
