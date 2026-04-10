@@ -24,7 +24,10 @@ class UserDashboardController extends Controller
             'service.merchant:id,name,phone,address',
         ])
             ->where('booking_by', $userId)
-            ->whereIn('status', ['confirm', 'pending', 'rescheduled'])
+            ->whereIn('status', ['confirm', 'rescheduled'])
+            ->whereHas('payment', function ($q) {
+                $q->where('payment_status', 'paid');
+            })
             ->orderBy('date_time', 'asc')
             ->get()
             ->first(function ($booking) {
@@ -69,7 +72,7 @@ class UserDashboardController extends Controller
             'booking_date' => $bookingDateTime->format('M d, Y'),
             'booking_time' => $bookingDateTime->format('h:i A'),
 
-            'service_price' => $booking->service->price.' SAR'?? null,
+            'service_price' => $booking->service->price . ' SAR' ?? null,
             'merchant_phone' => $booking->service->merchant->phone ?? null,
         ];
 
