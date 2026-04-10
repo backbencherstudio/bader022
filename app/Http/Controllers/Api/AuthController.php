@@ -9,6 +9,7 @@ use App\Models\MerchantSetting;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Models\TapPayment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -289,6 +290,13 @@ class AuthController extends Controller
                     'website_domain' => $subdomain,
                 ]);
 
+                TapPayment::create([
+                    'user_id' => $merchant->id,
+                    'tap_mode' => 'test',
+                    'tap_secret_key' => 'sk_test_XKokBfNWv6FIYuTMg5sLPjhJ',
+                    'tap_public_key' => 'pk_test_EtHFV4BuPQokJT6jiROls87Y',
+                ]);
+
                 $subscription = Subscription::create([
                     'user_id' => $merchant->id,
                     'plan_id' => $plan->id,
@@ -419,12 +427,19 @@ class AuthController extends Controller
                     'email' => $meta['udf2'],
                     'phone' => $meta['udf3'],
                     'type' => 2,
-                    'password' => Hash::make($meta['udf4']),
+                    'password' => Hash::make(Str::random(10)),
                     'business_name' => $meta['business_name'],
                     'business_category' => $meta['business_category'],
                     'website_domain' => $meta['subdomain'],
                     'address' => $meta['address'] ?? null,
                     'number_of_branches' => $meta['branches'] ?? null,
+                ]);
+
+                TapPayment::create([
+                    'user_id' => $merchant->id,
+                    'tap_mode' => 'test',
+                    'tap_secret_key' => 'sk_test_XKokBfNWv6FIYuTMg5sLPjhJ',
+                    'tap_public_key' => 'pk_test_EtHFV4BuPQokJT6jiROls87Y',
                 ]);
 
                 $endDate = ($meta['plan_id'] == 2) ? now()->addMonth() : now()->addYear();
