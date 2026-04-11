@@ -138,16 +138,23 @@ class MerchantDashboardContoller extends Controller
 
     public function todayAppointment()
     {
-        $userId = auth()->id();
+        $user = auth()->user();
+        $merchantId = $user->id;
 
         $today = Carbon::today()->toDateString();
 
         $bookings = Booking::with(['user', 'staff', 'service'])
-            ->where('user_id', $userId)
-            ->where('status', 'pending')
-            ->whereDate('created_at', $today)
+            ->where('user_id', $merchantId)
+            ->where('status', 'confirm')
+            ->whereDate('date_time', $today)
             ->latest()
             ->get();
+
+        $bookings->transform(function ($booking) {
+            $booking->date_time = Carbon::parse($booking->date_time)
+                ->format('M  d Y, h:i A');
+            return $booking;
+        });
 
         if ($bookings->isEmpty()) {
             return response()->json([
