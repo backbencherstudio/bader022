@@ -89,6 +89,18 @@ class AuthController extends Controller
 
         $user = Auth::guard('api')->user();
 
+        if ($user->type == 2) {
+            $subscription = $user->subscription;
+
+            if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your subscription has expired. Please renew to login.',
+                    'data' => null
+                ], 403);
+            }
+        }
+
         if ($user->type == 0) {
             $role = 'User';
         } elseif ($user->type == 1) {
