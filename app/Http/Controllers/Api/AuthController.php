@@ -35,50 +35,6 @@ class AuthController extends Controller
         ]);
     }
 
-
-    // public function login(Request $request)
-    // {
-    //     $credentials = $request->only('email', 'password');
-
-    //     if (! $token = Auth::guard('api')->attempt($credentials)) {
-    //         return response()->json(['error' => 'Invalid credentials'], 401);
-    //     }
-
-    //     $user = Auth::guard('api')->user();
-    //     if ($user->type == 0) {
-    //         $role = 'User';
-    //     } elseif ($user->type == 1) {
-    //         $role = 'Admin';
-    //     } elseif ($user->type == 2) {
-    //         $role = 'Merchant';
-    //     } else {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Invalid user type',
-    //             'data' => null,
-    //         ], 403);
-    //     }
-
-    //     if ($user->jwt_token) {
-    //         try {
-    //             JWTAuth::setToken($user->jwt_token)->invalidate();
-    //         } catch (\Exception $e) {
-    //         }
-    //     }
-
-    //     $user->update(['jwt_token' => $token]);
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => $role . ' login successfully',
-    //         'data' => [
-    //             'user' => $user,
-    //             'user_type' => $role,
-    //         ],
-    //         'token' => $token,
-    //     ]);
-    // }
-
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
@@ -1073,3 +1029,4 @@ class AuthController extends Controller
         return redirect()->away($frontendUrl);
     }
 }
+ 
