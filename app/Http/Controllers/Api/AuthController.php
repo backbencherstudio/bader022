@@ -93,13 +93,39 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $email = $request->email;
+        $password = $request->password;
 
-        if (! $token = Auth::guard('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email incorrect',
+                'data' => null
+            ], 401);
         }
 
-        $user = Auth::guard('api')->user();
+        if (!Hash::check($password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Password incorrect',
+                'data' => null
+            ], 401);
+        }
+
+        if ($user->type == 2) {
+            $subscription = $user->subscription;
+
+            if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your subscription has expired. Please renew to login.',
+                    'data' => null
+                ], 403);
+            }
+        }
+
         if ($user->type == 0) {
             $role = 'User';
         } elseif ($user->type == 1) {
@@ -110,9 +136,11 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid user type',
-                'data' => null,
+                'data' => null
             ], 403);
         }
+
+        $token = Auth::guard('api')->login($user);
 
         if ($user->jwt_token) {
             try {
@@ -133,6 +161,7 @@ class AuthController extends Controller
             'token' => $token,
         ]);
     }
+
 
     public function register(Request $request)
     {
