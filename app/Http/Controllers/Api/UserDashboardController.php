@@ -181,7 +181,15 @@ class UserDashboardController extends Controller
             ->orderBy('date_time', 'desc')
             ->paginate(10);
 
-        $result = $bookings->getCollection()->map(function ($booking) {
+        $statusMap = [
+            'pending' => 'Pending',
+            'confirm' => 'Confirmed',
+            'complete' => 'Completed',
+            'cancel' => 'Canceled',
+            'rescheduled' => 'Rescheduled',
+        ];
+
+        $result = $bookings->getCollection()->map(function ($booking) use ($statusMap) {
             return [
                 'booking_id' => $booking->id,
                 'customer_image' => $booking->bookedUser->image ?? null,
@@ -189,7 +197,7 @@ class UserDashboardController extends Controller
                 'service_name' => $booking->service->service_name ?? null,
                 'amount' => $booking->service->price ?? null,
                 'booking_date' => Carbon::parse($booking->date_time)->format('M d, Y h:i A'),
-                'status' => ucfirst($booking->status),
+                'status' => $statusMap[$booking->status] ?? ucfirst($booking->status),
             ];
         });
 
