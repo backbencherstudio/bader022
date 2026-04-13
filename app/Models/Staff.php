@@ -16,12 +16,13 @@ class Staff extends Model
         'status',
     ];
 
-    // public function services()
-    // {
-    //     return $this->belongsToMany(Service::class, 'service_id');
-    // }
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'service_id');
+    }
 
     protected $casts = [
         'service_id' => 'array',
+        'status' => 'boolean',
     ];
 }
