@@ -295,13 +295,13 @@ class AuthController extends Controller
                 ]);
 
                 $defaultHours = [
-                    'monday' => ['open' => '00:00', 'close' => '24:00'],
-                    'tuesday' => ['open' => '00:00', 'close' => '24:00'],
-                    'wednesday' => ['open' => '00:00', 'close' => '24:00'],
-                    'thursday' => ['open' => '00:00', 'close' => '24:00'],
-                    'friday' => ['open' => '00:00', 'close' => '24:00'],
-                    'saturday' => ['open' => '00:00', 'close' => '24:00'],
-                    'sunday' => ['open' => '00:00', 'close' => '24:00'],
+                    'monday' => ['open' => '09:00', 'close' => '24:00'],
+                    'tuesday' => ['open' => '09:00', 'close' => '24:00'],
+                    'wednesday' => ['open' => '09:00', 'close' => '24:00'],
+                    'thursday' => ['open' => '09:00', 'close' => '24:00'],
+                    'friday' => ['open' => '13:00', 'close' => '24:00'],
+                    'saturday' => ['open' => '09:00', 'close' => '24:00'],
+                    'sunday' => ['open' => '09:00', 'close' => '24:00'],
                 ];
 
                 foreach ($defaultHours as $day => $time) {
@@ -1166,4 +1166,3 @@ class AuthController extends Controller
         return redirect()->away($frontendUrl);
     }
 }
- 

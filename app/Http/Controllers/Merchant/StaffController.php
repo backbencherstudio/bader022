@@ -15,7 +15,7 @@ class StaffController extends Controller
         $query = Staff::where('user_id', auth()->id())->with('service')->orderBy('id', 'desc');
 
         if ($request->filled('name')) {
-            $query->where('name', 'like', '%'.$request->name.'%');
+            $query->where('name', 'like', '%' . $request->name . '%');
         }
 
         $staffs = $query->get();
@@ -26,57 +26,6 @@ class StaffController extends Controller
         ], 200);
     }
 
-    // public function store(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required|string|max:255',
-    //         'role' => 'required|in:staff,admin',
-    //         'service_id' => 'required|string',
-    //         'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-    //         'status' => 'nullable|boolean',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'errors' => $validator->errors()
-    //         ], 422);
-    //     }
-
-    //     $userService = auth()->user()->services()->where('id', $request->service_id)->first();
-
-    //     if (!$userService) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'The selected service does not belong to the authenticated user.'
-    //         ], 400);
-    //     }
-
-    //     $imagePath = null;
-    //     if ($request->hasFile('image')) {
-    //         $image = $request->file('image');
-    //         $imageName = time() . '_' . $image->getClientOriginalName();
-    //         $image->move(public_path('staffs'), $imageName);
-
-    //         $imagePath = 'staffs/' . $imageName;
-    //     }
-
-    //     $staff = Staff::create([
-    //         'user_id' => auth()->id(),
-    //         'name' => $request->name,
-    //         'role' => $request->role,
-    //         'service_id' => $request->service_id,
-    //         'image' => $imagePath,
-    //         'status' => $request->status ?? 1,
-    //     ]);
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Staff created successfully',
-    //         'data' => $staff
-    //     ], 201);
-    // }
-
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -84,58 +33,114 @@ class StaffController extends Controller
             'role' => 'required|in:staff,admin',
             'service_id' => 'required|array',
             'service_id.*' => 'exists:services,id',
-            'image' => 'nullable',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors(),
+                'errors' => $validator->errors()
             ], 422);
         }
 
-        // check services belong to user
-        $validServices = auth()->user()
+        $userServices = auth()->user()
             ->services()
             ->whereIn('id', $request->service_id)
             ->pluck('id')
             ->toArray();
 
-        if (count($validServices) !== count($request->service_id)) {
+        if (count($userServices) !== count($request->service_id)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Some services do not belong to you',
+                'message' => 'One or more selected services do not belong to the authenticated user.'
             ], 400);
         }
 
-        // upload image
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.$image->getClientOriginalName();
+            $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('staffs'), $imageName);
-            $imagePath = 'staffs/'.$imageName;
+
+            $imagePath = 'staffs/' . $imageName;
         }
 
-        // create staff
         $staff = Staff::create([
             'user_id' => auth()->id(),
             'name' => $request->name,
+            'service_id' => $request->service_id,
             'role' => $request->role,
             'image' => $imagePath,
             'status' => $request->status ?? 1,
         ]);
 
-        // attach multiple services
-        $staff->services()->attach($request->service_id);
-
         return response()->json([
             'success' => true,
             'message' => 'Staff created successfully',
-            'data' => $staff->load('services'),
+            'data' => $staff
         ], 201);
     }
+
+    // public function store(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required|string|max:255',
+    //         'role' => 'required|in:staff,admin',
+    //         'service_id' => 'required|array',
+    //         'service_id.*' => 'exists:services,id',
+    //         'image' => 'nullable',
+    //         'status' => 'nullable|boolean',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+
+    //     // check services belong to user
+    //     $validServices = auth()->user()
+    //         ->services()
+    //         ->whereIn('id', $request->service_id)
+    //         ->pluck('id')
+    //         ->toArray();
+
+    //     if (count($validServices) !== count($request->service_id)) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Some services do not belong to you',
+    //         ], 400);
+    //     }
+
+    //     // upload image
+    //     $imagePath = null;
+    //     if ($request->hasFile('image')) {
+    //         $image = $request->file('image');
+    //         $imageName = time().'_'.$image->getClientOriginalName();
+    //         $image->move(public_path('staffs'), $imageName);
+    //         $imagePath = 'staffs/'.$imageName;
+    //     }
+
+    //     // create staff
+    //     $staff = Staff::create([
+    //         'user_id' => auth()->id(),
+    //         'name' => $request->name,
+    //         'role' => $request->role,
+    //         'image' => $imagePath,
+    //         'status' => $request->status ?? 1,
+    //     ]);
+
+    //     // attach multiple services
+    //     $staff->services()->attach($request->service_id);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Staff created successfully',
+    //         'data' => $staff->load('services'),
+    //     ], 201);
+    // }
 
     public function show($id)
     {
@@ -197,10 +202,10 @@ class StaffController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time().'_'.$image->getClientOriginalName();
+            $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('staffs'), $imageName);
 
-            $staff->image = 'staffs/'.$imageName;
+            $staff->image = 'staffs/' . $imageName;
         }
 
         $staff->fill($request->only([

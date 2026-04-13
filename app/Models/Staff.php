@@ -21,8 +21,7 @@ class Staff extends Model
     //     return $this->belongsToMany(Service::class, 'service_id');
     // }
 
-    public function service()
-    {
-        return $this->belongsTo(Service::class);
-    }
+    protected $casts = [
+        'service_id' => 'array',
+    ];
 }
