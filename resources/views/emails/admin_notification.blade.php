@@ -112,7 +112,7 @@
                 <p style="margin-top: 30px;">Please follow up with this lead as soon as possible.</p>
             </div>
             <div class="footer">
-                <p>Sent from Bokli.io Internal Notification System</p>
+                <p>Sent from <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a> Internal Notification System</p>
                 <p>{{ now()->format('F d, Y h:i A') }}</p>
             </div>
         </div>

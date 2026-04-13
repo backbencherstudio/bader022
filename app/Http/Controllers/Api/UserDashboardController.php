@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\BookingRescheduledMail;
+use App\Mail\BookingCancelledMail;
 use App\Models\Booking;
 use App\Models\BusinessHour;
 use App\Models\MerchantPayment;
@@ -12,6 +14,9 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+
 
 class UserDashboardController extends Controller
 {
@@ -539,11 +544,9 @@ class UserDashboardController extends Controller
             ], 403);
         }
 
-        $booking->update([
-            'status' => 'cancel',
-        ]);
-
         $message = 'Your booking has been cancelled successfully.';
+
+        $canCancel = true;
 
         $payment = $booking->merchantPayment;
 
@@ -585,7 +588,9 @@ class UserDashboardController extends Controller
                         $payment->update([
                             'payment_status' => 'refund_failed',
                         ]);
-                        $message = 'Your booking has been cancelled, but refund could not be processed. Please contact the merchant.';
+
+                        $canCancel = false;
+                        $message = 'Refund failed. Booking was not cancelled. Please contact support.';
                     }
                 }
             } else {
@@ -596,6 +601,27 @@ class UserDashboardController extends Controller
 
                 $message = 'Your booking has been cancelled successfully.';
             }
+        }
+
+        if (! $canCancel) {
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+            ], 400);
+        }
+
+        $booking->update([
+            'status' => 'cancel',
+        ]);
+
+        try {
+            Mail::to($booking->email)
+                ->send(new BookingCancelledMail($booking, $message));
+        } catch (\Exception $e) {
+            Log::error('Cancel email failed', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return response()->json([
@@ -838,6 +864,13 @@ class UserDashboardController extends Controller
                 'status' => 'rescheduled',
                 'rescheduled_at' => $merchantNow,
             ]);
+
+            try {
+                Mail::to($booking->email)
+                    ->send(new BookingRescheduledMail($booking));
+            } catch (\Exception $e) {
+                Log::error('Reschedule email failed: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,
