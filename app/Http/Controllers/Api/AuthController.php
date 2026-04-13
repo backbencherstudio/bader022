@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\UserRegiMail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
@@ -139,6 +140,8 @@ class AuthController extends Controller
             'image' => $imagePath,
             'password' => Hash::make($request->password),
         ]);
+
+        Mail::to($user->email)->send(new UserRegiMail($user));
 
         $token = Auth::guard('api')->login($user);
 

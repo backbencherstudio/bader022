@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Password Reset OTP</title>
+    <title>Registration Successful</title>
 </head>
 <body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
@@ -14,7 +14,7 @@
 
                     <!-- Header / Logo -->
                     <tr>
-                        <td align="center" style=" padding:20px;">
+                        <td align="center" style="padding:20px;">
                             <img src="{{ $message->embed(public_path('logo.png')) }}" style="max-height:50px;">
                         </td>
                     </tr>
@@ -23,21 +23,14 @@
                     <tr>
                         <td style="padding:30px; text-align:center;">
 
-                            <h2 style="margin:0; color:#333;">Password Reset</h2>
+                            <h2 style="margin:0; color:#333;">Registration Successful 🎉</h2>
 
                             <p style="color:#666; margin-top:10px;">
-                                Use the OTP below to reset your password
+                                Hello {{ $user->name }}, your account has been created successfully.
                             </p>
 
-                            <!-- OTP Box -->
-                            <div style="margin:25px 0;">
-                                <span style="display:inline-block; padding:15px 25px; font-size:28px; letter-spacing:6px; background:#f1f7ff; color:#2d89ef; border-radius:8px; font-weight:bold;">
-                                    {{ $otp }}
-                                </span>
-                            </div>
-
                             <p style="color:#666;">
-                                This OTP will expire in <b>5 minutes</b>.
+                                You can now log in using your email address and password.
                             </p>
 
                         </td>
@@ -46,7 +39,7 @@
                     <!-- Footer -->
                     <tr>
                         <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
-                            If you didn’t request this, you can safely ignore this email.
+                            Thank you for joining us.
                             <br><br>
                             © {{ date('Y') }} Bokli. All rights reserved.
                         </td>
