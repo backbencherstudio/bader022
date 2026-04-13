@@ -41,10 +41,12 @@ Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/marchant/register', [AuthController::class, 'marchantregister'])->name('marchant.register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
+Route::post('/reset-otp', [AuthController::class, 'resetOtp']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
 Route::post('/renew', [AuthController::class, 'renew'])->name('subscription.renew');
 Route::get('/tap-renew-success', [AuthController::class, 'tapRenewSuccess'])->name('subscription.tap.success');
+
 
 // google login api
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);

@@ -13,6 +13,7 @@ use App\Models\TapPayment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -48,11 +49,11 @@ class AuthController extends Controller
         if ($user->type == 2) {
             $subscription = $user->subscription;
 
-            if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+            if (! $subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Your subscription has expired. Please renew to login.',
-                    'data' => null
+                    'data' => null,
                 ], 403);
             }
         }
@@ -70,7 +71,6 @@ class AuthController extends Controller
                 'data' => null,
             ], 403);
         }
-
 
         if ($user->type == 2) {
             $plan = Subscription::where('user_id', $user->id)->latest()->first();
@@ -94,7 +94,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => $role . ' login successfully',
+            'message' => $role.' login successfully',
             'data' => [
                 'user' => $user,
                 'user_type' => $role,
@@ -125,10 +125,10 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
 
-            $imagePath = 'user/' . $imageName;
+            $imagePath = 'user/'.$imageName;
         }
 
         $user = User::create([
@@ -180,9 +180,9 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $imagePath = 'user/' . $imageName;
+            $imagePath = 'user/'.$imageName;
         }
 
         $user = User::create([
@@ -209,7 +209,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-
     public function marchantregister(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -218,7 +217,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'required|string|max:20|unique:users,phone',
             'password' => 'required|string|min:6|confirmed',
-            'business_category' => 'required|in:salon_beauty,home_services,health,fitness_pro_gym,others',
+            'business_category' => 'required|string|max:255',
             'plan_id' => 'required|exists:plans,id',
             'number_of_branches' => 'nullable|integer',
             'address' => 'nullable|string|max:500',
@@ -234,7 +233,7 @@ class AuthController extends Controller
         if (empty($subdomain)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid business name for subdomain'
+                'message' => 'Invalid business name for subdomain',
             ], 422);
         }
 
@@ -332,7 +331,7 @@ class AuthController extends Controller
         }
 
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
             'Content-Type' => 'application/json',
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
@@ -372,14 +371,13 @@ class AuthController extends Controller
         ], 201);
     }
 
-
     public function tapSuccessregister(Request $request)
     {
         $chargeId = $request->tap_id;
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/$chargeId");
 
         $data = $response->json();
@@ -443,13 +441,13 @@ class AuthController extends Controller
                 ]);
 
                 $defaultHours = [
-                    'monday' => ['open' => '00:00', 'close' => '24:00'],
-                    'tuesday' => ['open' => '00:00', 'close' => '24:00'],
-                    'wednesday' => ['open' => '00:00', 'close' => '24:00'],
-                    'thursday' => ['open' => '00:00', 'close' => '24:00'],
-                    'friday' => ['open' => '00:00', 'close' => '24:00'],
-                    'saturday' => ['open' => '00:00', 'close' => '24:00'],
-                    'sunday' => ['open' => '00:00', 'close' => '24:00'],
+                    'monday' => ['open' => '09:00', 'close' => '24:00'],
+                    'tuesday' => ['open' => '09:00', 'close' => '24:00'],
+                    'wednesday' => ['open' => '09:00', 'close' => '24:00'],
+                    'thursday' => ['open' => '09:00', 'close' => '24:00'],
+                    'friday' => ['open' => '13:00', 'close' => '24:00'],
+                    'saturday' => ['open' => '09:00', 'close' => '24:00'],
+                    'sunday' => ['open' => '09:00', 'close' => '24:00'],
                 ];
 
                 foreach ($defaultHours as $day => $time) {
@@ -462,28 +460,26 @@ class AuthController extends Controller
                     ]);
                 }
 
-
                 DB::commit();
 
                 Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/create-account?user_id=' . $merchant->id . '&website=' . $merchant->website_domain;
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/create-account?user_id='.$merchant->id.'&website='.$merchant->website_domain;
 
                 return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/booking-failed';
 
                 return redirect()->away($frontendUrl);
             }
         }
 
-        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
+        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/booking-failed';
 
         return redirect()->away($frontendUrl);
     }
-
 
     public function getPaymentStatus($user_id)
     {
@@ -558,8 +554,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
             // 'role' => 'required|exists:roles,id',
@@ -578,9 +574,9 @@ class AuthController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $user->image = 'user/' . $imageName;
+            $user->image = 'user/'.$imageName;
         }
 
         $user->name = $request->name;
@@ -614,7 +610,6 @@ class AuthController extends Controller
             'user' => $user,
         ], 200);
     }
-
 
     public function logout()
     {
@@ -685,33 +680,104 @@ class AuthController extends Controller
         ], 200);
     }
 
+    // public function sendOtp(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'email' => 'required|email|exists:users,email',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Validation failed',
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+
+    //     $user = User::where('email', $request->email)->first();
+
+    //     if ($user->type == 1) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Admin cannot reset password via OTP. Please change password from dashboard.',
+    //         ], 403);
+    //     }
+
+    //     $otp = rand(100000, 999999);
+
+    //     DB::table('password_resets')->updateOrInsert(
+    //         ['email' => $request->email],
+    //         [
+    //             'otp' => Hash::make($otp),
+    //             'expires_at' => now()->addMinutes(5),
+    //             'updated_at' => now(),
+    //             'created_at' => now(),
+    //         ]
+    //     );
+
+    //     Mail::send('emails.otp', ['otp' => $otp], function ($message) use ($request) {
+    //         $message->to($request->email)
+    //             ->subject('Password Reset OTP');
+    //     });
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'OTP sent to your email successfully',
+    //     ]);
+    // }
     public function sendOtp(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'email' => 'required|email|exists:users,email',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
 
         $user = User::where('email', $request->email)->first();
 
         if ($user->type == 1) {
             return response()->json([
                 'success' => false,
-                'message' => 'Admin cannot reset password via OTP. Please change password from dashboard.',
+                'message' => 'Admin cannot reset password via OTP.',
             ], 403);
         }
 
+        $email = $request->email;
+
+        // ----------------------------
+        // 1. 60 seconds cooldown check
+        // ----------------------------
+        if (Cache::has("otp_cooldown:$email")) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please wait 60 seconds before requesting another OTP.',
+            ], 429);
+        }
+
+        // ----------------------------
+        // 2. 10 min limit (max 3 times)
+        // ----------------------------
+        $attemptKey = "otp_attempts:$email";
+        $attempts = Cache::get($attemptKey, 0);
+
+        if ($attempts >= 3) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many OTP requests. Please try again after 10 minutes.',
+            ], 429);
+        }
+
+        // increment attempts (expire in 10 minutes)
+        Cache::put($attemptKey, $attempts + 1, now()->addMinutes(10));
+
+        // set 60 sec cooldown
+        Cache::put("otp_cooldown:$email", true, now()->addSeconds(60));
+
+        // ----------------------------
+        // generate OTP
+        // ----------------------------
         $otp = rand(100000, 999999);
 
         DB::table('password_resets')->updateOrInsert(
-            ['email' => $request->email],
+            ['email' => $email],
             [
                 'otp' => Hash::make($otp),
                 'expires_at' => now()->addMinutes(5),
@@ -720,17 +786,86 @@ class AuthController extends Controller
             ]
         );
 
-        Mail::raw(
-            "Your password reset OTP is: {$otp}. It will expire in 5 minutes.",
-            function ($message) use ($request) {
-                $message->to($request->email)
-                    ->subject('Password Reset OTP');
-            }
-        );
+        Mail::send('emails.otp', ['otp' => $otp], function ($message) use ($email) {
+            $message->to($email)->subject('Password Reset OTP');
+        });
 
         return response()->json([
             'success' => true,
-            'message' => 'OTP sent to your email successfully',
+            'message' => 'OTP sent successfully',
+        ]);
+    }
+
+    public function resetOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user->type == 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Admin cannot reset password via OTP.',
+            ], 403);
+        }
+
+        $email = $request->email;
+
+        // ----------------------------
+        // 1. 60 seconds cooldown check
+        // ----------------------------
+        if (Cache::has("otp_cooldown:$email")) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please wait 60 seconds before requesting another OTP.',
+            ], 429);
+        }
+
+        // ----------------------------
+        // 2. 10 min limit (max 3 times)
+        // ----------------------------
+        $attemptKey = "otp_attempts:$email";
+        $attempts = Cache::get($attemptKey, 0);
+
+        if ($attempts >= 3) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many OTP requests. Please try again after 10 minutes.',
+            ], 429);
+        }
+
+        Cache::put($attemptKey, $attempts + 1, now()->addMinutes(10));
+
+        // ----------------------------
+        // cooldown 60 sec
+        // ----------------------------
+        Cache::put("otp_cooldown:$email", true, now()->addSeconds(60));
+
+        // ----------------------------
+        // generate new OTP
+        // ----------------------------
+        $otp = rand(100000, 999999);
+
+        DB::table('password_resets')->updateOrInsert(
+            ['email' => $email],
+            [
+                'otp' => Hash::make($otp),
+                'expires_at' => now()->addMinutes(5),
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
+
+        // send email
+        Mail::send('emails.otp', ['otp' => $otp], function ($message) use ($email) {
+            $message->to($email)->subject('Your New OTP Code');
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'New OTP sent successfully',
         ]);
     }
 
@@ -770,7 +905,6 @@ class AuthController extends Controller
             'message' => 'OTP verified successfully',
         ]);
     }
-
 
     public function resetPasswordWithOtp(Request $request)
     {
@@ -815,8 +949,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
+            'email' => 'nullable|email|unique:users,email,'.$user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
             'address' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -851,11 +985,11 @@ class AuthController extends Controller
                 unlink(public_path($user->image));
             }
 
-            $imageName = time() . '_' . $request->image->getClientOriginalName();
+            $imageName = time().'_'.$request->image->getClientOriginalName();
 
             $request->image->move(public_path('uploads/users'), $imageName);
 
-            $data['image'] = 'uploads/users/' . $imageName;
+            $data['image'] = 'uploads/users/'.$imageName;
         }
 
         if (! empty($data)) {
@@ -936,7 +1070,7 @@ class AuthController extends Controller
         }
 
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
             'Content-Type' => 'application/json',
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
@@ -978,7 +1112,7 @@ class AuthController extends Controller
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/{$tap_id}");
 
         $paymentData = $response->json();
@@ -1015,17 +1149,20 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/login';
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/login';
+
                 return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/booking-failed';
+
                 return redirect()->away($frontendUrl);
             }
         }
 
-        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
+        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/booking-failed';
+
         return redirect()->away($frontendUrl);
     }
 }
