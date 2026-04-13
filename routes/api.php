@@ -48,6 +48,7 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
 Route::post('/renew', [AuthController::class, 'renew'])->name('subscription.renew');
 Route::get('/tap-renew-success', [AuthController::class, 'tapRenewSuccess'])->name('subscription.tap.success');
+Route::post('/login-otp', [AuthController::class, 'loginOtp'])->name('login.otp');
 
 
 // google login api
