@@ -12,7 +12,7 @@ class StaffController extends Controller
     public function index(Request $request)
     {
 
-        $query = Staff::where('user_id', auth()->id())->with('service')->orderBy('id', 'desc');
+        $query = Staff::where('user_id', auth()->id())->orderBy('id', 'desc');
 
         if ($request->filled('name')) {
             $query->where('name', 'like', '%' . $request->name . '%');
