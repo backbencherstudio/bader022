@@ -55,7 +55,7 @@
                     <!-- Footer -->
                     <tr>
                         <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
-                            © {{ date('Y') }} Bokli. All rights reserved.
+                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. All rights reserved.
                         </td>
                     </tr>
 
