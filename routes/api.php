@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
+use App\Http\Controllers\Admin\BookdemoController;
 use App\Http\Controllers\Admin\SubcategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmailController;
@@ -42,6 +43,7 @@ Route::post('/marchant/register', [AuthController::class, 'marchantregister'])->
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
 Route::post('/reset-otp', [AuthController::class, 'resetOtp']);
+Route::post('/book-demo', [BookdemoController::class, 'bookDemo'])->name('book.demo');
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
 Route::post('/renew', [AuthController::class, 'renew'])->name('subscription.renew');
