@@ -93,7 +93,7 @@
 
         <div class="footer">
             <p>&copy; {{ date('Y') }} Bokli.io. All rights reserved.</p>
-            <p>Saudi Arabia | Info@bokli.io</p>
+            <p>Saudi Arabia | noreply@bokli.io</p>
         </div>
     </div>
 </body>

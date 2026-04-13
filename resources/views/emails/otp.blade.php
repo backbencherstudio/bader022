@@ -48,7 +48,7 @@
                         <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
                             If you didn’t request this, you can safely ignore this email.
                             <br><br>
-                            © {{ date('Y') }} Your Company. All rights reserved.
+                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. All rights reserved.
                         </td>
                     </tr>
 
