@@ -37,86 +37,19 @@ class AuthController extends Controller
         ]);
     }
 
-    // public function login(Request $request)
-    // {
-    //     $credentials = $request->only('email', 'password');
 
-    //     if (! $token = Auth::guard('api')->attempt($credentials)) {
-    //         return response()->json(['error' => 'Invalid credentials'], 401);
-    //     }
-
-    //     $user = Auth::guard('api')->user();
-
-    //     if ($user->type == 2) {
-    //         $subscription = $user->subscription;
-
-    //         if (! $subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Your subscription has expired. Please renew to login.',
-    //                 'data' => null,
-    //             ], 403);
-    //         }
-    //     }
-
-    //     if ($user->type == 0) {
-    //         $role = 'User';
-    //     } elseif ($user->type == 1) {
-    //         $role = 'Admin';
-    //     } elseif ($user->type == 2) {
-    //         $role = 'Merchant';
-    //     } else {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Invalid user type',
-    //             'data' => null,
-    //         ], 403);
-    //     }
-
-    //     if ($user->type == 2) {
-    //         $plan = Subscription::where('user_id', $user->id)->latest()->first();
-    //         if ($plan && $plan->plan_id == 1) {
-    //             $hasMiniSiteMenu = false;
-    //         } else {
-    //             $hasMiniSiteMenu = true;
-    //         }
-    //     } else {
-    //         $hasMiniSiteMenu = false;
-    //     }
-
-    //     if ($user->jwt_token) {
-    //         try {
-    //             JWTAuth::setToken($user->jwt_token)->invalidate();
-    //         } catch (\Exception $e) {
-    //         }
-    //     }
-
-    //     $user->update(['jwt_token' => $token]);
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => $role.' login successfully',
-    //         'data' => [
-    //             'user' => $user,
-    //             'user_type' => $role,
-    //             'has_mini_site_menu' => $hasMiniSiteMenu,
-    //         ],
-    //         'token' => $token,
-    //     ]);
-    // }
 
     // public function login(Request $request)
     // {
     //     $credentials = $request->only('email', 'password');
 
-    //     // ১. ইমেইল ও পাসওয়ার্ড চেক
+
     //     if (!$token = Auth::guard('api')->attempt($credentials)) {
     //         return response()->json(['error' => 'Invalid credentials'], 401);
     //     }
 
     //     $user = Auth::guard('api')->user();
 
-    //     // ২. মার্চেন্ট সাবস্ক্রিপশন চেক
     //     if ($user->type == 2) {
     //         $subscription = $user->subscription;
     //         if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
@@ -128,7 +61,6 @@ class AuthController extends Controller
     //         }
     //     }
 
-    //     // ৩. রোল নির্ধারণ
     //     $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
     //     $role = $roles[$user->type] ?? null;
 
@@ -136,14 +68,13 @@ class AuthController extends Controller
     //         return response()->json(['success' => false, 'message' => 'Invalid user type'], 403);
     //     }
 
-    //     // ৪. OTP এবং ৩০ দিনের সিকিউরিটি লজিক
     //     $needsOtp = false;
     //     $clientRememberToken = $request->header('Remember-Token');
 
     //     if ($user->type == 1) {
-    //         $needsOtp = true; // অ্যাডমিন হলে সবসময় OTP লাগবে
+    //         $needsOtp = true;
     //     } else {
-    //         // ইউজার/মার্চেন্ট হলে রিমেম্বার টোকেন চেক বা ৩০ দিন পার হয়েছে কি না চেক
+
     //         if (!$user->remember_token || $user->remember_token !== $clientRememberToken || $user->updated_at < now()->subDays(30)) {
     //             $needsOtp = true;
     //         }
@@ -156,15 +87,8 @@ class AuthController extends Controller
     //             'otp_expires_at' => now()->addMinutes(5),
     //         ]);
 
-    //         // ৫. আসল মেইল পাঠানোর অংশ (Laravel Mail ব্যবহার করে)
     //         try {
-    //             // আপনার একটি Mailable ক্লাস থাকতে হবে (যেমন: SendOtpMail)
-    //             // \Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp));
 
-    //             // অথবা দ্রুত টেস্ট করার জন্য Raw Mail:
-    //             // \Mail::raw("Your OTP for login is: $otp. It will expire in  minutes.", function ($message) use ($user) {
-    //             //     $message->to($user->email)->subject('Login OTP Verification');
-    //             // });
     //             Mail::send('emails.login_otp', ['otp' => $otp], function ($message) use ($user) {
     //                 $message->to($user->email)->subject('Login OTP Verification');
     //             });
@@ -181,21 +105,16 @@ class AuthController extends Controller
     //         ]);
     //     }
 
-    //     // ৬. মিনি সাইট মেনু লজিক
     //     $hasMiniSiteMenu = false;
     //     if ($user->type == 2) {
     //         $plan = Subscription::where('user_id', $user->id)->latest()->first();
     //         $hasMiniSiteMenu = !($plan && $plan->plan_id == 1);
     //     }
-
-    //     // ৭. পুরনো টোকেন ইনভ্যালিড করা (Single Device login)
     //     if ($user->jwt_token) {
     //         try {
     //             \JWTAuth::setToken($user->jwt_token)->invalidate();
     //         } catch (\Exception $e) {}
     //     }
-
-    //     // ৮. নতুন রিমেম্বার টোকেন জেনারেট এবং সেভ
     //     $newRememberToken = \Str::random(60);
     //     $user->setRememberToken($newRememberToken);
     //     $user->jwt_token = $token;
@@ -214,7 +133,107 @@ class AuthController extends Controller
     //     ]);
     // }
 
-public function loginOtp(Request $request)
+    public function login(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        if (!$token = Auth::guard('api')->attempt($credentials)) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
+        }
+
+        $user = Auth::guard('api')->user();
+
+        if ($user->type == 2) {
+            $subscription = $user->subscription;
+            if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your subscription has expired. Please renew to login.',
+                    'data' => null,
+                ], 403);
+            }
+        }
+
+        $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
+        $role = $roles[$user->type] ?? null;
+
+        if (!$role) {
+            return response()->json(['success' => false, 'message' => 'Invalid user type'], 403);
+        }
+
+
+        $needsOtp = false;
+        $clientRememberToken = $request->header('Remember-Token');
+
+        if ($user->type == 1) {
+
+            $needsOtp = true;
+        } else {
+
+            if (!$user->remember_token || $user->remember_token !== $clientRememberToken || $user->updated_at < now()->subDays(30)) {
+                $needsOtp = true;
+            }
+        }
+
+        if ($needsOtp) {
+            $otp = rand(100000, 999999);
+            $user->update([
+                'otp' => $otp,
+                'otp_expires_at' => now()->addMinutes(5),
+            ]);
+
+            try {
+                Mail::send('emails.login_otp', ['otp' => $otp], function ($message) use ($user) {
+                    $message->to($user->email)->subject('Login OTP Verification');
+                });
+            } catch (\Exception $e) {
+                return response()->json(['success' => false, 'message' => 'Could not send OTP.'], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'otp_required' => true,
+                'message' => 'OTP sent to your email successfully.',
+                'email' => $user->email,
+            ]);
+        }
+
+        $hasMiniSiteMenu = false;
+        if ($user->type == 2) {
+            $plan = Subscription::where('user_id', $user->id)->latest()->first();
+            $hasMiniSiteMenu = !($plan && $plan->plan_id == 1);
+        }
+
+        if ($user->jwt_token) {
+            try {
+                \JWTAuth::setToken($user->jwt_token)->invalidate();
+            } catch (\Exception $e) {}
+        }
+
+        if (!$user->remember_token) {
+            $user->remember_token = \Str::random(60);
+        }
+
+        $user->jwt_token = $token;
+
+
+        $user->timestamps = false;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $role . ' login successfully',
+            'data' => [
+                'user' => $user,
+                'user_type' => $role,
+                'has_mini_site_menu' => $hasMiniSiteMenu,
+                'remember_token' => $user->remember_token,
+            ],
+            'token' => $token,
+        ]);
+    }
+
+    public function loginOtp(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
@@ -269,11 +288,60 @@ public function loginOtp(Request $request)
         ]);
     }
 
+    // public function register(Request $request)
+    // {
 
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required|string|max:255',
+    //         'email' => 'required|email|unique:users,email',
+    //         'password' => 'required|string|min:6|confirmed',
+    //         'phone' => 'nullable|string|max:20',
+    //         'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+
+    //     $imagePath = null;
+    //     if ($request->hasFile('image')) {
+    //         $image = $request->file('image');
+    //         $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+    //         $image->move(public_path('user'), $imageName);
+
+    //         $imagePath = 'user/'.$imageName;
+    //     }
+
+    //     $user = User::create([
+    //         'name' => $request->name,
+    //         'email' => $request->email,
+    //         'phone' => $request->phone,
+    //         'type' => 0,
+    //         'image' => $imagePath,
+    //         'password' => Hash::make($request->password),
+    //     ]);
+
+    //     Mail::to($user->email)->send(new UserRegiMail($user));
+
+    //     $token = Auth::guard('api')->login($user);
+
+    //     $user->update([
+    //         'jwt_token' => $token,
+    //     ]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'User registered successfully',
+    //         'data' => $user,
+    //         'token' => $token,
+    //     ], 201);
+    // }
 
     public function register(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -285,42 +353,113 @@ public function loginOtp(Request $request)
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors(),
+                'errors' => $validator->errors()
             ], 422);
         }
 
+        $otp = rand(100000, 999999);
+        $email = $request->email;
+
+        // temp image save
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
-            $image->move(public_path('user'), $imageName);
+            $imagePath = $request->file('image')->store('temp_images', 'public');
+        }
 
-            $imagePath = 'user/'.$imageName;
+        // Store ALL data in cache (NO DB)
+        Cache::put('register_'.$email, [
+            'name' => $request->name,
+            'email' => $email,
+            'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'image' => $imagePath,
+            'otp' => $otp,
+            'otp_expires_at' => now()->addMinutes(5),
+        ], now()->addMinutes(5));
+
+        try {
+            Mail::send('emails.user_register_otp', ['otp' => $otp], function ($message) use ($email) {
+                $message->to($email)->subject('Registration OTP Verification');
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'OTP sent. Please verify.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mail failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function verifyRegisterOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required'
+        ]);
+
+        $data = Cache::get('register_'.$request->email);
+
+        if (!$data) {
+            return response()->json([
+                'success' => false,
+                'message' => 'OTP expired or not found'
+            ], 400);
+        }
+
+        if ($data['otp'] != $request->otp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid OTP'
+            ], 400);
+        }
+
+        if (now()->gt($data['otp_expires_at'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'OTP expired'
+            ], 400);
+        }
+
+      
+        if (User::where('email', $data['email'])->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User already exists'
+            ], 409);
         }
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'type' => 0,
-            'image' => $imagePath,
-            'password' => Hash::make($request->password),
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'phone' => $data['phone'],
+            'image' => $data['image'],
+            'email_verified_at' => now(),
         ]);
 
-        Mail::to($user->email)->send(new UserRegiMail($user));
 
-        $token = Auth::guard('api')->login($user);
+        $token = JWTAuth::fromUser($user);
 
-        $user->update([
-            'jwt_token' => $token,
-        ]);
+
+        $user->jwt_token = hash('sha256', $token);
+        $user->save();
+
+        Cache::forget('register_'.$request->email);
 
         return response()->json([
             'success' => true,
-            'message' => 'User registered successfully',
-            'data' => $user,
-            'token' => $token,
-        ], 201);
+            'message' => 'Registration successful',
+            'user' => $user,
+            'jwt_token' => $token,
+            'token_type' => 'bearer',
+
+        ]);
     }
 
     public function adminregister(Request $request)

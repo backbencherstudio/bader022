@@ -42,7 +42,8 @@ class User extends Authenticatable implements JWTSubject
         'business_category',
         'business_name',
         'otp',
-        'otp_expires_at'
+        'otp_expires_at',
+        'remember_token'
     ];
 
     protected $hidden = [
