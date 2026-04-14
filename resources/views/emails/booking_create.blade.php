@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Booking Rescheduled</title>
+    <title>Booking Confirmed</title>
 </head>
 <body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
@@ -24,7 +24,7 @@
                         <td style="padding:30px; text-align:center;">
 
                             <h2 style="margin:0; color:#333;">
-                                Booking Rescheduled
+                                Booking Confirmed 🎉
                             </h2>
 
                             <p style="color:#666; margin-top:15px;">
@@ -32,21 +32,27 @@
                             </p>
 
                             <p style="color:#666;">
-                                Your booking has been successfully rescheduled.
+                                Your booking has been successfully confirmed.
                             </p>
 
-                            <p style="color:#333; margin-top:15px;">
-                                Service: <br>
-                                <b>{{ $booking->service->service_name }}</b>
+                            <!-- Details -->
+                            <p style="color:#333; margin-top:20px;">
+                                <strong>Service:</strong><br>
+                                {{ $booking->service->service_name }}
                             </p>
 
-                            <p style="color:#333; margin-top:15px;">
-                                New Date & Time: <br>
-                                <b>{{ \Carbon\Carbon::parse($booking->date_time)->format('Y-m-d h:i A') }}</b>
+                            <p style="color:#333; margin-top:10px;">
+                                <strong>Date & Time:</strong><br>
+                               {{ \Carbon\Carbon::parse($booking->date_time)->format('Y-m-d h:i A') }}
+                            </p>
+
+                            <p style="color:#333; margin-top:10px;">
+                                <strong>Staff:</strong><br>
+                                {{ $booking->staff->name }}
                             </p>
 
                             <p style="color:#666; margin-top:20px;">
-                                Thank you.
+                                Thank you for choosing us.
                             </p>
 
                         </td>

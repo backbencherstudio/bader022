@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingConfirmationMail;
+use App\Mail\BookingCreateMail;
 
 class BookingController extends Controller
 {
@@ -308,6 +309,17 @@ class BookingController extends Controller
                 'payment_status' => 'paid',
                 'paid_at' => Carbon::now($merchantTimeZone),
             ]);
+
+            try {
+                if ($request->email) {
+                    Mail::to($request->email)->send(new BookingCreateMail($booking));
+                }
+            } catch (\Exception $e) {
+                Log::error('Booking email failed: ' . $e->getMessage(), [
+                    'booking_id' => $booking->id,
+                    'email' => $request->email,
+                ]);
+            }
 
             if ($request->payment_method === 'tap') {
 
