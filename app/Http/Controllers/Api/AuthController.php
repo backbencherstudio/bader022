@@ -105,182 +105,170 @@ class AuthController extends Controller
     //     ]);
     // }
 
-    public function login(Request $request)
-{
-    $credentials = $request->only('email', 'password');
+    // public function login(Request $request)
+    // {
+    //     $credentials = $request->only('email', 'password');
 
-    // ১. ইমেইল ও পাসওয়ার্ড চেক
-    if (!$token = Auth::guard('api')->attempt($credentials)) {
-        return response()->json(['error' => 'Invalid credentials'], 401);
-    }
+    //     // ১. ইমেইল ও পাসওয়ার্ড চেক
+    //     if (!$token = Auth::guard('api')->attempt($credentials)) {
+    //         return response()->json(['error' => 'Invalid credentials'], 401);
+    //     }
 
-    $user = Auth::guard('api')->user();
+    //     $user = Auth::guard('api')->user();
 
-    // ২. মার্চেন্ট সাবস্ক্রিপশন চেক
-    if ($user->type == 2) {
-        $subscription = $user->subscription;
-        if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Your subscription has expired. Please renew to login.',
-                'data' => null,
-            ], 403);
-        }
-    }
+    //     // ২. মার্চেন্ট সাবস্ক্রিপশন চেক
+    //     if ($user->type == 2) {
+    //         $subscription = $user->subscription;
+    //         if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Your subscription has expired. Please renew to login.',
+    //                 'data' => null,
+    //             ], 403);
+    //         }
+    //     }
 
-    // ৩. রোল নির্ধারণ
-    $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
-    $role = $roles[$user->type] ?? null;
+    //     // ৩. রোল নির্ধারণ
+    //     $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
+    //     $role = $roles[$user->type] ?? null;
 
-    if (!$role) {
-        return response()->json(['success' => false, 'message' => 'Invalid user type'], 403);
-    }
+    //     if (!$role) {
+    //         return response()->json(['success' => false, 'message' => 'Invalid user type'], 403);
+    //     }
 
-    // ৪. OTP এবং ৩০ দিনের সিকিউরিটি লজিক
-    $needsOtp = false;
-    $clientRememberToken = $request->header('Remember-Token');
+    //     // ৪. OTP এবং ৩০ দিনের সিকিউরিটি লজিক
+    //     $needsOtp = false;
+    //     $clientRememberToken = $request->header('Remember-Token');
 
-    if ($user->type == 1) {
-        $needsOtp = true; // অ্যাডমিন হলে সবসময় OTP লাগবে
-    } else {
-        // ইউজার/মার্চেন্ট হলে রিমেম্বার টোকেন চেক বা ৩০ দিন পার হয়েছে কি না চেক
-        if (!$user->remember_token || $user->remember_token !== $clientRememberToken || $user->updated_at < now()->subDays(30)) {
-            $needsOtp = true;
-        }
-    }
+    //     if ($user->type == 1) {
+    //         $needsOtp = true; // অ্যাডমিন হলে সবসময় OTP লাগবে
+    //     } else {
+    //         // ইউজার/মার্চেন্ট হলে রিমেম্বার টোকেন চেক বা ৩০ দিন পার হয়েছে কি না চেক
+    //         if (!$user->remember_token || $user->remember_token !== $clientRememberToken || $user->updated_at < now()->subDays(30)) {
+    //             $needsOtp = true;
+    //         }
+    //     }
 
-    if ($needsOtp) {
-        $otp = rand(100000, 999999);
-        $user->update([
-            'otp' => $otp,
-            'otp_expires_at' => now()->addMinutes(5),
+    //     if ($needsOtp) {
+    //         $otp = rand(100000, 999999);
+    //         $user->update([
+    //             'otp' => $otp,
+    //             'otp_expires_at' => now()->addMinutes(5),
+    //         ]);
+
+    //         // ৫. আসল মেইল পাঠানোর অংশ (Laravel Mail ব্যবহার করে)
+    //         try {
+    //             // আপনার একটি Mailable ক্লাস থাকতে হবে (যেমন: SendOtpMail)
+    //             // \Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp));
+
+    //             // অথবা দ্রুত টেস্ট করার জন্য Raw Mail:
+    //             // \Mail::raw("Your OTP for login is: $otp. It will expire in  minutes.", function ($message) use ($user) {
+    //             //     $message->to($user->email)->subject('Login OTP Verification');
+    //             // });
+    //             Mail::send('emails.login_otp', ['otp' => $otp], function ($message) use ($user) {
+    //                 $message->to($user->email)->subject('Login OTP Verification');
+    //             });
+
+    //         } catch (\Exception $e) {
+    //             return response()->json(['success' => false, 'message' => 'Could not send OTP. Please try again.'], 500);
+    //         }
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'otp_required' => true,
+    //             'message' => 'OTP sent to your email successfully.',
+    //             'email' => $user->email,
+    //         ]);
+    //     }
+
+    //     // ৬. মিনি সাইট মেনু লজিক
+    //     $hasMiniSiteMenu = false;
+    //     if ($user->type == 2) {
+    //         $plan = Subscription::where('user_id', $user->id)->latest()->first();
+    //         $hasMiniSiteMenu = !($plan && $plan->plan_id == 1);
+    //     }
+
+    //     // ৭. পুরনো টোকেন ইনভ্যালিড করা (Single Device login)
+    //     if ($user->jwt_token) {
+    //         try {
+    //             \JWTAuth::setToken($user->jwt_token)->invalidate();
+    //         } catch (\Exception $e) {}
+    //     }
+
+    //     // ৮. নতুন রিমেম্বার টোকেন জেনারেট এবং সেভ
+    //     $newRememberToken = \Str::random(60);
+    //     $user->setRememberToken($newRememberToken);
+    //     $user->jwt_token = $token;
+    //     $user->save();
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => $role . ' login successfully',
+    //         'data' => [
+    //             'user' => $user,
+    //             'user_type' => $role,
+    //             'has_mini_site_menu' => $hasMiniSiteMenu,
+    //             'remember_token' => $newRememberToken,
+    //         ],
+    //         'token' => $token,
+    //     ]);
+    // }
+
+public function loginOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp'   => 'required|numeric',
         ]);
+        $user = User::where('email', $request->email)->first();
 
-        // ৫. আসল মেইল পাঠানোর অংশ (Laravel Mail ব্যবহার করে)
-        try {
-            // আপনার একটি Mailable ক্লাস থাকতে হবে (যেমন: SendOtpMail)
-            // \Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp));
-
-            // অথবা দ্রুত টেস্ট করার জন্য Raw Mail:
-            // \Mail::raw("Your OTP for login is: $otp. It will expire in  minutes.", function ($message) use ($user) {
-            //     $message->to($user->email)->subject('Login OTP Verification');
-            // });
-            Mail::send('emails.login_otp', ['otp' => $otp], function ($message) use ($user) {
-                $message->to($user->email)->subject('Login OTP Verification');
-            });
-
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Could not send OTP. Please try again.'], 500);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found'], 404);
         }
+
+        if (!$user->otp || (int)$user->otp !== (int)$request->otp) {
+            return response()->json(['success' => false, 'message' => 'Invalid OTP'], 401);
+        }
+        if ($user->otp_expires_at < now()) {
+            return response()->json(['success' => false, 'message' => 'OTP has expired'], 401);
+        }
+        $token = Auth::guard('api')->fromUser($user);
+
+        if ($user->jwt_token) {
+            try {
+                \JWTAuth::setToken($user->jwt_token)->invalidate();
+            } catch (\Exception $e) {}
+        }
+
+        $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
+        $role = $roles[$user->type] ?? 'User';
+        $hasMiniSiteMenu = false;
+        if ($user->type == 2) {
+            $plan = Subscription::where('user_id', $user->id)->latest()->first();
+            $hasMiniSiteMenu = !($plan && $plan->plan_id == 1);
+        }
+        $newRememberToken = \Str::random(60);
+
+        $user->update([
+            'otp' => null,
+            'otp_expires_at' => null,
+            'jwt_token' => $token,
+            'remember_token' => $newRememberToken,
+        ]);
 
         return response()->json([
             'success' => true,
-            'otp_required' => true,
-            'message' => 'OTP sent to your email successfully.',
-            'email' => $user->email,
+            'message' => $role . ' verified and logged in successfully',
+            'data' => [
+                'user' => $user,
+                'user_type' => $role,
+                'has_mini_site_menu' => $hasMiniSiteMenu,
+                'remember_token' => $newRememberToken,
+            ],
+            'token' => $token,
         ]);
     }
 
-    // ৬. মিনি সাইট মেনু লজিক
-    $hasMiniSiteMenu = false;
-    if ($user->type == 2) {
-        $plan = Subscription::where('user_id', $user->id)->latest()->first();
-        $hasMiniSiteMenu = !($plan && $plan->plan_id == 1);
-    }
-
-    // ৭. পুরনো টোকেন ইনভ্যালিড করা (Single Device login)
-    if ($user->jwt_token) {
-        try {
-            \JWTAuth::setToken($user->jwt_token)->invalidate();
-        } catch (\Exception $e) {}
-    }
-
-    // ৮. নতুন রিমেম্বার টোকেন জেনারেট এবং সেভ
-    $newRememberToken = \Str::random(60);
-    $user->setRememberToken($newRememberToken);
-    $user->jwt_token = $token;
-    $user->save();
-
-    return response()->json([
-        'success' => true,
-        'message' => $role . ' login successfully',
-        'data' => [
-            'user' => $user,
-            'user_type' => $role,
-            'has_mini_site_menu' => $hasMiniSiteMenu,
-            'remember_token' => $newRememberToken,
-        ],
-        'token' => $token,
-    ]);
-}
-
-public function loginOtp(Request $request)
-{
-    // ১. ভ্যালিডেশন
-    $request->validate([
-        'email' => 'required|email',
-        'otp'   => 'required|numeric',
-    ]);
-
-    // ২. ইউজার খুঁজে বের করা
-    $user = User::where('email', $request->email)->first();
-
-    if (!$user) {
-        return response()->json(['success' => false, 'message' => 'User not found'], 404);
-    }
-
-    // ৩. OTP এবং মেয়াদ চেক করা (Strict typing এড়াতে (int) কাস্টিং ব্যবহার করা হয়েছে)
-    if (!$user->otp || (int)$user->otp !== (int)$request->otp) {
-        return response()->json(['success' => false, 'message' => 'Invalid OTP'], 401);
-    }
-
-    if ($user->otp_expires_at < now()) {
-        return response()->json(['success' => false, 'message' => 'OTP has expired'], 401);
-    }
-
-    // ৪. সফল হলে নতুন টোকেন জেনারেট করা
-    $token = Auth::guard('api')->fromUser($user);
-
-    // ৫. পুরনো JWT টোকেন ইনভ্যালিড করা (Single Device login logic)
-    if ($user->jwt_token) {
-        try {
-            \JWTAuth::setToken($user->jwt_token)->invalidate();
-        } catch (\Exception $e) {}
-    }
-
-    // ৬. রোল নির্ধারণ
-    $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
-    $role = $roles[$user->type] ?? 'User';
-
-    // ৭. মার্চেন্টের জন্য মিনি সাইট মেনু লজিক
-    $hasMiniSiteMenu = false;
-    if ($user->type == 2) {
-        $plan = Subscription::where('user_id', $user->id)->latest()->first();
-        $hasMiniSiteMenu = !($plan && $plan->plan_id == 1);
-    }
-
-    // ৮. ডাটাবেজ আপডেট (OTP মুছে ফেলা এবং নতুন রিমেম্বার টোকেন সেট করা)
-    $newRememberToken = \Str::random(60);
-
-    $user->update([
-        'otp' => null,           // ব্যবহার হয়ে গেলে OTP মুছে ফেলুন
-        'otp_expires_at' => null,
-        'jwt_token' => $token,
-        'remember_token' => $newRememberToken,
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'message' => $role . ' verified and logged in successfully',
-        'data' => [
-            'user' => $user,
-            'user_type' => $role,
-            'has_mini_site_menu' => $hasMiniSiteMenu,
-            'remember_token' => $newRememberToken,
-        ],
-        'token' => $token,
-    ]);
-}
 
 
     public function register(Request $request)
