@@ -426,7 +426,7 @@ class AuthController extends Controller
             ], 400);
         }
 
-      
+
         if (User::where('email', $data['email'])->exists()) {
             return response()->json([
                 'success' => false,
@@ -456,7 +456,7 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Registration successful',
             'user' => $user,
-            'jwt_token' => $token,
+            'token' => $token,
             'token_type' => 'bearer',
 
         ]);
