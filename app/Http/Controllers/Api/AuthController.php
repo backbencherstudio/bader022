@@ -1210,104 +1210,33 @@ public function verifyMerchantOtpAndRegister(Request $request)
         ], 200);
     }
 
-    // public function sendOtp(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'email' => 'required|email|exists:users,email',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Validation failed',
-    //             'errors' => $validator->errors(),
-    //         ], 422);
-    //     }
-
-    //     $user = User::where('email', $request->email)->first();
-
-    //     if ($user->type == 1) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Admin cannot reset password via OTP. Please change password from dashboard.',
-    //         ], 403);
-    //     }
-
-    //     $otp = rand(100000, 999999);
-
-    //     DB::table('password_resets')->updateOrInsert(
-    //         ['email' => $request->email],
-    //         [
-    //             'otp' => Hash::make($otp),
-    //             'expires_at' => now()->addMinutes(5),
-    //             'updated_at' => now(),
-    //             'created_at' => now(),
-    //         ]
-    //     );
-
-    //     Mail::send('emails.otp', ['otp' => $otp], function ($message) use ($request) {
-    //         $message->to($request->email)
-    //             ->subject('Password Reset OTP');
-    //     });
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'OTP sent to your email successfully',
-    //     ]);
-    // }
     public function sendOtp(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         $user = User::where('email', $request->email)->first();
 
         if ($user->type == 1) {
             return response()->json([
                 'success' => false,
-                'message' => 'Admin cannot reset password via OTP.',
+                'message' => 'Admin cannot reset password via OTP. Please change password from dashboard.',
             ], 403);
         }
 
-        $email = $request->email;
-
-        // ----------------------------
-        // 1. 60 seconds cooldown check
-        // ----------------------------
-        if (Cache::has("otp_cooldown:$email")) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Please wait 60 seconds before requesting another OTP.',
-            ], 429);
-        }
-
-        // ----------------------------
-        // 2. 10 min limit (max 3 times)
-        // ----------------------------
-        $attemptKey = "otp_attempts:$email";
-        $attempts = Cache::get($attemptKey, 0);
-
-        if ($attempts >= 3) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Too many OTP requests. Please try again after 10 minutes.',
-            ], 429);
-        }
-
-        // increment attempts (expire in 10 minutes)
-        Cache::put($attemptKey, $attempts + 1, now()->addMinutes(10));
-
-        // set 60 sec cooldown
-        Cache::put("otp_cooldown:$email", true, now()->addSeconds(60));
-
-        // ----------------------------
-        // generate OTP
-        // ----------------------------
         $otp = rand(100000, 999999);
 
         DB::table('password_resets')->updateOrInsert(
-            ['email' => $email],
+            ['email' => $request->email],
             [
                 'otp' => Hash::make($otp),
                 'expires_at' => now()->addMinutes(5),
@@ -1316,15 +1245,17 @@ public function verifyMerchantOtpAndRegister(Request $request)
             ]
         );
 
-        Mail::send('emails.otp', ['otp' => $otp], function ($message) use ($email) {
-            $message->to($email)->subject('Password Reset OTP');
+        Mail::send('emails.otp', ['otp' => $otp], function ($message) use ($request) {
+            $message->to($request->email)
+                ->subject('Password Reset OTP');
         });
 
         return response()->json([
             'success' => true,
-            'message' => 'OTP sent successfully',
+            'message' => 'OTP sent to your email successfully',
         ]);
     }
+
 
     public function resetOtp(Request $request)
     {
