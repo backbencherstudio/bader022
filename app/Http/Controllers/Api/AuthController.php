@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserRegiMail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
@@ -683,223 +684,169 @@ class AuthController extends Controller
     //     ], 201);
     // }
 
+
+
+
     public function marchantregister(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'business_name' => 'required|string|max:255|unique:users,business_name',
-        'email' => 'required|email|unique:users,email',
-        'phone' => 'required|string|max:20|unique:users,phone',
-        'password' => 'required|string|min:6|confirmed',
-        'business_category' => 'required|string|max:255',
-        'plan_id' => 'required|exists:plans,id',
-        'number_of_branches' => 'nullable|integer',
-        'address' => 'nullable|string|max:500',
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'business_name' => 'required|string|max:255|unique:users,business_name',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|max:20|unique:users,phone',
+            'password' => 'required|string|min:6|confirmed',
+            'business_category' => 'required|string|max:255',
+            'plan_id' => 'required|exists:plans,id',
+            'number_of_branches' => 'nullable|integer',
+            'address' => 'nullable|string|max:500',
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => false,
-            'errors' => $validator->errors()
-        ], 422);
-    }
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
+        }
 
-    $otp = rand(100000, 999999);
+        $otp = rand(100000, 999999);
+        Cache::put('register_'.$request->email, [
+            'data' => $request->all(),
+            'otp' => $otp
+        ], now()->addMinutes(5));
 
-    Cache::put('merchant_register_' . $request->email, [
-        'otp' => $otp,
-        'data' => $request->all(),
-    ], now()->addMinutes(5));
-
-    try {
-
-        Mail::send('emails.user_register_otp', ['otp' => $otp], function ($message) use ($request) {
+        Mail::send('emails.merchant_register_otp', ['otp' => $otp], function ($message) use ($request) {
             $message->to($request->email)
-                ->subject('Registration OTP Verification');
+                    ->subject('Your Registration OTP');
         });
 
         return response()->json([
             'success' => true,
-            'message' => 'OTP sent successfully. Please verify to complete registration.'
+            'message' => 'OTP sent to email'
+        ]);
+    }
+
+    public function verifyMerchantOtpAndRegister(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required'
         ]);
 
-    } catch (\Exception $e) {
+        $cached = Cache::get('register_'.$request->email);
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to send OTP',
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
-
-
-
-public function verifyMerchantOtpAndRegister(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'otp' => 'required|numeric'
-    ]);
-
-    $cacheKey = 'merchant_register_' . $request->email;
-    $cached = Cache::get($cacheKey);
-
-    if (!$cached) {
-        return response()->json([
-            'success' => false,
-            'message' => 'OTP expired or not found'
-        ], 400);
-    }
-
-    if ($cached['otp'] != $request->otp) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Invalid OTP'
-        ], 400);
-    }
-
-    $data = $cached['data'];
-
-    $plan = Plan::find($data['plan_id']);
-    $subdomain = strtolower(Str::slug($data['business_name'], ''));
-
-    if (User::where('website_domain', $subdomain)->exists()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Subdomain already taken'
-        ], 422);
-    }
-
-    DB::beginTransaction();
-
-    try {
-
-        $merchant = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'],
-            'type' => 2,
-            'password' => Hash::make($data['password']),
-            'business_category' => $data['business_category'],
-            'number_of_branches' => $data['number_of_branches'] ?? null,
-            'address' => $data['address'] ?? null,
-            'business_name' => $data['business_name'],
-            'website_domain' => $subdomain,
-        ]);
-
-        /*
-        =========================
-        FREE PLAN
-        =========================
-        */
-        if ($plan->id == 1) {
-
-            TapPayment::create([
-                'user_id' => $merchant->id,
-                'tap_mode' => 'test',
-                'tap_secret_key' => 'sk_test_XKokBfNWv6FIYuTMg5sLPjhJ',
-                'tap_public_key' => 'pk_test_EtHFV4BuPQokJT6jiROls87Y',
-            ]);
-
-            $subscription = Subscription::create([
-                'user_id' => $merchant->id,
-                'plan_id' => $plan->id,
-                'starts_at' => now(),
-                'ends_at' => now()->addDays(7),
-                'status' => 'active',
-                'auto_renew' => 0,
-            ]);
-
-            Payment::create([
-                'user_id' => $merchant->id,
-                'subscription_id' => $subscription->id,
-                'amount' => 0,
-                'currency' => 'SAR',
-                'payment_method' => 'free',
-                'transaction_id' => Str::uuid(),
-                'status' => 'paid',
-            ]);
-
-            Cache::forget($cacheKey);
-
-            DB::commit();
-
-            $token = auth('api')->login($merchant);
-
+        if (!$cached) {
             return response()->json([
-                'success' => true,
-                'message' => 'Registration successful',
-                'token' => $token
-            ], 201);
+                'success' => false,
+                'message' => 'OTP expired'
+            ], 400);
         }
 
-        /*
-        =========================
-        PAID PLAN
-        =========================
-        */
+        if ($cached['otp'] != $request->otp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid OTP'
+            ], 400);
+        }
+
+        $data = (object) $cached['data'];
+        $plan = Plan::find($data->plan_id);
+        $subdomain = strtolower(Str::slug($data->business_name, ''));
+
+        Cache::forget('register_'.$request->email);
+
+        if ($plan->id == 1) {
+
+            DB::beginTransaction();
+            try {
+                $merchant = User::create([
+                    'name' => $data->name,
+                    'email' => $data->email,
+                    'phone' => $data->phone,
+                    'type' => 2,
+                    'password' => Hash::make($data->password),
+                    'business_category' => $data->business_category,
+                    'number_of_branches' => $data->number_of_branches,
+                    'address' => $data->address,
+                    'business_name' => $data->business_name,
+                    'website_domain' => $subdomain,
+                ]);
+
+
+                TapPayment::create([
+                    'user_id' => $merchant->id,
+                    'tap_mode' => 'test',
+                    'tap_secret_key' => 'sk_test_XKokBfNWv6FIYuTMg5sLPjhJ',
+                    'tap_public_key' => 'pk_test_EtHFV4BuPQokJT6jiROls87Y',
+                ]);
+
+                $subscription = Subscription::create([
+                    'user_id' => $merchant->id,
+                    'plan_id' => $plan->id,
+                    'starts_at' => now(),
+                    'ends_at' => now()->addDays(7),
+                    'status' => 'active',
+                    'auto_renew' => 0,
+                ]);
+
+                Payment::create([
+                    'user_id' => $merchant->id,
+                    'subscription_id' => $subscription->id,
+                    'amount' => 0,
+                    'currency' => 'SAR',
+                    'payment_method' => 'free',
+                    'transaction_id' => Str::uuid(),
+                    'status' => 'paid',
+                ]);
+
+
+
+                DB::commit();
+
+                $token = auth('api')->login($merchant);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration successful',
+                    'token' => $token
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+        }
 
         $tapSetting = DB::table('settings')->latest()->first();
 
-        if (!$tapSetting || !$tapSetting->tap_secret_key) {
-            DB::rollBack();
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Payment config missing'
-            ], 422);
-        }
-
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
-            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
             'currency' => 'SAR',
             'customer' => [
-                'first_name' => $data['name'],
-                'email' => $data['email'],
-                'phone' => [
-                    'country_code' => '966',
-                    'number' => $data['phone']
-                ],
+                'first_name' => $data->name,
+                'email' => $data->email,
+                'phone' => ['country_code' => '966', 'number' => $data->phone],
             ],
             'source' => ['id' => 'src_all'],
             'redirect' => [
                 'url' => url('/api/tap-successregister'),
             ],
-            'metadata' => $data,
+            'metadata' => [
+                'udf1' => $data->name,
+                'udf2' => $data->email,
+                'udf3' => $data->phone,
+                'udf4' => $data->password,
+                'business_name' => $data->business_name,
+                'business_category' => $data->business_category,
+                'plan_id' => $plan->id,
+                'subdomain' => $subdomain,
+                'address' => $data->address,
+                'branches' => $data->number_of_branches,
+            ],
         ]);
-
-        if ($tapResponse->failed()) {
-            DB::rollBack();
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Payment creation failed'
-            ], 500);
-        }
-
-        DB::commit();
-        Cache::forget($cacheKey);
-
         return response()->json([
             'success' => true,
-            'message' => 'Redirect to payment',
             'tap_payment_url' => $tapResponse->json()['transaction']['url'],
         ]);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage()
-        ], 500);
     }
-}
-
 
     public function tapSuccessregister(Request $request)
     {
@@ -993,6 +940,7 @@ public function verifyMerchantOtpAndRegister(Request $request)
                 DB::commit();
 
                 Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
+
 
                 $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/create-account?user_id='.$merchant->id.'&website='.$merchant->website_domain;
 
