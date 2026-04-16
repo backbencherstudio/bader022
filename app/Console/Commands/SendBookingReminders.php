@@ -14,15 +14,12 @@ class SendBookingReminders extends Command
 
     public function handle()
     {
-        // ✅ FIXED TIMEZONE
         $now = Carbon::now('Asia/Riyadh');
 
         $this->info("System Time (Riyadh): " . $now->toDateTimeString());
 
-        // 24 hours reminder
         $this->processReminder($now, 24, '24 hours');
 
-        // 1 hour reminder
         $this->processReminder($now, 1, '1 hour');
 
         $this->info("All reminders processed successfully.");
@@ -30,7 +27,6 @@ class SendBookingReminders extends Command
 
     private function processReminder($now, $hours, $label)
     {
-        // Target time window
         $start = $now->copy()->addHours($hours)->subMinutes(10);
         $end   = $now->copy()->addHours($hours)->addMinutes(10);
 
@@ -39,7 +35,7 @@ class SendBookingReminders extends Command
         $this->info("End: " . $end->toDateTimeString());
 
         $bookings = Booking::with(['user', 'merchantPayment'])
-            ->whereIn('status', ['confirm', 'reschedule'])
+            ->whereIn('status', ['confirm', 'rescheduled'])
             ->whereBetween('date_time', [$start, $end])
             ->whereHas('merchantPayment', function ($q) {
                 $q->where('payment_status', 'paid');
@@ -67,7 +63,6 @@ class SendBookingReminders extends Command
                 });
 
                 $this->info("Sent {$label} reminder for Booking ID: {$booking->id}");
-
             } catch (\Exception $e) {
                 $this->error("Email failed (ID {$booking->id}): " . $e->getMessage());
             }
