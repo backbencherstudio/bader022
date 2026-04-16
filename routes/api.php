@@ -78,7 +78,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
     Route::get('businessTypeAnalytics', [DashboardController::class, 'businessTypeAnalytics'])->name('businessTypeAnalytics');
 
-    // Role
+    // Role $ Role
     Route::prefix('role')->group(function () {
         Route::get('index', [RoleController::class, 'index'])->name('role.index');
         Route::post('store', [RoleController::class, 'store'])->name('role.store');
