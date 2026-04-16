@@ -37,7 +37,7 @@
                                 <table width="100%" style="color:#555; font-size:14px;">
                                     <tr>
                                         <td style="padding:5px 0;"><b>Date & Time:</b></td>
-                                        <td style="padding:5px 0; text-align:right;">{{ $booking->date_time }}</td>
+                                        <td style="padding:5px 0; text-align:right;">{{ \Carbon\Carbon::parse($booking->date_time)->format('Y-m-d h:i A') }}</td>
                                     </tr>
                                     <tr>
                                         <td style="padding:5px 0;"><b>Status:</b></td>
@@ -50,7 +50,7 @@
                                     @if($booking->service)
                                     <tr>
                                         <td style="padding:5px 0;"><b>Service:</b></td>
-                                        <td style="padding:5px 0; text-align:right;">{{ $booking->service->name }}</td>
+                                        <td style="padding:5px 0; text-align:right;">{{ $booking->service->service_name }}</td>
                                     </tr>
                                     @endif
                                 </table>
