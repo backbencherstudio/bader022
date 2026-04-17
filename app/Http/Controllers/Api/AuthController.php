@@ -208,7 +208,8 @@ class AuthController extends Controller
         if ($user->jwt_token) {
             try {
                 \JWTAuth::setToken($user->jwt_token)->invalidate();
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
         if (!$user->remember_token) {
@@ -257,7 +258,8 @@ class AuthController extends Controller
         if ($user->jwt_token) {
             try {
                 \JWTAuth::setToken($user->jwt_token)->invalidate();
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
         $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
@@ -372,7 +374,7 @@ class AuthController extends Controller
         }
 
         // Store ALL data in cache (NO DB)
-        Cache::put('register_'.$email, [
+        Cache::put('register_' . $email, [
             'name' => $request->name,
             'email' => $email,
             'password' => Hash::make($request->password),
@@ -391,7 +393,6 @@ class AuthController extends Controller
                 'success' => true,
                 'message' => 'OTP sent. Please verify.'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -408,7 +409,7 @@ class AuthController extends Controller
             'otp' => 'required'
         ]);
 
-        $data = Cache::get('register_'.$request->email);
+        $data = Cache::get('register_' . $request->email);
 
         if (!$data) {
             return response()->json([
@@ -455,7 +456,7 @@ class AuthController extends Controller
         $user->jwt_token = hash('sha256', $token);
         $user->save();
 
-        Cache::forget('register_'.$request->email);
+        Cache::forget('register_' . $request->email);
 
         return response()->json([
             'success' => true,
@@ -493,9 +494,9 @@ class AuthController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $imagePath = 'user/'.$imageName;
+            $imagePath = 'user/' . $imageName;
         }
 
         $user = User::create([
@@ -706,14 +707,14 @@ class AuthController extends Controller
         }
 
         $otp = rand(100000, 999999);
-        Cache::put('register_'.$request->email, [
+        Cache::put('register_' . $request->email, [
             'data' => $request->all(),
             'otp' => $otp
         ], now()->addMinutes(5));
 
         Mail::send('emails.merchant_register_otp', ['otp' => $otp], function ($message) use ($request) {
             $message->to($request->email)
-                    ->subject('Your Registration OTP');
+                ->subject('Your Registration OTP');
         });
 
         return response()->json([
@@ -729,7 +730,7 @@ class AuthController extends Controller
             'otp' => 'required'
         ]);
 
-        $cached = Cache::get('register_'.$request->email);
+        $cached = Cache::get('register_' . $request->email);
 
         if (!$cached) {
             return response()->json([
@@ -749,7 +750,7 @@ class AuthController extends Controller
         $plan = Plan::find($data->plan_id);
         $subdomain = strtolower(Str::slug($data->business_name, ''));
 
-        Cache::forget('register_'.$request->email);
+        Cache::forget('register_' . $request->email);
 
         if ($plan->id == 1) {
 
@@ -767,7 +768,6 @@ class AuthController extends Controller
                     'business_name' => $data->business_name,
                     'website_domain' => $subdomain,
                 ]);
-
 
                 TapPayment::create([
                     'user_id' => $merchant->id,
@@ -795,7 +795,36 @@ class AuthController extends Controller
                     'status' => 'paid',
                 ]);
 
+                $storeSetting = MerchantSetting::create([
+                    'user_id' => $merchant->id,
+                    'store_name' => $merchant->business_name,
+                    'business_category' => $merchant->business_category,
+                    'business_address' => $merchant->address ?? null,
+                    'country' => 'Saudi Arabia',
+                    'city' => 'Riyadh',
+                    'time_zone' => 'Asia/Riyadh',
+                    'currency' => 'SAR',
+                ]);
 
+                $defaultHours = [
+                    'monday' => ['open' => '09:00', 'close' => '24:00'],
+                    'tuesday' => ['open' => '09:00', 'close' => '24:00'],
+                    'wednesday' => ['open' => '09:00', 'close' => '24:00'],
+                    'thursday' => ['open' => '09:00', 'close' => '24:00'],
+                    'friday' => ['open' => '13:00', 'close' => '24:00'],
+                    'saturday' => ['open' => '09:00', 'close' => '24:00'],
+                    'sunday' => ['open' => '09:00', 'close' => '24:00'],
+                ];
+
+                foreach ($defaultHours as $day => $time) {
+                    BusinessHour::create([
+                        'merchant_store_setting_id' => $storeSetting->id,
+                        'day' => $day,
+                        'open_time' => $time['open'],
+                        'close_time' => $time['close'],
+                        'is_closed' => 0,
+                    ]);
+                }
 
                 DB::commit();
 
@@ -806,7 +835,6 @@ class AuthController extends Controller
                     'message' => 'Registration successful',
                     'token' => $token
                 ]);
-
             } catch (\Exception $e) {
                 DB::rollBack();
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -816,7 +844,7 @@ class AuthController extends Controller
         $tapSetting = DB::table('settings')->latest()->first();
 
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
             'currency' => 'SAR',
@@ -854,7 +882,7 @@ class AuthController extends Controller
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/$chargeId");
 
         $data = $response->json();
@@ -942,19 +970,19 @@ class AuthController extends Controller
                 Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
 
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/create-account?user_id='.$merchant->id.'&website='.$merchant->website_domain;
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/create-account?user_id=' . $merchant->id . '&website=' . $merchant->website_domain;
 
                 return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/booking-failed';
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
 
                 return redirect()->away($frontendUrl);
             }
         }
 
-        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/booking-failed';
+        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
 
         return redirect()->away($frontendUrl);
     }
@@ -1032,8 +1060,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => 'required|in:0,1',
             // 'role' => 'required|exists:roles,id',
@@ -1052,9 +1080,9 @@ class AuthController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('user'), $imageName);
-            $user->image = 'user/'.$imageName;
+            $user->image = 'user/' . $imageName;
         }
 
         $user->name = $request->name;
@@ -1358,8 +1386,8 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|unique:users,phone,'.$user->id,
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20|unique:users,phone,' . $user->id,
             'address' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -1394,11 +1422,11 @@ class AuthController extends Controller
                 unlink(public_path($user->image));
             }
 
-            $imageName = time().'_'.$request->image->getClientOriginalName();
+            $imageName = time() . '_' . $request->image->getClientOriginalName();
 
             $request->image->move(public_path('uploads/users'), $imageName);
 
-            $data['image'] = 'uploads/users/'.$imageName;
+            $data['image'] = 'uploads/users/' . $imageName;
         }
 
         if (! empty($data)) {
@@ -1479,7 +1507,7 @@ class AuthController extends Controller
         }
 
         $tapResponse = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
             'Content-Type' => 'application/json',
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
@@ -1521,7 +1549,7 @@ class AuthController extends Controller
         $tapSetting = DB::table('settings')->latest()->first();
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$tapSetting->tap_secret_key,
+            'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
         ])->get("https://api.tap.company/v2/charges/{$tap_id}");
 
         $paymentData = $response->json();
@@ -1558,19 +1586,19 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/login';
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/login';
 
                 return redirect()->away($frontendUrl);
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/booking-failed';
+                $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
 
                 return redirect()->away($frontendUrl);
             }
         }
 
-        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io').'/booking-failed';
+        $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
 
         return redirect()->away($frontendUrl);
     }
