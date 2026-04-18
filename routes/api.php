@@ -38,11 +38,11 @@ use Illuminate\Support\Facades\Route;
 
 
 // user login
-Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('user.register');
 Route::post('/verify-register-otp', [AuthController::class, 'verifyRegisterOtp'])->name('verify.register.otp');
 Route::post('/marchant/register', [AuthController::class, 'marchantregister'])->name('marchant.register');
 Route::post('/marchant-verify-otp', [AuthController::class, 'verifyMerchantOtpAndRegister'])->name('marchant.verify.otp');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('user.login');
 Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
 Route::post('/reset-otp', [AuthController::class, 'resetOtp']);
 Route::post('/book-demo', [BookdemoController::class, 'bookDemo'])->name('book.demo');
