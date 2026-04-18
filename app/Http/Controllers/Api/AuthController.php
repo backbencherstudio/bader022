@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\PaymentCompletedMail;
+use App\Mail\MerchantRegFree;
 use App\Models\BusinessHour;
 use App\Models\MerchantSetting;
 use App\Models\Payment;
@@ -828,6 +829,8 @@ class AuthController extends Controller
                 }
 
                 DB::commit();
+
+                Mail::to($merchant->email)->send(new MerchantRegFree($merchant));
 
                 $token = auth('api')->login($merchant);
 
