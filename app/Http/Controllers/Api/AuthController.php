@@ -72,14 +72,14 @@ class AuthController extends Controller
 
 
         $needsOtp = false;
-        $clientRememberToken = $request->header('Remember-Token');
+        $clientRememberToken = $request->header('RememberToken');
 
         if ($user->type == 1) {
 
             $needsOtp = true;
         } else {
 
-            if (!$user->remember_token || $user->remember_token !== $clientRememberToken || $user->updated_at < now()->subDays(30)) {
+            if (!$user->remembertoken || $user->remembertoken !== $clientRememberToken || $user->updated_at < now()->subDays(30)) {
                 $needsOtp = true;
             }
         }
@@ -120,8 +120,8 @@ class AuthController extends Controller
             }
         }
 
-        if (!$user->remember_token) {
-            $user->remember_token = \Str::random(60);
+        if (!$user->remembertoken) {
+            $user->remembertoken = \Str::random(60);
         }
 
         $user->jwt_token = $token;
@@ -137,7 +137,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'user_type' => $role,
                 'has_mini_site_menu' => $hasMiniSiteMenu,
-                'remember_token' => $user->remember_token,
+                'remembertoken' => $user->remember_token,
             ],
             'token' => $token,
         ]);
@@ -183,7 +183,7 @@ class AuthController extends Controller
             'otp' => null,
             'otp_expires_at' => null,
             'jwt_token' => $token,
-            'remember_token' => $newRememberToken,
+            'remembertoken' => $newRememberToken,
         ]);
 
         return response()->json([
@@ -193,7 +193,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'user_type' => $role,
                 'has_mini_site_menu' => $hasMiniSiteMenu,
-                'remember_token' => $newRememberToken,
+                'remembertoken' => $newRememberToken,
             ],
             'token' => $token,
         ]);
