@@ -19,9 +19,9 @@ return [
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*', 'Remember-Token'],
+    'allowed_headers' => ['*', 'remember_token'],
 
-    'exposed_headers' => ['Remember-Token'],
+    'exposed_headers' => ['remember_token'],
 
     'max_age' => 0,
 
