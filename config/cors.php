@@ -28,7 +28,7 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => ['Remember-Token'],
+    'exposed_headers' => ['remember_token'],
 
     'max_age' => 0,
 
