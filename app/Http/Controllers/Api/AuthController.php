@@ -26,6 +26,7 @@ use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
+
 {
     public function index()
     {
@@ -37,9 +38,6 @@ class AuthController extends Controller
 
         ]);
     }
-
-
-
 
 
     public function login(Request $request)
@@ -72,7 +70,7 @@ class AuthController extends Controller
 
 
         $needsOtp = false;
-        $clientRememberToken = $request->header('Remember-Token');
+        $clientRememberToken = $request->header('remember_token');
 
         if ($user->type == 1) {
 
