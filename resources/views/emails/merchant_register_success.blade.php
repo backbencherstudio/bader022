@@ -3,7 +3,7 @@
 <head>
     <title>{{ $type == 'otp' ? 'Account Verification' : 'Payment Successful' }}</title>
 </head>
-<body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
+<body dir="rtl" style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
 <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
 <tr>
@@ -24,7 +24,7 @@
 
             @if($type == 'otp')
 
-                <h2 style="margin:0; color:#28a745;">🎉 تم التسجيل بنجاح</h2>
+                <h2 style="margin:0; color:#28a745;">تم التسجيل بنجاح 🎉</h2>
 
                 <p style="color:#666; margin-top:10px;">
                     تم إنشاء حسابك التجاري بنجاح.
@@ -53,7 +53,7 @@
 
             @else
 
-                <h2 style="margin:0; color:#2d89ef;">💳 تم إتمام عملية الدفع بنجاح</h2>
+                <h2 style="margin:0; color:#2d89ef;">تم إتمام عملية الدفع بنجاح 💳</h2>
 
                 <p style="color:#666; margin-top:10px;">
                     تم إتمام عملية الدفع بنجاح.

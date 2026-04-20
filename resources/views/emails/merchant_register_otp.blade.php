@@ -47,7 +47,7 @@
         }
     </style>
 </head>
-<body>
+<body dir="rtl">
     <div class="container">
         <div class="header">
             <img src="{{ $message->embed(public_path('logo.png')) }}" style="max-height:50px;">
