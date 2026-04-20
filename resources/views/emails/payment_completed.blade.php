@@ -42,7 +42,7 @@
             <tr>
               <td style="padding: 30px; text-align: center">
                 <h2 style="margin: 0; color: #333">
-                  🎉 تم إتمام عملية الدفع بنجاح
+                  تم إتمام عملية الدفع بنجاح 🎉
                 </h2>
 
                 <p style="color: #666; margin-top: 10px">
