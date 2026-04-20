@@ -3,7 +3,7 @@
 <head>
     <title>تم إعادة جدولة الحجز</title>
 </head>
-<body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
+<body dir="rtl" style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
     <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
         <tr>

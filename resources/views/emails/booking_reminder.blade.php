@@ -3,7 +3,7 @@
 <head>
     <title>تذكير بالحجز</title>
 </head>
-<body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
+<body dir="rtl" style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
     <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
         <tr>
@@ -32,7 +32,7 @@
                                 <p style="color:#666;">يبدأ حجزك في<b> 1 ساعة</b>. يرجى الوصول في الموعد المحدد.</p>
                             @endif
 
-                            <div style="margin:25px 0; text-align: left; background:#f1f7ff; padding:20px; border-radius:8px;">
+                            <div style="margin:25px 0; text-align: right; background:#f1f7ff; padding:20px; border-radius:8px;">
                                 <h4 style="margin:0 0 10px 0; color:#2d89ef;">تفاصيل الحجز:</h4>
                                 <table width="100%" style="color:#555; font-size:14px;">
                                     <tr>
@@ -49,7 +49,7 @@
                                     </tr>
                                     @if($booking->service)
                                     <tr>
-                                        <td style="padding:5px 0;"><b>Service:</b></td>
+                                        <td style="padding:5px 0;"><b>خدمة:</b></td>
                                         <td style="padding:5px 0; text-align:right;">{{ $booking->service->service_name }}</td>
                                     </tr>
                                     @endif
