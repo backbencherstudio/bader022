@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Booking Rescheduled</title>
+    <title>تم إعادة جدولة الحجز</title>
 </head>
 <body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
@@ -24,29 +24,29 @@
                         <td style="padding:30px; text-align:center;">
 
                             <h2 style="margin:0; color:#333;">
-                                Booking Rescheduled
+                                تم إعادة جدولة الحجز
                             </h2>
 
                             <p style="color:#666; margin-top:15px;">
-                                Hello {{ $booking->customer_name }},
+                                مرحبًا {{ $booking->customer_name }},
                             </p>
 
                             <p style="color:#666;">
-                                Your booking has been successfully rescheduled.
+                                تمت إعادة جدولة حجزك بنجاح.
                             </p>
 
                             <p style="color:#333; margin-top:15px;">
-                                Service: <br>
+                                خدمة: <br>
                                 <b>{{ $booking->service->service_name }}</b>
                             </p>
 
                             <p style="color:#333; margin-top:15px;">
-                                New Date & Time: <br>
+                                التاريخ والوقت الجديدان: <br>
                                 <b>{{ \Carbon\Carbon::parse($booking->date_time)->format('Y-m-d h:i A') }}</b>
                             </p>
 
                             <p style="color:#666; margin-top:20px;">
-                                Thank you.
+                                شكرًا لك.
                             </p>
 
                         </td>
@@ -55,7 +55,7 @@
                     <!-- Footer -->
                     <tr>
                         <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
-                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. All rights reserved.
+                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. جميع الحقوق محفوظة.
                         </td>
                     </tr>
 

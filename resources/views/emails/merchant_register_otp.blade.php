@@ -53,14 +53,14 @@
             <img src="{{ $message->embed(public_path('logo.png')) }}" style="max-height:50px;">
         </div>
         <div class="content">
-            <p>Hello,</p>
-            <p>Merchant Registration OTP</p>
+            <p>مرحبًا،</p>
+            <p>رمز التحقق لتسجيل التاجر</p>
             <div class="otp-code">{{ $otp }}</div>
-            <p>This code is valid for <strong>5 minutes</strong>. Please do not share this code with anyone.</p>
-            <p>If you did not request this registration, you can safely ignore this email.</p>
+            <p>هذا الرمز صالح لـ <strong>5 دقائق</strong>. يرجى عدم مشاركة هذا الرمز مع أي شخص.</p>
+            <p>إذا لم تكن قد طلبت هذا التسجيل، فيمكنك تجاهل هذه الرسالة الإلكترونية بأمان.</p>
         </div>
         <div class="footer">
-            &copy; {{ date('Y') }} <a href="https://yourcompany.com">Bokli.io</a>. All rights reserved.
+            &copy; {{ date('Y') }} <a href="https://yourcompany.com">Bokli.io</a>. جميع الحقوق محفوظة.
         </div>
     </div>
 </body>

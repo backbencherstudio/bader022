@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Booking Reminder</title>
+    <title>تذكير بالحجز</title>
 </head>
 <body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
@@ -20,27 +20,27 @@
                     <tr>
                         <td style="padding:30px; text-align:center;">
 
-                            <h2 style="margin:0; color:#333;">Booking Reminder</h2>
+                            <h2 style="margin:0; color:#333;">تذكير بالحجز</h2>
 
                             <p style="color:#666; margin-top:10px;">
-                                Hello <b>{{ $booking->user->name }}</b>,
+                                مرحبًا <b>{{ $booking->user->name }}</b>,
                             </p>
 
                             @if($type == '24 hours')
-                                <p style="color:#666;">Your booking is scheduled in <b>24 hours</b>.</p>
+                                <p style="color:#666;">تم تحديد موعد حجزك في<b> 24 ساعة</b>.</p>
                             @else
-                                <p style="color:#666;">Your booking starts in <b>1 hour</b>. Please arrive on time.</p>
+                                <p style="color:#666;">يبدأ حجزك في<b> 1 ساعة</b>. يرجى الوصول في الموعد المحدد.</p>
                             @endif
 
                             <div style="margin:25px 0; text-align: left; background:#f1f7ff; padding:20px; border-radius:8px;">
-                                <h4 style="margin:0 0 10px 0; color:#2d89ef;">Booking Details:</h4>
+                                <h4 style="margin:0 0 10px 0; color:#2d89ef;">تفاصيل الحجز:</h4>
                                 <table width="100%" style="color:#555; font-size:14px;">
                                     <tr>
-                                        <td style="padding:5px 0;"><b>Date & Time:</b></td>
+                                        <td style="padding:5px 0;"><b>التاريخ والوقت:</b></td>
                                         <td style="padding:5px 0; text-align:right;">{{ \Carbon\Carbon::parse($booking->date_time)->format('Y-m-d h:i A') }}</td>
                                     </tr>
                                     <tr>
-                                        <td style="padding:5px 0;"><b>Status:</b></td>
+                                        <td style="padding:5px 0;"><b>حالة:</b></td>
                                         <td style="padding:5px 0; text-align:right;">
                                             <span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:4px; font-size:12px;">
                                                 {{ ucfirst($booking->status) }}
@@ -57,7 +57,7 @@
                             </div>
 
                             <p style="color:#666; font-size: 14px;">
-                                Thank you for choosing our service!
+                                نشكرك لاختيارك خدمتنا!
                             </p>
 
                         </td>
@@ -65,9 +65,9 @@
 
                     <tr>
                         <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
-                            If you did not make this booking, please contact our support team.
+                            إذا لم تقم أنت بإجراء هذا الحجز، فيرجى الاتصال بفريق الدعم لدينا.
                             <br><br>
-                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. All rights reserved.
+                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. جميع الحقوق محفوظة.
                         </td>
                     </tr>
 
