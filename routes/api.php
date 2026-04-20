@@ -194,23 +194,23 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
 
     // ----- Merchant/Service
-    Route::prefix('service')->group(function () {
-        Route::get('index', [ServicesController::class, 'index'])->name('service.index');
-        Route::post('store', [ServicesController::class, 'store'])->name('service.store');
-        Route::get('show/{id}', [ServicesController::class, 'show'])->name('service.show');
-        Route::put('update/{id}', [ServicesController::class, 'update'])->name('service.update');
-        Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
-        Route::get('userindex', [ServicesController::class, 'userindex'])->name('service.userindex');
-    });
+    // Route::prefix('service')->group(function () {
+    //     Route::get('index', [ServicesController::class, 'index'])->name('service.index');
+    //     Route::post('store', [ServicesController::class, 'store'])->name('service.store');
+    //     Route::get('show/{id}', [ServicesController::class, 'show'])->name('service.show');
+    //     Route::put('update/{id}', [ServicesController::class, 'update'])->name('service.update');
+    //     Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
+    //     Route::get('userindex', [ServicesController::class, 'userindex'])->name('service.userindex');
+    // });
 
     // ----- Merchant/Staff
-    Route::prefix('staff')->group(function () {
-        Route::get('index', [StaffController::class, 'index'])->name('staff.index');
-        Route::post('store', [StaffController::class, 'store'])->name('staff.store');
-        Route::get('show/{id}', [StaffController::class, 'show'])->name('staff.show');
-        Route::put('update/{id}', [StaffController::class, 'update'])->name('staff.update');
-        Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
-    });
+    // Route::prefix('staff')->group(function () {
+    //     Route::get('index', [StaffController::class, 'index'])->name('staff.index');
+    //     Route::post('store', [StaffController::class, 'store'])->name('staff.store');
+    //     Route::get('show/{id}', [StaffController::class, 'show'])->name('staff.show');
+    //     Route::put('update/{id}', [StaffController::class, 'update'])->name('staff.update');
+    //     Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
+    // });
 
     // -----Admin/Subscription/Plan
     Route::prefix('plan')->group(function () {
@@ -234,19 +234,19 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
     // ----- Merchant/Bookings
     Route::prefix('booking')->group(function () {
-        Route::get('index', [BookingController::class, 'index'])->name('booking.index');
+        // Route::get('index', [BookingController::class, 'index'])->name('booking.index');
         Route::post('store', [BookingController::class, 'store'])->name('booking.store');
-        Route::get('booking-invoice/{id}', [BookingController::class, 'bookingInvoice'])->name('booking.bookingInvoice');
-        Route::get('invoice-by-merchant/{id}', [InvoiceController::class, 'invoiceBymerchant'])->name('booking.invoiceBymerchant');
-        Route::get('show/{id}', [BookingController::class, 'show'])->name('booking.show');
-        Route::post('update/{id}', [BookingController::class, 'update'])->name('booking.update');
-        Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
-        Route::get('staff', [BookingController::class, 'getAvailableStaffByTime'])->name('booking.getAvailableStaffByTime');
-        Route::post('service-booking', [BookingController::class, 'bookingByUser'])->name('booking.bookingByUser');
-        // Route::get('invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
+        // Route::get('booking-invoice/{id}', [BookingController::class, 'bookingInvoice'])->name('booking.bookingInvoice');
+        // Route::get('invoice-by-merchant/{id}', [InvoiceController::class, 'invoiceBymerchant'])->name('booking.invoiceBymerchant');
+        // Route::get('show/{id}', [BookingController::class, 'show'])->name('booking.show');
+        // Route::post('update/{id}', [BookingController::class, 'update'])->name('booking.update');
+        // Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
+        // Route::get('staff', [BookingController::class, 'getAvailableStaffByTime'])->name('booking.getAvailableStaffByTime');
+        // Route::post('service-booking', [BookingController::class, 'bookingByUser'])->name('booking.bookingByUser');
+        // // Route::get('invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
 
-        // invoice generate route
-        Route::get('invoice/{id}', [InvoiceController::class, 'generate']);
+        // // invoice generate route
+        // Route::get('invoice/{id}', [InvoiceController::class, 'generate']);
     });
 
     // -----Admin/Merchants
@@ -324,3 +324,36 @@ Route::get('bokli/{website_domain}', [MinisiteController::class, 'userView'])->n
 Route::get('/tap-callback', [BookingController::class, 'tapCallbackbooking']);
 Route::get('/booking-details/{id}', [BookingController::class, 'bookingDetails']);
 Route::get('confirm-invoice/{id}', [InvoiceController::class, 'confirmationInvoice']);
+
+Route::prefix('admin.staff')->group(function () {
+    Route::get('index', [StaffController::class, 'index'])->name('staff.index');
+    Route::post('store', [StaffController::class, 'store'])->name('staff.store');
+    Route::get('show/{id}', [StaffController::class, 'show'])->name('staff.show');
+    Route::put('update/{id}', [StaffController::class, 'update'])->name('staff.update');
+    Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
+});
+
+Route::prefix('admin.service')->group(function () {
+    Route::get('index', [ServicesController::class, 'index'])->name('service.index');
+    Route::post('store', [ServicesController::class, 'store'])->name('service.store');
+    Route::get('show/{id}', [ServicesController::class, 'show'])->name('service.show');
+    Route::put('update/{id}', [ServicesController::class, 'update'])->name('service.update');
+    Route::delete('delete/{id}', [ServicesController::class, 'destroy'])->name('service.destroy');
+    Route::get('userindex', [ServicesController::class, 'userindex'])->name('service.userindex');
+});
+
+Route::prefix('admin.booking')->group(function () {
+    Route::get('index', [BookingController::class, 'index'])->name('booking.index');
+    // Route::post('store', [BookingController::class, 'store'])->name('booking.store');
+    Route::get('booking-invoice/{id}', [BookingController::class, 'bookingInvoice'])->name('booking.bookingInvoice');
+    Route::get('invoice-by-merchant/{id}', [InvoiceController::class, 'invoiceBymerchant'])->name('booking.invoiceBymerchant');
+    Route::get('show/{id}', [BookingController::class, 'show'])->name('booking.show');
+    Route::post('update/{id}', [BookingController::class, 'update'])->name('booking.update');
+    Route::get('schedule', [BookingController::class, 'getAvailability'])->name('booking.getAvailability');
+    Route::get('staff', [BookingController::class, 'getAvailableStaffByTime'])->name('booking.getAvailableStaffByTime');
+    Route::post('service-booking', [BookingController::class, 'bookingByUser'])->name('booking.bookingByUser');
+    // Route::get('invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
+
+    // invoice generate route
+    Route::get('invoice/{id}', [InvoiceController::class, 'generate']);
+});

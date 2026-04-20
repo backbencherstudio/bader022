@@ -20,7 +20,8 @@ return [
         'http://192.168.7.66:3000',
         'https://bokli.io',
         // 'https://bokli.io',
-        'http://192.168.7.66:3000',
+
+
 
     ],
 
