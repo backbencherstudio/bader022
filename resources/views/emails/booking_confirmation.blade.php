@@ -3,7 +3,7 @@
 <head>
     <title>تم تأكيد الحجز</title>
 </head>
-<body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
+<body dir="rtl" style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
     <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
         <tr>
@@ -24,7 +24,7 @@
                         <td style="padding:30px;">
 
                             <h2 style="margin:0; color:#333; text-align:center;">
-                                🎉 تم تأكيد الحجز
+                                تم تأكيد الحجز 🎉
                             </h2>
 
                             <p style="color:#666; margin-top:15px; text-align:center;">

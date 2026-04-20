@@ -45,7 +45,7 @@
 
         .table th,
         .table td {
-            text-align: left;
+            text-align: right;
             padding: 12px;
             border-bottom: 1px solid #eee;
         }
@@ -74,7 +74,7 @@
     </style>
 </head>
 
-<body>
+<body dir="rtl">
     <div class="wrapper">
         <div class="container">
             <div class="header">
