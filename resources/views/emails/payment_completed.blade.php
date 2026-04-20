@@ -1,74 +1,109 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <title>Payment Successful</title>
-</head>
+  <head>
+    <title>تم إتمام عملية الدفع بنجاح</title>
+  </head>
 
-<body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
-
-<table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
-    <tr>
+  <body
+    dir="rtl"
+    style="
+      margin: 0;
+      padding: 0;
+      background: #f4f6f8;
+      font-family: Arial, sans-serif;
+    "
+  >
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding: 20px">
+      <tr>
         <td align="center">
+          <!-- Main Container -->
+          <table
+            width="500"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              background: #ffffff;
+              border-radius: 10px;
+              overflow: hidden;
+              box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            "
+          >
+            <!-- Header / Logo -->
+            <tr>
+              <td align="center" style="padding: 20px">
+                <img
+                  src="{{ $message->embed(public_path('logo.png')) }}"
+                  style="max-height: 50px"
+                />
+              </td>
+            </tr>
 
-            <!-- Main Container -->
-            <table width="500" cellpadding="0" cellspacing="0"
-                   style="background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+            <!-- Content -->
+            <tr>
+              <td style="padding: 30px; text-align: center">
+                <h2 style="margin: 0; color: #333">
+                  🎉 تم إتمام عملية الدفع بنجاح
+                </h2>
 
-                <!-- Header / Logo -->
-                <tr>
-                    <td align="center" style="padding:20px;">
-                        <img src="{{ $message->embed(public_path('logo.png')) }}" style="max-height:50px;">
-                    </td>
-                </tr>
+                <p style="color: #666; margin-top: 10px">
+                  عزيزي <b>{{ $merchant->name }}</b>،<br />
+                  تمت عملية الدفع بنجاح وتم إنشاء حسابك.
+                </p>
 
-                <!-- Content -->
-                <tr>
-                    <td style="padding:30px; text-align:center;">
+                <!-- Details Box -->
+                <div
+                  style="
+                    margin: 25px 0;
+                    text-align: right;
+                    background: #f9fbff;
+                    padding: 20px;
+                    border-radius: 8px;
+                  "
+                >
+                  <p style="margin: 5px 0; color: #333">
+                    <strong>اسم:</strong> {{ $merchant->name }}
+                  </p>
 
-                        <h2 style="margin:0; color:#333;">Payment Successful 🎉</h2>
+                  <p style="margin: 5px 0; color: #333">
+                    <strong>اسم الشركة:</strong> {{ $merchant->business_name }}
+                  </p>
 
-                        <p style="color:#666; margin-top:10px;">
-                            Dear <b>{{ $merchant->name }}</b>, your payment was successful and your account has been created.
-                        </p>
+                  <p style="margin: 5px 0; color: #333">
+                    <strong>فئة الأعمال:</strong> {{
+                    $merchant->business_category }}
+                  </p>
+                </div>
 
-                        <!-- Details Box -->
-                        <div style="margin:25px 0; text-align:left; background:#f9fbff; padding:20px; border-radius:8px;">
+                <p style="color: #666">
+                  نشكركم لاختياركم منصتنا. نتطلع للعمل معكم!
+                </p>
+              </td>
+            </tr>
 
-                            <p style="margin:5px 0; color:#333;">
-                                <strong>Name:</strong> {{ $merchant->name }}
-                            </p>
-
-                            <p style="margin:5px 0; color:#333;">
-                                <strong>Business Name:</strong> {{ $merchant->business_name }}
-                            </p>
-
-                            <p style="margin:5px 0; color:#333;">
-                                <strong>Business Category:</strong> {{ $merchant->business_category }}
-                            </p>
-
-                        </div>
-
-                        <p style="color:#666;">
-                            Thank you for choosing our platform. We’re excited to work with you!
-                        </p>
-
-                    </td>
-                </tr>
-
-                <!-- Footer -->
-                <tr>
-                    <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
-                        If you didn’t request this, you can safely ignore this email.
-                        <br><br>
-                        © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. All rights reserved.
-                    </td>
-                </tr>
-
-            </table>
-
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  background: #f9f9f9;
+                  padding: 20px;
+                  text-align: center;
+                  font-size: 12px;
+                  color: #999;
+                "
+              >
+                إذا لم تطلب ذلك، يمكنك تجاهل هذه الرسالة الإلكترونية بأمان.
+                <br /><br />
+                © {{ date('Y') }}
+                <a
+                  href="https://bokli.io"
+                  style="color: #2d89ef; text-decoration: none"
+                  >Bokli.io</a
+                >. جميع الحقوق محفوظة.
+              </td>
+            </tr>
+          </table>
         </td>
-    </tr>
-</table>
-
-</body>
+      </tr>
+    </table>
+  </body>
 </html>
