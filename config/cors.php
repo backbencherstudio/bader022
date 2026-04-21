@@ -11,25 +11,25 @@ return [
         'http://localhost:5173',
         'http://127.0.0.1:5174',
         'http://127.0.0.1:5173',
-        'http://*.devlaro.com',
-        'https://*.devlaro.com',
-        'http://192.168.7.82:3000',
         'http://localhost:3000',
-        'http://192.168.7.102:3000',
         'https://bader022-front-end.vercel.app',
-        'http://192.168.7.66:3000',
         'https://bokli.io',
+<<<<<<< HEAD
         // 'https://bokli.io',
 
 
 
+=======
+        'https://www.bokli.io',
+        'https://bader022.apphero.agency',
+>>>>>>> dev
     ],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['*', 'Remember-Token'],
 
-    'exposed_headers' => ['remember_token'],
+    'exposed_headers' => ['Remember-Token'],
 
     'max_age' => 0,
 

@@ -78,41 +78,40 @@
     <div class="wrapper">
         <div class="container">
             <div class="header">
-                <h2 style="margin:0;">New Demo Request!</h2>
+                <h2 style="margin:0;">طلب عرض توضيحي جديد!</h2>
             </div>
             <div class="content">
-                <p>Hello Team,</p>
-                <p>A new demo request has been submitted from the <strong>Bokli.io</strong> website. Here are the lead
-                    details:</p>
-
+                <p>مرحباً بالفريق،</p>
+                <p>تم تقديم طلب عرض توضيحي جديد من <strong>Bokli.io</strong> الموقع الإلكتروني. إليكم أبرز النقاط
+                    تفاصيل:</p>
                 <table class="table">
                     <tr>
-                        <th>Status</th>
-                        <td><span class="badge">New Lead</span></td>
+                        <th>حالة</th>
+                        <td><span class="badge">عميل جديد</span></td>
                     </tr>
                     <tr>
-                        <th>Full Name</th>
+                        <th>الاسم الكامل</th>
                         <td>{{ $demo->name }}</td>
                     </tr>
                     <tr>
-                        <th>Email</th>
+                        <th>بريد إلكتروني</th>
                         <td><a href="mailto:{{ $demo->email }}">{{ $demo->email }}</a></td>
                     </tr>
                     <tr>
-                        <th>Business Name</th>
+                        <th>اسم الشركة</th>
                         <td>{{ $demo->business_name }}</td>
                     </tr>
                     <tr>
-                        <th>Phone</th>
+                        <th>هاتف</th>
                         <td>{{ $demo->phone }}</td>
                     </tr>
 
                 </table>
 
-                <p style="margin-top: 30px;">Please follow up with this lead as soon as possible.</p>
+                <p style="margin-top: 30px;">يرجى متابعة هذا الأمر في أقرب وقت ممكن.</p>
             </div>
             <div class="footer">
-                <p>Sent from <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a> Internal Notification System</p>
+                <p>تم الإرسال من <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a> نظام الإخطار الداخلي</p>
                 <p>{{ now()->format('F d, Y h:i A') }}</p>
             </div>
         </div>
