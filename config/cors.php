@@ -14,15 +14,8 @@ return [
         'http://localhost:3000',
         'https://bader022-front-end.vercel.app',
         'https://bokli.io',
-<<<<<<< HEAD
-        // 'https://bokli.io',
-
-
-
-=======
         'https://www.bokli.io',
         'https://bader022.apphero.agency',
->>>>>>> dev
     ],
 
     'allowed_origins_patterns' => [],
