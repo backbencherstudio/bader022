@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Registration Successful</title>
+    <title>تم التسجيل بنجاح</title>
 </head>
-<body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
+
+<body dir="rtl" style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
     <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
         <tr>
@@ -23,14 +24,14 @@
                     <tr>
                         <td style="padding:30px; text-align:center;">
 
-                            <h2 style="margin:0; color:#333;">Registration Successful 🎉</h2>
+                            <h2 style="margin:0; color:#333;">تم التسجيل بنجاح 🎉</h2>
 
                             <p style="color:#666; margin-top:10px;">
-                                Hello {{ $user->name }}, your account has been created successfully.
+                                مرحبًا {{ $user->name }}، تم إنشاء حسابك بنجاح.
                             </p>
 
                             <p style="color:#666;">
-                                You can now log in using your email address and password.
+                                يمكنك الآن تسجيل الدخول باستخدام عنوان بريدك الإلكتروني وكلمة المرور.
                             </p>
 
                         </td>
@@ -39,9 +40,9 @@
                     <!-- Footer -->
                     <tr>
                         <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
-                            Thank you for joining us.
+                            شكراً لانضمامكم إلينا.
                             <br><br>
-                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. All rights reserved.
+                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. جميع الحقوق محفوظة.
                         </td>
                     </tr>
 
