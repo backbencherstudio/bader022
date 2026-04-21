@@ -3,7 +3,7 @@
 <head>
     <title>{{ $type == 'otp' ? 'Account Verification' : 'Payment Successful' }}</title>
 </head>
-<body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
+<body dir="rtl" style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
 <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
 <tr>
@@ -24,14 +24,14 @@
 
             @if($type == 'otp')
 
-                <h2 style="margin:0; color:#28a745;">🎉 Registration Successful</h2>
+                <h2 style="margin:0; color:#28a745;">تم التسجيل بنجاح 🎉</h2>
 
                 <p style="color:#666; margin-top:10px;">
-                    Your merchant account has been created successfully.
+                    تم إنشاء حسابك التجاري بنجاح.
                 </p>
 
                 <p style="color:#666;">
-                    Use the OTP below to verify your account:
+                    استخدم رمز التحقق لمرة واحدة (OTP) أدناه للتحقق من حسابك:
                 </p>
 
                 <!-- OTP -->
@@ -42,42 +42,42 @@
                 </div>
 
                 <p style="color:#666;">
-                    This OTP will expire in <b>10 minutes</b>.
+                    ستنتهي صلاحية رمز التحقق هذا في غضون <b>10 دقائق</b>.
                 </p>
 
                 @if(isset($url))
                 <a href="{{ $url }}" style="display:inline-block; margin-top:20px; padding:12px 25px; background:#28a745; color:#fff; text-decoration:none; border-radius:6px;">
-                    Verify Account
+                    التحقق من الحساب
                 </a>
                 @endif
 
             @else
 
-                <h2 style="margin:0; color:#2d89ef;">💳 Payment Successful</h2>
+                <h2 style="margin:0; color:#2d89ef;">تم إتمام عملية الدفع بنجاح 💳</h2>
 
                 <p style="color:#666; margin-top:10px;">
-                    Your payment has been successfully completed.
+                    تم إتمام عملية الدفع بنجاح.
                 </p>
 
                 <table width="100%" style="margin-top:20px; text-align:left; font-size:14px; color:#555;">
                     <tr>
-                        <td><strong>Amount:</strong></td>
+                        <td><strong>كمية:</strong></td>
                         <td>{{ $amount }} {{ $currency }}</td>
                     </tr>
                     <tr>
-                        <td><strong>Transaction ID:</strong></td>
+                        <td><strong>رقم العملية:</strong></td>
                         <td>{{ $transaction_id }}</td>
                     </tr>
                     @if(isset($plan))
                     <tr>
-                        <td><strong>Plan:</strong></td>
+                        <td><strong>يخطط:</strong></td>
                         <td>{{ $plan }}</td>
                     </tr>
                     @endif
                 </table>
 
                 <p style="margin-top:20px; color:#666;">
-                    Thank you for your purchase
+                    شكراً لشرائك
                 </p>
 
             @endif
@@ -88,7 +88,7 @@
     <!-- Footer -->
     <tr>
         <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
-            If you didn’t request this, you can ignore this email.
+            إذا لم تطلب ذلك، يمكنك تجاهل هذه الرسالة الإلكترونية.
             <br><br>
             © {{ date('Y') }}
             <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>

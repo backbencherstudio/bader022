@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Booking Confirmed</title>
+    <title>تم تأكيد الحجز</title>
 </head>
-<body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
+<body dir="rtl" style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
     <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
         <tr>
@@ -24,35 +24,35 @@
                         <td style="padding:30px; text-align:center;">
 
                             <h2 style="margin:0; color:#333;">
-                                Booking Confirmed 🎉
+                                تم تأكيد الحجز 🎉
                             </h2>
 
                             <p style="color:#666; margin-top:15px;">
-                                Hello {{ $booking->customer_name }},
+                               مرحبًا {{ $booking->customer_name }}،
                             </p>
 
                             <p style="color:#666;">
-                                Your booking has been successfully confirmed.
+                                تم تأكيد حجزك بنجاح.
                             </p>
 
                             <!-- Details -->
                             <p style="color:#333; margin-top:20px;">
-                                <strong>Service:</strong><br>
+                                <strong>خدمة:</strong><br>
                                 {{ $booking->service->service_name }}
                             </p>
 
                             <p style="color:#333; margin-top:10px;">
-                                <strong>Date & Time:</strong><br>
+                                <strong>التاريخ والوقت:</strong><br>
                                {{ \Carbon\Carbon::parse($booking->date_time)->format('Y-m-d h:i A') }}
                             </p>
 
                             <p style="color:#333; margin-top:10px;">
-                                <strong>Staff:</strong><br>
+                                <strong>طاقم عمل:</strong><br>
                                 {{ $booking->staff->name }}
                             </p>
 
                             <p style="color:#666; margin-top:20px;">
-                                Thank you for choosing us.
+                                شكراً لاختياركم لنا.
                             </p>
 
                         </td>
@@ -61,7 +61,7 @@
                     <!-- Footer -->
                     <tr>
                         <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
-                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. All rights reserved.
+                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. جميع الحقوق محفوظة.
                         </td>
                     </tr>
 
