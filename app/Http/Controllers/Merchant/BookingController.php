@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Merchant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Http, Log};
 use App\Http\Controllers\Controller;
-use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff};
+use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff,User};
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
@@ -2152,5 +2152,109 @@ class BookingController extends Controller
         $pdf = Pdf::loadView('invoice', compact('invoice'));
 
         return $pdf->download('invoice-' . $booking->id . '.pdf');
+    }
+
+
+    public function booklischedule(Request $request, $website_domain)
+    {
+
+        $user = User::where('website_domain', $website_domain)->first();
+
+        if (!$user) {
+            return response()->json(['available_times' => [], 'message' => 'Store not found'], 404);
+        }
+
+        // ২. Validation (Slug URL theke asche, baki gulo Request theke)
+        $request->validate([
+            'service_id' => 'required|exists:services,id',
+            'date'       => 'required|date',
+            'staff_id'   => 'nullable|integer',
+        ]);
+
+        $service = Service::find($request->service_id);
+
+        // ৩. Store Settings fetch kora (User ID diye)
+        $storeSetting = DB::table('merchant_store_settings')
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$storeSetting || !$storeSetting->time_zone) {
+            return response()->json(['available_times' => [], 'message' => 'Store timezone not set']);
+        }
+
+        $merchantTimeZone = $storeSetting->time_zone;
+        $date = Carbon::parse($request->date, $merchantTimeZone);
+        $day = strtolower($date->format('l'));
+
+        // ৪. Business Hours Check
+        $businessHour = BusinessHour::where('merchant_store_setting_id', $storeSetting->id)
+            ->where('day', $day)
+            ->where('is_closed', 0)
+            ->first();
+
+        if (!$businessHour || !$businessHour->open_time || !$businessHour->close_time) {
+            return response()->json(['available_times' => [], 'message' => 'Business closed today']);
+        }
+
+
+        $staffQuery = Staff::where('user_id', $user->id)->where('status', 1);
+
+        if ($request->staff_id) {
+            $staffQuery->where('id', $request->staff_id);
+        }
+
+        $staffIds = $staffQuery->pluck('id');
+
+        if ($staffIds->isEmpty()) {
+            return response()->json(['available_times' => [], 'message' => 'No staff available'], 404);
+        }
+
+        $duration = (int) $service->duration;
+        $slots = [];
+        $start = Carbon::createFromTimeString($businessHour->open_time, $merchantTimeZone);
+        $end = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
+
+        while ($start->copy()->addMinutes($duration)->lte($end)) {
+            $slots[] = $start->format('H:i');
+            $start->addMinutes($duration);
+        }
+
+        $bookings = Booking::whereIn('staff_id', $staffIds)
+            ->whereDate('date_time', $date)
+            ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
+            ->with('service') // duration check korar jonno
+            ->get();
+
+        $availableSlots = [];
+        $now = Carbon::now($merchantTimeZone);
+
+        foreach ($slots as $slot) {
+            $slotStart = Carbon::parse($request->date . ' ' . $slot, $merchantTimeZone);
+            $slotEnd = $slotStart->copy()->addMinutes($duration);
+
+            if ($date->isToday() && $slotStart->lte($now)) {
+                continue;
+            }
+
+            $overlapStaff = [];
+            foreach ($bookings as $booking) {
+                $bookingStart = Carbon::parse($booking->date_time, $merchantTimeZone);
+                $bookingEnd = $bookingStart->copy()->addMinutes($booking->service->duration ?? $duration);
+
+                if ($slotStart->lt($bookingEnd) && $slotEnd->gt($bookingStart)) {
+                    $overlapStaff[$booking->staff_id] = true;
+                }
+            }
+
+            if (count($overlapStaff) < count($staffIds)) {
+                $availableSlots[] = $slotStart->format('h:i A');
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'store_name' => $user->name,
+            'available_times' => $availableSlots
+        ]);
     }
 }
