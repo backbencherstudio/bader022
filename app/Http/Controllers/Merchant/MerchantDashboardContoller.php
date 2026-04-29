@@ -36,7 +36,7 @@ class MerchantDashboardContoller extends Controller
                 ->count(),
 
             'appointments' => Booking::where('user_id', $merchantId)
-                ->where('status', 'pending')
+                ->whereIn('status', ['confirm', 'rescheduled'])
                 ->count(),
 
             'Total_Customers' => Booking::where('user_id', $merchantId)
@@ -145,7 +145,7 @@ class MerchantDashboardContoller extends Controller
 
         $bookings = Booking::with(['user', 'staff', 'service'])
             ->where('user_id', $merchantId)
-            ->where('status', 'confirm')
+            ->whereIn('status', ['confirm', 'rescheduled'])
             ->whereDate('date_time', $today)
             ->latest()
             ->get();

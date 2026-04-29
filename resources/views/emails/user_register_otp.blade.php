@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify Your Email</title>
+<title>تحقق من بريدك الإلكتروني</title>
 
 <style>
     body {
@@ -115,7 +115,7 @@
 </style>
 </head>
 
-<body>
+<body dir="rtl">
 
 <div class="container">
 
@@ -124,10 +124,10 @@
     </div>
 
     <div class="content">
-        <h2>Email Verification</h2>
+        <h2>التحقق من البريد الإلكتروني</h2>
 
         <p>
-            Use the OTP below to complete your registration.
+            استخدم رمز التحقق لمرة واحدة (OTP) أدناه لإكمال عملية التسجيل.
         </p>
 
         <div class="otp-box">
@@ -135,7 +135,7 @@
         </div>
 
         <div class="expiry">
-            ⏳ This code will expire in <strong>5 minutes</strong>
+            ⏳ سينتهي صلاحية هذا الرمز في <strong>5 دقائق</strong>
         </div>
 
         <!-- Optional Button (if you add link verification later) -->
@@ -146,14 +146,14 @@
         -->
 
         <p class="warning">
-            If you didn’t request this, you can safely ignore this email.
+            إذا لم تطلب ذلك، يمكنك تجاهل هذه الرسالة الإلكترونية بأمان.
         </p>
     </div>
 
     <div class="footer">
         © {{ date('Y') }}
         <a href="https://bokli.io" target="_blank">Bokli.io</a>
-        All rights reserved.
+        جميع الحقوق محفوظة.
     </div>
 
 </div>

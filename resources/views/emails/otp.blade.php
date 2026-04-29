@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Password Reset OTP</title>
+    <title>رمز التحقق لإعادة تعيين كلمة المرور</title>
 </head>
 <body style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
@@ -23,10 +23,10 @@
                     <tr>
                         <td style="padding:30px; text-align:center;">
 
-                            <h2 style="margin:0; color:#333;">Password Reset</h2>
+                            <h2 style="margin:0; color:#333;">إعادة تعيين كلمة المرور</h2>
 
                             <p style="color:#666; margin-top:10px;">
-                                Use the OTP below to reset your password
+                                استخدم رمز التحقق لمرة واحدة (OTP) أدناه لإعادة تعيين كلمة مرورك
                             </p>
 
                             <!-- OTP Box -->
@@ -37,7 +37,7 @@
                             </div>
 
                             <p style="color:#666;">
-                                This OTP will expire in <b>5 minutes</b>.
+                                ستنتهي صلاحية رمز التحقق هذا في غضون <b>5 دقائق</b>.
                             </p>
 
                         </td>
@@ -46,9 +46,9 @@
                     <!-- Footer -->
                     <tr>
                         <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
-                            If you didn’t request this, you can safely ignore this email.
+                            إذا لم تطلب ذلك، يمكنك تجاهل هذه الرسالة الإلكترونية بأمان.
                             <br><br>
-                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. All rights reserved.
+                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. جميع الحقوق محفوظة.
                         </td>
                     </tr>
 

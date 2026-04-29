@@ -47,20 +47,20 @@
         }
     </style>
 </head>
-<body>
+<body dir="rtl">
     <div class="container">
         <div class="header">
             <img src="{{ $message->embed(public_path('logo.png')) }}" style="max-height:50px;">
         </div>
         <div class="content">
-            <p>Hello,</p>
-            <p>Your one-time password (OTP) for logging into your account is:</p>
+            <p>مرحبًا،</p>
+            <p>كلمة المرور لمرة واحدة (OTP) الخاصة بك لتسجيل الدخول إلى حسابك هي:</p>
             <div class="otp-code">{{ $otp }}</div>
-            <p>This code is valid for <strong>5 minutes</strong>. Please do not share this code with anyone.</p>
-            <p>If you did not attempt to log in, please ignore this email or secure your account.</p>
+            <p>هذا الرمز صالح لـ <strong>5 دقائق</strong>. يرجى عدم مشاركة هذا الرمز مع أي شخص.</p>
+            <p>إذا لم تحاول تسجيل الدخول، فيرجى تجاهل هذه الرسالة الإلكترونية أو تأمين حسابك.</p>
         </div>
         <div class="footer">
-            &copy; {{ date('Y') }} <a href="https://yourcompany.com">Bokli.io</a>. All rights reserved.
+            &copy; {{ date('Y') }} <a href="https://yourcompany.com">Bokli.io</a>. جميع الحقوق محفوظة.
         </div>
     </div>
 </body>

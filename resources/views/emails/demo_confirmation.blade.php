@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html dir="rtl">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo Request Confirmation</title>
+    <title>تأكيد طلب العرض التوضيحي</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -12,6 +13,7 @@
             padding: 0;
             -webkit-font-smoothing: antialiased;
         }
+
         .container {
             max-width: 600px;
             margin: 40px auto;
@@ -20,30 +22,36 @@
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
+
         .header {
             /* background-color: #2563eb; SaaS Blue Color */
             padding: 30px;
             text-align: center;
         }
+
         .header h1 {
             color: #ffffff;
             margin: 0;
             font-size: 24px;
             font-weight: 700;
         }
+
         .content {
             padding: 40px 30px;
             line-height: 1.6;
             color: #334155;
         }
+
         .content h2 {
             font-size: 20px;
             color: #1e293b;
             margin-top: 0;
         }
+
         .content p {
             margin-bottom: 20px;
         }
+
         .details-box {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -51,10 +59,12 @@
             padding: 20px;
             margin-bottom: 25px;
         }
+
         .details-box p {
             margin: 5px 0;
             font-size: 14px;
         }
+
         .footer {
             background-color: #f1f5f9;
             padding: 20px;
@@ -62,6 +72,7 @@
             font-size: 12px;
             color: #64748b;
         }
+
         .btn {
             display: inline-block;
             padding: 12px 24px;
@@ -74,6 +85,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -81,20 +93,24 @@
         </div>
 
         <div class="content">
-            <h2>Hi {{ $demo->name }},</h2>
-            <p>Thank you for reaching out! We’ve received your request for a personalized demo of our platform. Our team is excited to show you how <strong>Bokli</strong> can help your business scale.</p>
+            <h2>مرحبًا {{ $demo->name }}،</h2>
+            <p>
+                شكرًا لتواصلكم! لقد تلقينا طلبكم لعرض توضيحي مخصص لمنصتنا. فريقنا متحمس لعرض كيف يمكن لمنصة
+                <strong>Bokli</strong> أن تساعدكم في توسيع نطاق أعمالكم.
+            </p>
 
-            <p>One of our product specialists will contact you within the next 24 hours to schedule a convenient time for the walkthrough.</p>
+            <p>سيتصل بك أحد متخصصي منتجاتنا خلال الـ 24 ساعة القادمة لتحديد موعد مناسب للجولة التعريفية.</p>
 
-            <p>In the meantime, feel free to explore our website for more details.</p>
+            <p>في هذه الأثناء، لا تتردد في استكشاف موقعنا الإلكتروني لمزيد من التفاصيل.</p>
 
-            <a href="https://bokli.io" class="btn">Visit our Website</a>
+            <a href="https://bokli.io" class="btn">تفضل بزيارة موقعنا الإلكتروني</a>
         </div>
 
         <div class="footer">
-            <p>&copy; {{ date('Y') }} Bokli.io. All rights reserved.</p>
-            <p>Saudi Arabia | noreply@bokli.io</p>
+            <p>&copy; {{ date('Y') }} Bokli.io. جميع الحقوق محفوظة.</p>
+            <p>المملكة العربية السعودية | noreply@bokli.io</p>
         </div>
     </div>
 </body>
+
 </html>

@@ -38,11 +38,11 @@ use Illuminate\Support\Facades\Route;
 
 
 // user login
-Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('user.register');
 Route::post('/verify-register-otp', [AuthController::class, 'verifyRegisterOtp'])->name('verify.register.otp');
 Route::post('/marchant/register', [AuthController::class, 'marchantregister'])->name('marchant.register');
 Route::post('/marchant-verify-otp', [AuthController::class, 'verifyMerchantOtpAndRegister'])->name('marchant.verify.otp');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('user.login');
 Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
 Route::post('/reset-otp', [AuthController::class, 'resetOtp']);
 Route::post('/book-demo', [BookdemoController::class, 'bookDemo'])->name('book.demo');
@@ -78,7 +78,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
     Route::get('businessTypeAnalytics', [DashboardController::class, 'businessTypeAnalytics'])->name('businessTypeAnalytics');
 
-    // Role
+    // Role $ Role
     Route::prefix('role')->group(function () {
         Route::get('index', [RoleController::class, 'index'])->name('role.index');
         Route::post('store', [RoleController::class, 'store'])->name('role.store');
@@ -172,10 +172,10 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
     // admin subscription
     Route::prefix('subscription')->group(function () {
-        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('processs.index');
-        Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('process.edit');
-        Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('process.update');
-        Route::get('summary', [AdminSubscriptionController::class, 'summary'])->name('process.summary');
+        Route::get('index', [AdminSubscriptionController::class, 'index'])->name('subscription.index');
+        Route::get('edit/{id}', [AdminSubscriptionController::class, 'show'])->name('subscription.edit');
+        Route::post('update/{id}', [AdminSubscriptionController::class, 'update'])->name('subscription.update');
+        Route::get('summary', [AdminSubscriptionController::class, 'summary'])->name('subscription.summary');
     });
 
     // setting
@@ -319,6 +319,8 @@ Route::get('/create-account', [AuthController::class, 'tapSuccessregister']);
 Route::get('/payment-status/{user_id}', [AuthController::class, 'getPaymentStatus']);
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
 Route::get('bokli/{website_domain}', [MinisiteController::class, 'userView'])->name('mini-site.userView');
+Route::get('bokli/staff/{website_domain}', [StaffController::class, 'staffIndex'])->name('staffIndex.index');
+Route::get('bokli/schedule/{website_domain}', [BookingController::class, 'booklischedule'])->name('booking.booklischedule');
 
 // redirect to confirmation page
 Route::get('/tap-callback', [BookingController::class, 'tapCallbackbooking']);

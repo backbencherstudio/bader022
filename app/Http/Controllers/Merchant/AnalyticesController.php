@@ -9,6 +9,54 @@ use Carbon\Carbon;
 
 class AnalyticesController extends Controller
 {
+    // public function analytice()
+    // {
+    //     $user = auth()->user();
+
+    //     if ($user->type != 2) {
+    //         return response()->json(['message' => 'Unauthorized access'], 403);
+    //     }
+
+    //     $merchantId = $user->id;
+    //     $startOfMonth = Carbon::now()->startOfMonth();
+    //     $endOfMonth = Carbon::now()->endOfMonth();
+
+    //     $newCustomersCount = Booking::where('user_id', $merchantId)
+    //         ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+    //         ->whereNotIn('email', function ($query) use ($merchantId, $startOfMonth) {
+    //             $query->select('email')
+    //                 ->from('bookings')
+    //                 ->where('user_id', $merchantId)
+    //                 ->where('created_at', '<', $startOfMonth);
+    //         })
+    //         ->distinct('email')
+    //         ->count('email');
+
+    //     $returningCustomersCount = Booking::where('user_id', $merchantId)
+    //         ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+    //         ->whereIn('email', function ($query) use ($merchantId, $startOfMonth) {
+    //             $query->select('email')
+    //                 ->from('bookings')
+    //                 ->where('user_id', $merchantId)
+    //                 ->where('created_at', '<', $startOfMonth);
+    //         })
+    //         ->distinct('email')
+    //         ->count('email');
+
+    //     return response()->json([
+    //         'revenue' => (int) MerchantPayment::where('user_id', $merchantId)
+    //             ->where('payment_status', 'paid')
+    //             ->whereHas('booking', function ($query) {
+    //                 $query->where('status', 'complete');
+    //             })
+    //             ->sum('amount'),
+
+    //         'total_bookings' => Booking::where('user_id', $merchantId)->count(),
+
+    //         'new_customers' => $newCustomersCount,
+    //         'returning_customers' => $returningCustomersCount,
+    //     ]);
+    // }
     public function analytice()
     {
         $user = auth()->user();
@@ -16,32 +64,31 @@ class AnalyticesController extends Controller
         if ($user->type != 2) {
             return response()->json(['message' => 'Unauthorized access'], 403);
         }
-
         $merchantId = $user->id;
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
 
-        $newCustomersCount = Booking::where('user_id', $merchantId)
+        $customersThisMonth = Booking::where('user_id', $merchantId)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->whereNotIn('email', function ($query) use ($merchantId, $startOfMonth) {
-                $query->select('email')
-                    ->from('bookings')
-                    ->where('user_id', $merchantId)
-                    ->where('created_at', '<', $startOfMonth);
-            })
-            ->distinct('email')
-            ->count('email');
+            ->select('email', DB::raw('COUNT(*) as total_this_month'))
+            ->groupBy('email')
+            ->get();
 
-        $returningCustomersCount = Booking::where('user_id', $merchantId)
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->whereIn('email', function ($query) use ($merchantId, $startOfMonth) {
-                $query->select('email')
-                    ->from('bookings')
-                    ->where('user_id', $merchantId)
-                    ->where('created_at', '<', $startOfMonth);
-            })
-            ->distinct('email')
-            ->count('email');
+        $newCustomersCount = 0;
+        $returningCustomersCount = 0;
+
+        foreach ($customersThisMonth as $customer) {
+            $existsBefore = Booking::where('user_id', $merchantId)
+                ->where('email', $customer->email)
+                ->where('created_at', '<', $startOfMonth)
+                ->exists();
+            if (!$existsBefore) {
+                $newCustomersCount++;
+            }
+            if ($existsBefore || $customer->total_this_month > 1) {
+                $returningCustomersCount++;
+            }
+        }
 
         return response()->json([
             'revenue' => (int) MerchantPayment::where('user_id', $merchantId)
@@ -147,6 +194,33 @@ class AnalyticesController extends Controller
         return response()->json($result);
     }
 
+    // public function newreturn()
+    // {
+    //     $user = auth()->user();
+
+    //     if ($user->type != 2) {
+    //         return response()->json(['message' => 'Unauthorized access'], 403);
+    //     }
+
+    //     $merchantId = $user->id;
+    //     $startOfMonth = Carbon::now()->startOfMonth();
+    //     $endOfMonth = Carbon::now()->endOfMonth();
+
+    //     $customers = Booking::where('user_id', $merchantId)
+    //         ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+    //         ->select('email', DB::raw('COUNT(*) as total_orders'))
+    //         ->groupBy('email')
+    //         ->get();
+
+    //     $newCustomersCount = $customers->count();
+    //     $returningCustomersCount = $customers->where('total_orders', '>')->count();
+
+    //     return response()->json([
+    //         'new_customers' => $newCustomersCount,
+    //         'returning_customers' => $returningCustomersCount,
+    //     ]);
+    // }
+
     public function newreturn()
     {
         $user = auth()->user();
@@ -156,17 +230,40 @@ class AnalyticesController extends Controller
         }
 
         $merchantId = $user->id;
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+        $validStatuses = ['confirm', 'complete'];
 
-        $customers = Booking::where('user_id', $merchantId)
+        $emailsThisMonth = Booking::where('user_id', $merchantId)
+            ->whereIn('status', $validStatuses)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->select('email', DB::raw('COUNT(*) as total_orders'))
-            ->groupBy('email')
-            ->get();
+            ->distinct()
+            ->pluck('email');
 
-        $newCustomersCount = $customers->count();
-        $returningCustomersCount = $customers->where('total_orders', '>', 1)->count();
+        $newCustomersCount = 0;
+        $returningCustomersCount = 0;
+
+        foreach ($emailsThisMonth as $email) {
+            $existsBefore = Booking::where('user_id', $merchantId)
+                ->where('email', $email)
+                ->whereIn('status', $validStatuses)
+                ->where('created_at', '<', $startOfMonth)
+                ->exists();
+
+            $bookingsThisMonthCount = Booking::where('user_id', $merchantId)
+                ->where('email', $email)
+                ->whereIn('status', $validStatuses)
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->count();
+
+            if (!$existsBefore) {
+                $newCustomersCount++;
+            }
+
+            if ($existsBefore || $bookingsThisMonthCount > 1) {
+                $returningCustomersCount++;
+            }
+        }
 
         return response()->json([
             'new_customers' => $newCustomersCount,
