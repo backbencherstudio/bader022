@@ -79,7 +79,7 @@ class BranchController extends Controller
         $data['is_main'] = $data['is_main'] ?? 0;
 
         if ($data['is_main'] == 1) {
-        Branch::where('user_id', $userId)
+            Branch::where('user_id', $userId)
                 ->update(['is_main' => 0]);
         }
 
@@ -130,7 +130,7 @@ class BranchController extends Controller
         ]);
 
         if (isset($data['is_main']) && $data['is_main'] == 1) {
-           Branch::where('user_id', auth()->id())
+            Branch::where('user_id', auth()->id())
                 ->where('id', '!=', $branch->id)
                 ->update(['is_main' => 0]);
         }
@@ -165,8 +165,8 @@ class BranchController extends Controller
         }
 
         $hasDependencies = $branch->staffs()->exists() ||
-                           $branch->services()->exists() ||
-                           $branch->bookings()->exists();
+            $branch->services()->exists() ||
+            $branch->bookings()->exists();
 
         if ($hasDependencies) {
             return response()->json([
@@ -209,5 +209,4 @@ class BranchController extends Controller
             'message' => 'Branch not found.'
         ], 404);
     }
-
 }
