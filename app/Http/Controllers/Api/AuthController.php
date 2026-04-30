@@ -7,6 +7,7 @@ use App\Mail\MerchantRegFree;
 use App\Models\BusinessHour;
 use App\Models\MerchantSetting;
 use App\Models\Payment;
+use App\Models\Branch;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\TapPayment;
@@ -682,6 +683,12 @@ class AuthController extends Controller
                     'tap_secret_key' => 'sk_test_XKokBfNWv6FIYuTMg5sLPjhJ',
                     'tap_public_key' => 'pk_test_EtHFV4BuPQokJT6jiROls87Y',
                 ]);
+                Branch::create([
+                    'user_id' => $merchant->id,
+                    'name' => 'Main Branch',
+                    'status' => 1,
+                    'is_main' => 1,
+                ]);
 
                 $subscription = Subscription::create([
                     'user_id' => $merchant->id,
@@ -820,6 +827,13 @@ class AuthController extends Controller
                     'tap_mode' => 'test',
                     'tap_secret_key' => 'sk_test_XKokBfNWv6FIYuTMg5sLPjhJ',
                     'tap_public_key' => 'pk_test_EtHFV4BuPQokJT6jiROls87Y',
+                ]);
+
+                Branch::create([
+                    'user_id' => $merchant->id,
+                    'name' => 'Main Branch',
+                    'status' => 1,
+                    'is_main' => 1,
                 ]);
 
                 $endDate = ($meta['plan_id'] == 2) ? now()->addMonth() : now()->addYear();
