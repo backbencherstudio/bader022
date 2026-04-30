@@ -93,6 +93,8 @@ class StaffController extends Controller
     }
 
 
+
+
     public function show($id)
     {
         $staff = Staff::where('id', $id)->where('user_id', auth()->id())->with('service')->first();

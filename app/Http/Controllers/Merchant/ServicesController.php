@@ -27,59 +27,129 @@ class ServicesController extends Controller
         ]);
     }
 
+    // public function store(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'service_name' => 'required|string|max:255',
+    //         'duration' => 'required|string',
+    //         'price' => 'required|numeric|min:0',
+    //         'description' => 'nullable|string',
+    //         'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+    //         'status' => 'nullable|boolean',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     $imagePath = null;
+
+    //     if ($request->hasFile('image')) {
+
+    //         $image = $request->file('image');
+
+    //         $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+
+    //         $destination = public_path('services');
+
+    //         if (!file_exists($destination)) {
+    //             mkdir($destination, 0755, true);
+    //         }
+
+    //         $image->move($destination, $imageName);
+
+    //         $imagePath = 'services/' . $imageName;
+    //     }
+
+    //     $service = Service::create([
+    //         'user_id' => auth()->id(),
+    //         'service_name' => $request->service_name,
+    //         'duration' => $request->duration,
+    //         'price' => $request->price,
+    //         'description' => $request->description,
+    //         'image' => $imagePath,
+    //         'status' => $request->status ?? 1,
+    //     ]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Service created successfully',
+    //         'data' => $service
+    //     ], 201);
+    // }
+
     public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'service_name' => 'required|string|max:255',
-            'duration' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'status' => 'nullable|boolean',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'service_name' => 'required|string|max:255',
+        'duration' => 'required|string',
+        'price' => 'required|numeric|min:0',
+        'description' => 'nullable|string',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        'status' => 'nullable|boolean',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $imagePath = null;
-
-        if ($request->hasFile('image')) {
-
-            $image = $request->file('image');
-
-            $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
-
-            $destination = public_path('services');
-
-            if (!file_exists($destination)) {
-                mkdir($destination, 0755, true);
-            }
-
-            $image->move($destination, $imageName);
-
-            $imagePath = 'services/' . $imageName;
-        }
-
-        $service = Service::create([
-            'user_id' => auth()->id(),
-            'service_name' => $request->service_name,
-            'duration' => $request->duration,
-            'price' => $request->price,
-            'description' => $request->description,
-            'image' => $imagePath,
-            'status' => $request->status ?? 1,
-        ]);
-
+    if ($validator->fails()) {
         return response()->json([
-            'success' => true,
-            'message' => 'Service created successfully',
-            'data' => $service
-        ], 201);
+            'success' => false,
+            'errors' => $validator->errors()
+        ], 422);
     }
+
+
+    $mainBranch = \App\Models\Branch::where('user_id', auth()->id())
+        ->where('is_main', 1)
+        ->first();
+
+    if (!$mainBranch) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Main branch not found'
+        ], 404);
+    }
+
+   
+    $imagePath = null;
+
+    if ($request->hasFile('image')) {
+
+        $image = $request->file('image');
+        $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+
+        $destination = public_path('services');
+
+        if (!file_exists($destination)) {
+            mkdir($destination, 0755, true);
+        }
+
+        $image->move($destination, $imageName);
+
+        $imagePath = 'services/' . $imageName;
+    }
+
+
+    $service = \App\Models\Service::create([
+        'user_id' => auth()->id(),
+        'branch_id' => $mainBranch->id,
+        'service_name' => $request->service_name,
+        'duration' => $request->duration,
+        'price' => $request->price,
+        'description' => $request->description,
+        'image' => $imagePath,
+        'status' => $request->status ?? 1,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Service created successfully',
+        'data' => $service
+    ], 201);
+}
+
+
 
 
     public function show($id)
