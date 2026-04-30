@@ -70,7 +70,7 @@ class AuthController extends Controller
 
 
         $needsOtp = false;
-        $clientRememberToken = $request->header('remember_token');
+        $clientRememberToken = $request->header('Remember-Token');
 
         if ($user->type == 1) {
 

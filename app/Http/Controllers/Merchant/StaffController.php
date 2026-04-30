@@ -271,4 +271,41 @@ class StaffController extends Controller
             'message' => 'Staff deleted successfully',
         ], 200);
     }
+
+
+    // public function staffIndex($website_domain)
+    // {
+    //     $staffs = Staff::with('user') // User data shaho load korbe
+    //         ->whereHas('user', function ($query) use ($website_domain) {
+    //             $query->where('website_domain', $website_domain);
+    //         })
+    //         ->get();
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $staffs,
+    //     ], 200);
+    // }
+
+    public function staffIndex($website_domain)
+{
+    $staffs = Staff::whereHas('user', function ($query) use ($website_domain) {
+            $query->where('website_domain', $website_domain);
+        })
+        ->get();
+
+    // Map kore shudhu proyojoniyo data nawa
+    $formattedStaffs = $staffs->map(function ($staff) {
+        return [
+            'id'   => $staff->id,
+            'name' => $staff->name, // Staff table-e jodi 'name' thake
+            // 'user_name' => $staff->user->name ?? null, // Jodi user table theke name nite chan
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'data' => $formattedStaffs,
+    ], 200);
+}
 }

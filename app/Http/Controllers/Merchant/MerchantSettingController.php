@@ -24,7 +24,7 @@ class MerchantSettingController extends Controller
         $validated = $request->validate([
             'store_name' => 'nullable|string|max:255',
             'business_logo' => 'nullable|image|mimes:jpg,jpeg,png,svg|max:2048',
-            'business_category' => 'nullable|in:salon_beauty,home_services,health,fitness_pro_gym,others',
+            'business_category' => 'nullable',
             'business_address' => 'nullable|string',
             'country' => 'nullable|string|max:100',
             'city' => 'nullable|string|max:100',

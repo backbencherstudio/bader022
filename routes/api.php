@@ -319,6 +319,8 @@ Route::get('/create-account', [AuthController::class, 'tapSuccessregister']);
 Route::get('/payment-status/{user_id}', [AuthController::class, 'getPaymentStatus']);
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
 Route::get('bokli/{website_domain}', [MinisiteController::class, 'userView'])->name('mini-site.userView');
+Route::get('bokli/staff/{website_domain}', [StaffController::class, 'staffIndex'])->name('staffIndex.index');
+Route::get('bokli/schedule/{website_domain}', [BookingController::class, 'booklischedule'])->name('booking.booklischedule');
 
 // redirect to confirmation page
 Route::get('/tap-callback', [BookingController::class, 'tapCallbackbooking']);
