@@ -20,12 +20,7 @@ class Branch extends Model
         'is_main',
     ];
 
-    protected $casts = [
-        'status' => 'boolean',
-        'is_main' => 'boolean',
-    ];
-
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }

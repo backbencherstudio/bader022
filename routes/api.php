@@ -28,6 +28,7 @@ use App\Http\Controllers\Merchant\MerchantSettingController;
 use App\Http\Controllers\Merchant\MinisiteController;
 use App\Http\Controllers\Merchant\ServicesController;
 use App\Http\Controllers\Merchant\StaffController;
+use App\Http\Controllers\Merchant\BranchController;
 use App\Http\Controllers\Merchant\SubscriptionController;
 use App\Http\Controllers\Merchant\TapPaymentController;
 use App\Http\Controllers\Merchant\TransactionController;
@@ -210,6 +211,15 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('show/{id}', [StaffController::class, 'show'])->name('staff.show');
         Route::put('update/{id}', [StaffController::class, 'update'])->name('staff.update');
         Route::delete('delete/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
+    });
+
+    Route::prefix('branch')->group(function () {
+        Route::get('index', [BranchController::class, 'index'])->name('branch.index');
+        Route::post('store', [BranchController::class, 'store'])->name('branch.store');
+        Route::get('show/{id}', [BranchController::class, 'show'])->name('branch.show');
+        Route::put('update/{id}', [BranchController::class, 'update'])->name('branch.update');
+        Route::delete('delete/{id}', [BranchController::class, 'destroy'])->name('branch.destroy');
+        Route::post('set-branch/{id}', [BranchController::class, 'setMainBranch'])->name('branch.setMainBranch');
     });
 
     // -----Admin/Subscription/Plan

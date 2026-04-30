@@ -11,17 +11,21 @@ class Staff extends Model
     protected $fillable = [
         'name',
         'user_id',
+        'branch_id',
         'role',
         'service_id',
         'image',
         'status',
     ];
 
+    // public function services()
+    // {
+    //     return $this->belongsToMany(Service::class, 'service_id');
+    // }
     public function services()
     {
-        return $this->belongsToMany(Service::class, 'service_id');
+        return $this->belongsToMany(\App\Models\Service::class);
     }
-
     public function user(): BelongsTo
     {
 
