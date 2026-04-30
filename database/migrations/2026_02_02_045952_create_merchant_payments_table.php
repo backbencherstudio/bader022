@@ -21,6 +21,9 @@ return new class extends Migration
             $table->foreignId('user_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
+            $table->foreignId('branch_id')
+                ->constrained('branches')
+                ->cascadeOnDelete();
 
             $table->string('payment_method')->nullable();
 
