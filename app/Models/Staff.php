@@ -18,11 +18,14 @@ class Staff extends Model
         'status',
     ];
 
+    // public function services()
+    // {
+    //     return $this->belongsToMany(Service::class, 'service_id');
+    // }
     public function services()
     {
-        return $this->belongsToMany(Service::class, 'service_id');
+        return $this->belongsToMany(\App\Models\Service::class);
     }
-
     public function user(): BelongsTo
     {
 

@@ -10,34 +10,93 @@ use Illuminate\Support\Facades\Validator;
 class StaffController extends Controller
 {
     public function index(Request $request)
-{
-    $query = Staff::where('user_id', auth()->id())->orderBy('id', 'desc');
+    {
+        $query = Staff::where('user_id', auth()->id())->orderBy('id', 'desc');
 
-    if ($request->filled('name')) {
-        $query->where('name', 'like', '%' . $request->name . '%');
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        $staffs = $query->get();
+
+        $staffs->map(function ($staff) {
+            if (is_array($staff->service_id) && !empty($staff->service_id)) {
+                $staff->service_names = \App\Models\Service::whereIn('id', $staff->service_id)
+                    ->pluck('service_name')
+                    ->toArray();
+            } else {
+                $staff->service_names = [];
+            }
+            return $staff;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $staffs,
+        ], 200);
     }
 
-    $staffs = $query->get();
+    // public function store(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required|string|max:255',
+    //         'role' => 'required|in:staff,admin',
+    //         'service_id' => 'required|array',
+    //         'service_id.*' => 'exists:services,id',
+    //         'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+    //         'status' => 'nullable|boolean',
+    //     ]);
 
-    $staffs->map(function ($staff) {
-        if (is_array($staff->service_id) && !empty($staff->service_id)) {
-            $staff->service_names = \App\Models\Service::whereIn('id', $staff->service_id)
-                ->pluck('service_name')
-                ->toArray();
-        } else {
-            $staff->service_names = [];
-        }
-        return $staff;
-    });
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
 
-    return response()->json([
-        'success' => true,
-        'data' => $staffs,
-    ], 200);
-}
+    //     $userServices = auth()->user()
+    //         ->services()
+    //         ->whereIn('id', $request->service_id)
+    //         ->pluck('id')
+    //         ->toArray();
+
+    //     if (count($userServices) !== count($request->service_id)) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'One or more selected services do not belong to the authenticated user.'
+    //         ], 400);
+    //     }
+
+    //     $imagePath = null;
+    //     if ($request->hasFile('image')) {
+    //         $image = $request->file('image');
+    //         $imageName = time() . '_' . $image->getClientOriginalName();
+    //         $image->move(public_path('staffs'), $imageName);
+
+    //         $imagePath = 'staffs/' . $imageName;
+    //     }
+
+    //     $staff = Staff::create([
+    //         'user_id' => auth()->id(),
+    //         'name' => $request->name,
+    //         'service_id' => $request->service_id,
+    //         'role' => $request->role,
+    //         'image' => $imagePath,
+    //         'status' => $request->status ?? 1,
+    //     ]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Staff created successfully',
+    //         'data' => $staff
+    //     ], 201);
+    // }
+
+
 
     public function store(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'role' => 'required|in:staff,admin',
@@ -48,23 +107,15 @@ class StaffController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $userServices = auth()->user()
-            ->services()
-            ->whereIn('id', $request->service_id)
-            ->pluck('id')
-            ->toArray();
+        $mainBranch = \App\Models\Branch::where('user_id', auth()->id())
+            ->where('is_main', 1)
+            ->first();
 
-        if (count($userServices) !== count($request->service_id)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'One or more selected services do not belong to the authenticated user.'
-            ], 400);
+        if (!$mainBranch) {
+            return response()->json(['success' => false, 'message' => 'Main branch not found.'], 404);
         }
 
         $imagePath = null;
@@ -72,12 +123,11 @@ class StaffController extends Controller
             $image = $request->file('image');
             $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('staffs'), $imageName);
-
             $imagePath = 'staffs/' . $imageName;
         }
-
         $staff = Staff::create([
             'user_id' => auth()->id(),
+            'branch_id' => $mainBranch->id,
             'name' => $request->name,
             'service_id' => $request->service_id,
             'role' => $request->role,
@@ -87,13 +137,10 @@ class StaffController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Staff created successfully',
+            'message' => 'Staff created successfully for main branch.',
             'data' => $staff
         ], 201);
     }
-
-
-
 
     public function show($id)
     {

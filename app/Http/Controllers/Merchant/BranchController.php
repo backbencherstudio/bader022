@@ -104,7 +104,7 @@ class BranchController extends Controller
     }
 
 
-    // DELETE
+
     public function destroy($id)
     {
         $branch = Branch::where('user_id', auth()->id())->find($id);
@@ -123,6 +123,37 @@ class BranchController extends Controller
             'message' => 'Branch deleted successfully'
         ]);
     }
+
+
+
+    public function setMainBranch(Request $request, $id)
+    {
+
+        \App\Models\Branch::where('user_id', auth()->id())
+            ->where('is_main', 1)
+            ->update(['is_main' => 0]);
+
+        $branch = \App\Models\Branch::where('user_id', auth()->id())
+            ->where('id', $id)
+            ->first();
+
+        if ($branch) {
+            $branch->update(['is_main' => 1]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Branch ' . $branch->name . ' is now set as the main branch.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Branch not found.'
+        ], 404);
+    }
+
+
+
 
 
 }
