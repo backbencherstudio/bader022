@@ -9,8 +9,6 @@ use App\Models\Subscription;
 
 class BranchController extends Controller
 {
-
-
     public function index()
     {
         $branches = Branch::where('user_id', auth()->id())->get();
@@ -89,7 +87,7 @@ class BranchController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Branch created successfully',
+            'message' => 'Branch created successfully!',
             'data' => $branch
         ]);
     }
@@ -141,16 +139,15 @@ class BranchController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Branch updated successfully',
+            'message' => 'Branch updated successfully!',
             'data' => $branch
         ]);
     }
 
 
-
     public function destroy($id)
     {
-     
+
         $branch = Branch::where('user_id', auth()->id())->find($id);
 
         if (!$branch) {
@@ -182,10 +179,9 @@ class BranchController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Branch deleted successfully'
+            'message' => 'Branch deleted successfully!'
         ]);
     }
-
 
 
     public function setMainBranch(Request $request, $id)
@@ -213,9 +209,5 @@ class BranchController extends Controller
             'message' => 'Branch not found.'
         ], 404);
     }
-
-
-
-
 
 }
