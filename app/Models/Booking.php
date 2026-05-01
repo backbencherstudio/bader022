@@ -16,7 +16,8 @@ class Booking extends Model
         'date_time',
         'status',
         'special_note',
-        'booking_by'
+        'booking_by',
+        'branch_id',
     ];
 
     public function payment()
@@ -64,5 +65,5 @@ class Booking extends Model
         return $this->belongsTo(User::class);
     }
 
-    
+
 }

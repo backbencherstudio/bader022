@@ -415,12 +415,31 @@ class BookingController extends Controller
             'phone'         => 'nullable|string',
             'special_note'  => 'nullable|string',
             'payment_method' => 'required|in:tap,cash',
+            'branch_id' => 'nullable|exists:branches,id',  //new
         ]);
 
-        return DB::transaction(function () use ($request, $merchant) {
+        $branchId = $request->branch_id;
+
+        if (!$branchId) {
+            $mainBranch = DB::table('branches')
+                ->where('is_main', 1)
+                ->first();
+
+            if (!$mainBranch) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Main branch not found'
+                ], 404);
+            }
+
+            $branchId = $mainBranch->id;
+        }
+
+        return DB::transaction(function () use ($request, $merchant, $branchId) {
 
             $service = Service::where('id', $request->service_id)
                 ->where('user_id', $merchant->id)
+                ->where('branch_id', $branchId) //new
                 ->first();
 
             if (!$service) {
@@ -501,6 +520,7 @@ class BookingController extends Controller
 
 
             $staffQuery = Staff::where('user_id', $merchant->id)
+                ->where('branch_id', $branchId) //new
                 ->whereJsonContains('service_id', (string)$service->id)
                 ->where('status', 1);
 
@@ -513,10 +533,11 @@ class BookingController extends Controller
                 ], 404);
             }
 
-            $existingBookings = Booking::whereIn('staff_id', function ($q) use ($merchant, $service) {
+            $existingBookings = Booking::whereIn('staff_id', function ($q) use ($merchant, $service, $branchId) {
                 $q->select('id')
                     ->from('staffs')
                     ->where('user_id', $merchant->id)
+                    ->where('branch_id', $branchId) //new
                     ->whereJsonContains('service_id', (string)$service->id)
                     ->where('status', 1);
             })
@@ -561,6 +582,7 @@ class BookingController extends Controller
                 'status'         => 'confirm',
                 'special_note'   => $request->special_note,
                 'booking_by'     => 'merchant',
+                'branch_id'      => $branchId,  //new
             ]);
 
             $merchantPayment = MerchantPayment::create([
@@ -573,6 +595,7 @@ class BookingController extends Controller
                     : null,
                 'payment_status' => 'paid',
                 'paid_at' => Carbon::now($merchantTimeZone),
+                'branch_id' => $branchId,  //new
             ]);
 
             try {
@@ -1027,6 +1050,7 @@ class BookingController extends Controller
         }
 
         $staffIds = Staff::where('user_id', $merchantId)
+            ->where('branch_id', $branchId)
             ->where('status', 1)
             ->pluck('id');
 
@@ -1050,13 +1074,13 @@ class BookingController extends Controller
 
         if ($request->staff_id) {
             $bookings = Booking::where('staff_id', $request->staff_id)
-                ->where('branch_id', $request->branch_id) // NEW
+                ->where('branch_id', $branchId) // NEW
                 ->whereDate('date_time', $date)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
         } else {
             $bookings = Booking::whereIn('staff_id', $staffIds)
-                ->where('branch_id', $request->branch_id) // NEW
+                ->where('branch_id', $branchId) // NEW
                 ->whereDate('date_time', $date)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();

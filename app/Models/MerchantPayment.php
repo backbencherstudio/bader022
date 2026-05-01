@@ -16,6 +16,7 @@ class MerchantPayment extends Model
         'paid_at',
         'refund_id',
         'refund_date',
+        'branch_id',
     ];
 
     public function booking()
