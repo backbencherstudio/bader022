@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Merchant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Http, Log};
 use App\Http\Controllers\Controller;
-use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff,User};
+use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff, User};
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
@@ -963,9 +963,29 @@ class BookingController extends Controller
             'service_id' => 'required|exists:services,id',
             'date' => 'required|date',
             'staff_id' => 'nullable|integer',
+            'branch_id' => 'nullable|exists:branches,id', // NEW
         ]);
 
-        $service = Service::find($request->service_id);
+        if ($request->branch_id) {
+            $branchId = $request->branch_id;
+        } else {
+            $mainBranch = DB::table('branches')
+                ->where('is_main', 1)
+                ->first();
+
+            if (!$mainBranch) {
+                return response()->json([
+                    'available_times' => [],
+                    'message' => 'Main branch not found'
+                ], 404);
+            }
+
+            $branchId = $mainBranch->id;
+        }
+
+        $service = Service::where('id', $request->service_id)
+            ->where('branch_id', $branchId)
+            ->first();
         if (! $service) {
             return response()->json(['available_times' => [], 'message' => 'Service not found'], 404);
         }
@@ -1030,11 +1050,13 @@ class BookingController extends Controller
 
         if ($request->staff_id) {
             $bookings = Booking::where('staff_id', $request->staff_id)
+                ->where('branch_id', $request->branch_id) // NEW
                 ->whereDate('date_time', $date)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
         } else {
             $bookings = Booking::whereIn('staff_id', $staffIds)
+                ->where('branch_id', $request->branch_id) // NEW
                 ->whereDate('date_time', $date)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
