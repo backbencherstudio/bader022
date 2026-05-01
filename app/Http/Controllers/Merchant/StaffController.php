@@ -23,7 +23,7 @@ class StaffController extends Controller
             ], 404);
         }
         $query = Staff::where('user_id', auth()->id())
-        ->where('branch_id', $mainBranch->id)->orderBy('id', 'asc');
+            ->where('branch_id', $mainBranch->id)->orderBy('id', 'asc');
 
         if ($request->filled('name')) {
             $query->where('name', 'like', '%' . $request->name . '%');
@@ -156,7 +156,17 @@ class StaffController extends Controller
 
     public function show($id)
     {
-        $staff = Staff::where('id', $id)->where('user_id', auth()->id())->with('service')->first();
+        $mainBranch = Branch::where('user_id', auth()->id())
+            ->where('is_main', 1)
+            ->first();
+        if (!$mainBranch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Main branch not found'
+            ], 404);
+        }
+        $staff = Staff::where('id', $id)->where('user_id', auth()->id())
+            ->where('branch_id', $mainBranch->id)->with('services')->first();
 
         if (! $staff) {
             return response()->json([
