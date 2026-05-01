@@ -162,7 +162,18 @@ class ServicesController extends Controller
 
     public function show($id)
     {
-        $service = Service::where('id', $id)->where('user_id', auth()->id())->first();
+        $mainBranch = Branch::where('user_id', auth()->id())
+            ->where('is_main', 1)
+            ->first();
+
+        if (!$mainBranch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Main branch not found'
+            ], 404);
+        }
+        $service = Service::where('id', $id)->where('user_id', auth()->id())
+            ->where('branch_id', $mainBranch->id)->first();
 
         if (!$service) {
             return response()->json([
