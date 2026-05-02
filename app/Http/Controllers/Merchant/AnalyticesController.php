@@ -9,54 +9,7 @@ use Carbon\Carbon;
 
 class AnalyticesController extends Controller
 {
-    // public function analytice()
-    // {
-    //     $user = auth()->user();
 
-    //     if ($user->type != 2) {
-    //         return response()->json(['message' => 'Unauthorized access'], 403);
-    //     }
-
-    //     $merchantId = $user->id;
-    //     $startOfMonth = Carbon::now()->startOfMonth();
-    //     $endOfMonth = Carbon::now()->endOfMonth();
-
-    //     $newCustomersCount = Booking::where('user_id', $merchantId)
-    //         ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-    //         ->whereNotIn('email', function ($query) use ($merchantId, $startOfMonth) {
-    //             $query->select('email')
-    //                 ->from('bookings')
-    //                 ->where('user_id', $merchantId)
-    //                 ->where('created_at', '<', $startOfMonth);
-    //         })
-    //         ->distinct('email')
-    //         ->count('email');
-
-    //     $returningCustomersCount = Booking::where('user_id', $merchantId)
-    //         ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-    //         ->whereIn('email', function ($query) use ($merchantId, $startOfMonth) {
-    //             $query->select('email')
-    //                 ->from('bookings')
-    //                 ->where('user_id', $merchantId)
-    //                 ->where('created_at', '<', $startOfMonth);
-    //         })
-    //         ->distinct('email')
-    //         ->count('email');
-
-    //     return response()->json([
-    //         'revenue' => (int) MerchantPayment::where('user_id', $merchantId)
-    //             ->where('payment_status', 'paid')
-    //             ->whereHas('booking', function ($query) {
-    //                 $query->where('status', 'complete');
-    //             })
-    //             ->sum('amount'),
-
-    //         'total_bookings' => Booking::where('user_id', $merchantId)->count(),
-
-    //         'new_customers' => $newCustomersCount,
-    //         'returning_customers' => $returningCustomersCount,
-    //     ]);
-    // }
     public function analytice()
     {
         $user = auth()->user();
@@ -90,6 +43,14 @@ class AnalyticesController extends Controller
             }
         }
 
+        $topService = Booking::where('bookings.user_id', $merchantId)
+            ->whereIn('bookings.status', ['confirm', 'complete', 'rescheduled'])
+            ->join('services', 'services.id', '=', 'bookings.service_id')
+            ->select('services.service_name', DB::raw('COUNT(*) as total'))
+            ->groupBy('services.service_name')
+            ->orderByDesc('total')
+            ->first();
+
         return response()->json([
             'revenue' => (int) MerchantPayment::where('user_id', $merchantId)
                 ->where('payment_status', 'paid')
@@ -102,6 +63,7 @@ class AnalyticesController extends Controller
 
             'new_customers' => $newCustomersCount,
             'returning_customers' => $returningCustomersCount,
+            'top_service' => $topService ? $topService->service_name : null,
         ]);
     }
 

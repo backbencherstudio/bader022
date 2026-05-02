@@ -5,15 +5,25 @@ namespace App\Http\Controllers\Merchant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
-use App\Models\{Service, User};
+use App\Models\{Branch, Service, User};
 
 class ServicesController extends Controller
 {
     public function index(Request $request)
     {
+        $mainBranch = Branch::where('user_id', auth()->id())
+            ->where('is_main', 1)
+            ->first();
 
-        $query = Service::where('user_id', auth()->id());
-        // $query = Service::where('user_id', auth()->id());
+        if (!$mainBranch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Main branch not found'
+            ], 404);
+        }
+
+        $query = Service::where('user_id', auth()->id())
+            ->where('branch_id', $mainBranch->id);
 
         if ($request->filled('service_name')) {
             $query->where('service_name', 'like', '%' . $request->service_name . '%');
@@ -152,7 +162,18 @@ class ServicesController extends Controller
 
     public function show($id)
     {
-        $service = Service::where('id', $id)->where('user_id', auth()->id())->first();
+        $mainBranch = Branch::where('user_id', auth()->id())
+            ->where('is_main', 1)
+            ->first();
+
+        if (!$mainBranch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Main branch not found'
+            ], 404);
+        }
+        $service = Service::where('id', $id)->where('user_id', auth()->id())
+            ->where('branch_id', $mainBranch->id)->first();
 
         if (!$service) {
             return response()->json([
@@ -167,9 +188,22 @@ class ServicesController extends Controller
         ], 200);
     }
 
+
     public function update(Request $request, $id)
     {
-        $service = Service::where('id', $id)->where('user_id', auth()->id())->first();
+        $mainBranch = Branch::where('user_id', auth()->id())
+            ->where('is_main', 1)
+            ->first();
+
+        if (!$mainBranch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Main branch not found'
+            ], 404);
+        }
+
+        $service = Service::where('id', $id)->where('user_id', auth()->id())
+            ->where('branch_id', $mainBranch->id)->first();
 
         if (!$service) {
             return response()->json([
@@ -225,7 +259,18 @@ class ServicesController extends Controller
 
     public function destroy($id)
     {
-        $service = Service::where('id', $id)->where('user_id', auth()->id())->first();
+        $mainBranch = Branch::where('user_id', auth()->id())
+            ->where('is_main', 1)
+            ->first();
+
+        if (!$mainBranch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Main branch not found'
+            ], 404);
+        }
+        $service = Service::where('id', $id)->where('user_id', auth()->id())
+            ->where('branch_id', $mainBranch->id)->first();
 
         if (!$service) {
             return response()->json([

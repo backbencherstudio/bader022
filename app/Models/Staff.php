@@ -24,7 +24,7 @@ class Staff extends Model
     // }
     public function services()
     {
-        return $this->belongsToMany(\App\Models\Service::class);
+        return $this->belongsTo(\App\Models\Service::class);
     }
     public function user(): BelongsTo
     {

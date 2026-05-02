@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
+use App\Models\Service;
 use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -11,7 +13,17 @@ class StaffController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Staff::where('user_id', auth()->id())->orderBy('id', 'desc');
+        $mainBranch = Branch::where('user_id', auth()->id())
+            ->where('is_main', 1)
+            ->first();
+        if (!$mainBranch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Main branch not found'
+            ], 404);
+        }
+        $query = Staff::where('user_id', auth()->id())
+            ->where('branch_id', $mainBranch->id)->orderBy('id', 'asc');
 
         if ($request->filled('name')) {
             $query->where('name', 'like', '%' . $request->name . '%');
@@ -21,7 +33,7 @@ class StaffController extends Controller
 
         $staffs->map(function ($staff) {
             if (is_array($staff->service_id) && !empty($staff->service_id)) {
-                $staff->service_names = \App\Models\Service::whereIn('id', $staff->service_id)
+                $staff->service_names = Service::whereIn('id', $staff->service_id)
                     ->pluck('service_name')
                     ->toArray();
             } else {
@@ -144,7 +156,17 @@ class StaffController extends Controller
 
     public function show($id)
     {
-        $staff = Staff::where('id', $id)->where('user_id', auth()->id())->with('service')->first();
+        $mainBranch = Branch::where('user_id', auth()->id())
+            ->where('is_main', 1)
+            ->first();
+        if (!$mainBranch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Main branch not found'
+            ], 404);
+        }
+        $staff = Staff::where('id', $id)->where('user_id', auth()->id())
+            ->where('branch_id', $mainBranch->id)->with('services')->first();
 
         if (! $staff) {
             return response()->json([
@@ -227,76 +249,76 @@ class StaffController extends Controller
     public function update(Request $request, $id)
     {
 
-    $staff = Staff::where('user_id', auth()->id())->find($id);
+        $staff = Staff::where('user_id', auth()->id())->find($id);
 
-    if (!$staff) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Staff not found or unauthorized.'
-        ], 404);
-    }
-
-
-    $validator = Validator::make($request->all(), [
-        'name' => 'sometimes|required|string|max:255',
-        'role' => 'sometimes|required|in:staff,admin',
-        'service_id' => 'sometimes|required|array',
-        'service_id.*' => 'exists:services,id',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        'status' => 'nullable|boolean',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'success' => false,
-            'errors' => $validator->errors()
-        ], 422);
-    }
-
-
-    if ($request->has('service_id')) {
-        $userServices = auth()->user()
-            ->services()
-            ->whereIn('id', $request->service_id)
-            ->pluck('id')
-            ->toArray();
-
-        if (count($userServices) !== count($request->service_id)) {
+        if (!$staff) {
             return response()->json([
                 'success' => false,
-                'message' => 'One or more selected services do not belong to you.'
-            ], 400);
-        }
-    }
-
-
-    if ($request->hasFile('image')) {
-
-        if ($staff->image && file_exists(public_path($staff->image))) {
-            @unlink(public_path($staff->image));
+                'message' => 'Staff not found or unauthorized.'
+            ], 404);
         }
 
-        $image = $request->file('image');
-        $imageName = time() . '_' . $image->getClientOriginalName();
-        $image->move(public_path('staffs'), $imageName);
-        $staff->image = 'staffs/' . $imageName;
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|required|string|max:255',
+            'role' => 'sometimes|required|in:staff,admin',
+            'service_id' => 'sometimes|required|array',
+            'service_id.*' => 'exists:services,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'status' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+
+        if ($request->has('service_id')) {
+            $userServices = auth()->user()
+                ->services()
+                ->whereIn('id', $request->service_id)
+                ->pluck('id')
+                ->toArray();
+
+            if (count($userServices) !== count($request->service_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'One or more selected services do not belong to you.'
+                ], 400);
+            }
+        }
+
+
+        if ($request->hasFile('image')) {
+
+            if ($staff->image && file_exists(public_path($staff->image))) {
+                @unlink(public_path($staff->image));
+            }
+
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('staffs'), $imageName);
+            $staff->image = 'staffs/' . $imageName;
+        }
+
+
+        $staff->update([
+            'name' => $request->name ?? $staff->name,
+            'role' => $request->role ?? $staff->role,
+            'service_id' => $request->service_id ?? $staff->service_id,
+            'status' => $request->status ?? $staff->status,
+            'image' => $staff->image,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Staff updated successfully',
+            'data' => $staff
+        ], 200);
     }
-
-
-    $staff->update([
-        'name' => $request->name ?? $staff->name,
-        'role' => $request->role ?? $staff->role,
-        'service_id' => $request->service_id ?? $staff->service_id,
-        'status' => $request->status ?? $staff->status,
-        'image' => $staff->image,
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Staff updated successfully',
-        'data' => $staff
-    ], 200);
-}
 
     public function destroy($id)
     {
@@ -337,24 +359,24 @@ class StaffController extends Controller
     // }
 
     public function staffIndex($website_domain)
-{
-    $staffs = Staff::whereHas('user', function ($query) use ($website_domain) {
+    {
+        $staffs = Staff::whereHas('user', function ($query) use ($website_domain) {
             $query->where('website_domain', $website_domain);
         })
-        ->get();
+            ->get();
 
-    // Map kore shudhu proyojoniyo data nawa
-    $formattedStaffs = $staffs->map(function ($staff) {
-        return [
-            'id'   => $staff->id,
-            'name' => $staff->name, // Staff table-e jodi 'name' thake
-            // 'user_name' => $staff->user->name ?? null, // Jodi user table theke name nite chan
-        ];
-    });
+        // Map kore shudhu proyojoniyo data nawa
+        $formattedStaffs = $staffs->map(function ($staff) {
+            return [
+                'id'   => $staff->id,
+                'name' => $staff->name, // Staff table-e jodi 'name' thake
+                // 'user_name' => $staff->user->name ?? null, // Jodi user table theke name nite chan
+            ];
+        });
 
-    return response()->json([
-        'success' => true,
-        'data' => $formattedStaffs,
-    ], 200);
-}
+        return response()->json([
+            'success' => true,
+            'data' => $formattedStaffs,
+        ], 200);
+    }
 }
