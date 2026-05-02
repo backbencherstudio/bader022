@@ -2200,7 +2200,7 @@ class BookingController extends Controller
         return $pdf->download('invoice-' . $booking->id . '.pdf');
     }
 
-    
+
     public function booklischedule(Request $request, $website_domain)
     {
         $user = User::where('website_domain', $website_domain)->first();
