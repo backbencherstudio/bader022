@@ -986,7 +986,7 @@ class BookingController extends Controller
             'service_id' => 'required|exists:services,id',
             'date' => 'required|date',
             'staff_id' => 'nullable|integer',
-            'branch_id' => 'nullable|exists:branches,id', // NEW
+            'branch_id' => 'nullable|exists:branches,id', //new
         ]);
 
         if ($request->branch_id) {
@@ -1074,13 +1074,13 @@ class BookingController extends Controller
 
         if ($request->staff_id) {
             $bookings = Booking::where('staff_id', $request->staff_id)
-                ->where('branch_id', $branchId) // NEW
+                ->where('branch_id', $branchId) // new
                 ->whereDate('date_time', $date)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
         } else {
             $bookings = Booking::whereIn('staff_id', $staffIds)
-                ->where('branch_id', $branchId) // NEW
+                ->where('branch_id', $branchId) // new
                 ->whereDate('date_time', $date)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
@@ -2203,14 +2203,12 @@ class BookingController extends Controller
 
     public function booklischedule(Request $request, $website_domain)
     {
-
         $user = User::where('website_domain', $website_domain)->first();
 
         if (!$user) {
             return response()->json(['available_times' => [], 'message' => 'Store not found'], 404);
         }
 
-        // ২. Validation (Slug URL theke asche, baki gulo Request theke)
         $request->validate([
             'service_id' => 'required|exists:services,id',
             'date'       => 'required|date',
@@ -2219,7 +2217,7 @@ class BookingController extends Controller
 
         $service = Service::find($request->service_id);
 
-        // ৩. Store Settings fetch kora (User ID diye)
+
         $storeSetting = DB::table('merchant_store_settings')
             ->where('user_id', $user->id)
             ->first();
@@ -2232,7 +2230,6 @@ class BookingController extends Controller
         $date = Carbon::parse($request->date, $merchantTimeZone);
         $day = strtolower($date->format('l'));
 
-        // ৪. Business Hours Check
         $businessHour = BusinessHour::where('merchant_store_setting_id', $storeSetting->id)
             ->where('day', $day)
             ->where('is_closed', 0)
@@ -2241,7 +2238,6 @@ class BookingController extends Controller
         if (!$businessHour || !$businessHour->open_time || !$businessHour->close_time) {
             return response()->json(['available_times' => [], 'message' => 'Business closed today']);
         }
-
 
         $staffQuery = Staff::where('user_id', $user->id)->where('status', 1);
 
@@ -2268,7 +2264,7 @@ class BookingController extends Controller
         $bookings = Booking::whereIn('staff_id', $staffIds)
             ->whereDate('date_time', $date)
             ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
-            ->with('service') // duration check korar jonno
+            ->with('service') 
             ->get();
 
         $availableSlots = [];
