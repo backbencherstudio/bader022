@@ -1116,6 +1116,8 @@ class BookingController extends Controller
     }
 
 
+
+
     //..........One staff for one service
 
     // public function getAvailableStaffByTime(Request $request)
