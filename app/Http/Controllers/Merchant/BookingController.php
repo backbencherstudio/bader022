@@ -2200,7 +2200,7 @@ class BookingController extends Controller
         return $pdf->download('invoice-' . $booking->id . '.pdf');
     }
 
-
+    
     public function booklischedule(Request $request, $website_domain)
     {
         $user = User::where('website_domain', $website_domain)->first();
@@ -2264,7 +2264,7 @@ class BookingController extends Controller
         $bookings = Booking::whereIn('staff_id', $staffIds)
             ->whereDate('date_time', $date)
             ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
-            ->with('service') 
+            ->with('service')
             ->get();
 
         $availableSlots = [];
