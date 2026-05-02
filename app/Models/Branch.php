@@ -24,4 +24,18 @@ class Branch extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function staffs()
+{
+    return $this->hasMany(\App\Models\Staff::class);
+}
+
+public function services()
+{
+    return $this->hasMany(\App\Models\Service::class);
+}
+
+public function bookings()
+{
+    return $this->hasMany(\App\Models\Booking::class);
+}
 }
