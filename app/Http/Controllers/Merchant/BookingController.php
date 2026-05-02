@@ -109,7 +109,7 @@ class BookingController extends Controller
 
 
 
-   
+
 
     public function paymentCallback(Request $request)
     {
@@ -402,6 +402,7 @@ class BookingController extends Controller
         return response()->json(['available_times' => $availableSlots]);
     }
 
+    
 
     public function getAvailableStaffByTime(Request $request)
     {
