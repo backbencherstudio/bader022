@@ -156,33 +156,7 @@ class AnalyticesController extends Controller
         return response()->json($result);
     }
 
-    // public function newreturn()
-    // {
-    //     $user = auth()->user();
-
-    //     if ($user->type != 2) {
-    //         return response()->json(['message' => 'Unauthorized access'], 403);
-    //     }
-
-    //     $merchantId = $user->id;
-    //     $startOfMonth = Carbon::now()->startOfMonth();
-    //     $endOfMonth = Carbon::now()->endOfMonth();
-
-    //     $customers = Booking::where('user_id', $merchantId)
-    //         ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-    //         ->select('email', DB::raw('COUNT(*) as total_orders'))
-    //         ->groupBy('email')
-    //         ->get();
-
-    //     $newCustomersCount = $customers->count();
-    //     $returningCustomersCount = $customers->where('total_orders', '>')->count();
-
-    //     return response()->json([
-    //         'new_customers' => $newCustomersCount,
-    //         'returning_customers' => $returningCustomersCount,
-    //     ]);
-    // }
-
+    
     public function newreturn()
     {
         $user = auth()->user();

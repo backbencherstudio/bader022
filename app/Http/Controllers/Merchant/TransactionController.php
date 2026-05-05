@@ -4,22 +4,58 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
 use App\Models\MerchantPayment;
-
+use Illuminate\Http\Request;
 class TransactionController extends Controller
 {
-    public function index()
+    // public function index()
+    // {
+    //     $userId = auth()->id();
+
+    //     $payments = MerchantPayment::with(['user', 'booking.service'])
+    //         ->where('user_id', $userId)
+    //         ->latest()
+    //         ->get();
+
+    //     if ($payments->isEmpty()) {
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'No transactions found for this user',
+    //             'data' => [],
+    //         ], 200);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Transactions fetched successfully',
+    //         'data' => $payments,
+    //     ], 200);
+    // }
+
+    public function index(Request $request)
     {
         $userId = auth()->id();
 
+
+        $branchId = $request->query('x_branch_id');
+
+        if (!$branchId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch ID is required',
+            ], 400);
+        }
+
+
         $payments = MerchantPayment::with(['user', 'booking.service'])
             ->where('user_id', $userId)
+            ->where('branch_id', $branchId)
             ->latest()
             ->get();
 
         if ($payments->isEmpty()) {
             return response()->json([
                 'success' => true,
-                'message' => 'No transactions found for this user',
+                'message' => 'No transactions found for this branch',
                 'data' => [],
             ], 200);
         }

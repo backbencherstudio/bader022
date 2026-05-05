@@ -14,19 +14,29 @@ use App\Mail\BookingCreateMail;
 
 class BookingController extends Controller
 {
-    public function index()
+
+
+    public function index(Request $request)
     {
         $userId = auth()->id();
 
+        if (!$request->filled('x_branch_id')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch ID is required to see bookings.',
+            ], 422);
+        }
+
         $bookings = Booking::with(['user', 'staff', 'service'])
             ->where('user_id', $userId)
+            ->where('branch_id', $request->x_branch_id)
             ->latest()
             ->get();
 
         if ($bookings->isEmpty()) {
             return response()->json([
                 'success' => true,
-                'message' => 'No bookings found for this user',
+                'message' => 'No bookings found for this branch',
                 'data' => [],
             ], 200);
         }
@@ -37,6 +47,7 @@ class BookingController extends Controller
             'data' => $bookings,
         ], 200);
     }
+
 
     public function show($id)
     {
@@ -114,6 +125,7 @@ class BookingController extends Controller
         $request->validate([
             'service_id'    => 'required|exists:services,id',
             'staff_id'      => 'nullable|integer',
+            'branch_id'      => 'nullable|integer',
             'date'          => 'required|date',
             'time'          => 'required',
             'customer_name' => 'required|string',
@@ -255,11 +267,13 @@ class BookingController extends Controller
             }
 
             $staffId = $staff->id;
+            $branchId = $request->branch_id;
 
             $booking = Booking::create([
                 'user_id'        => $merchant->id,
                 'staff_id'       => $staffId,
                 'service_id'     => $service->id,
+                'branch_id'      => $branchId,
                 'customer_name'  => $request->customer_name,
                 'email'          => $request->email,
                 'phone'          => $request->phone,
@@ -272,6 +286,7 @@ class BookingController extends Controller
             $merchantPayment = MerchantPayment::create([
                 'booking_id'     => $booking->id,
                 'user_id'        => $merchant->id,
+                'branch_id'        => $branchId,
                 'payment_method' => $request->payment_method,
                 'amount'         => $service->price,
                 'transaction_id' => $request->payment_method === 'cash'
@@ -365,8 +380,6 @@ class BookingController extends Controller
             ], 201);
         });
     }
-
-
 
 
     public function paymentCallback(Request $request)
@@ -1059,6 +1072,7 @@ class BookingController extends Controller
         $request->validate([
             'service_id' => 'required|exists:services,id',
             'staff_id' => 'nullable|integer',
+            'branch_id' => 'nullable|integer',
             'date' => 'required|date',
             'time' => 'required',
             'customer_name' => 'required|string',
@@ -1219,6 +1233,7 @@ class BookingController extends Controller
             $booking = Booking::create([
                 'user_id' => $merchantId,
                 'staff_id' => $staffId,
+                'branch_id'     => $request->branch_id,
                 'service_id' => $service->id,
                 'customer_name' => $request->customer_name,
                 'email' => $request->email,
@@ -1232,6 +1247,7 @@ class BookingController extends Controller
             $payment = MerchantPayment::create([
                 'booking_id' => $booking->id,
                 'user_id' => $merchantId,
+                'branch_id'      => $request->branch_id,
                 'payment_method' => $request->payment_method,
                 'amount' => $service->price,
                 'transaction_id' => 'tx' . uniqid(),
@@ -1245,6 +1261,7 @@ class BookingController extends Controller
                     'booking' => [
                         'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
                         'service' => $booking->service->service_name,
+                        'branch_id'  => $booking->branch_id,
                         'date_time' => $booking->date_time->format('Y-m-d h:i A'),
                         'staff_name' => $booking->staff->name,
                         'duration' => $booking->service->duration . ' min',
@@ -1322,6 +1339,7 @@ class BookingController extends Controller
                     'message' => 'Redirect to Tap payment',
                     'payment_url' => $tapData['transaction']['url'],
                     'booking_id' => $booking->id,
+                    'branch_id'   => $booking->branch_id
                 ], 200);
             }
         });

@@ -8,10 +8,14 @@ use App\Models\MerchantPayment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class MerchantDashboardContoller extends Controller
 {
-    public function index()
+
+
+
+    public function index(Request $request)
     {
         $user = auth()->user();
 
@@ -23,9 +27,17 @@ class MerchantDashboardContoller extends Controller
 
         $merchantId = $user->id;
 
-        return response()->json([
+        $branchId = $request->header('X-Branch-Id');
 
+        if (!$branchId) {
+            return response()->json([
+                'message' => 'Please provide X-Branch-Id in the request headers',
+            ], 400);
+        }
+
+        return response()->json([
             'revenue' => (int) MerchantPayment::where('user_id', $merchantId)
+                ->where('branch_id', $branchId)
                 ->where('payment_status', 'paid')
                 ->whereHas('booking', function ($query) {
                     $query->where('status', 'complete');
@@ -33,28 +45,39 @@ class MerchantDashboardContoller extends Controller
                 ->sum('amount'),
 
             'total_bookings' => Booking::where('user_id', $merchantId)
+                ->where('branch_id', $branchId)
                 ->count(),
 
             'appointments' => Booking::where('user_id', $merchantId)
+                ->where('branch_id', $branchId)
                 ->whereIn('status', ['confirm', 'rescheduled'])
                 ->count(),
 
             'Total_Customers' => Booking::where('user_id', $merchantId)
+                ->where('branch_id', $branchId)
                 ->where('status', 'complete')
                 ->count(),
-
         ]);
     }
 
-
-    public function monthlypaymentrevenue()
+    public function monthlypaymentrevenue(Request $request)
     {
         $user = auth()->user();
         $merchantId = $user->id;
         $year = date('Y');
 
+        // --- Change: Accessing Header instead of Query Param ---
+        $branchId = $request->header('X-Branch-Id');
+
+        if (!$branchId) {
+            return response()->json([
+                'message' => 'X-Branch-Id header is required'
+            ], 400);
+        }
+
         $revenues = MerchantPayment::where('payment_status', 'paid')
-            ->where('merchant_payments.user_id', $merchantId)
+            ->where('user_id', $merchantId)
+            ->where('branch_id', $branchId) // Applied here
             ->whereHas('booking', function ($query) {
                 $query->where('status', 'complete');
             })
@@ -67,18 +90,9 @@ class MerchantDashboardContoller extends Controller
             ->pluck('total_revenue', 'month');
 
         $months = [
-            1 => 'Jan',
-            2 => 'Feb',
-            3 => 'Mar',
-            4 => 'Apr',
-            5 => 'May',
-            6 => 'Jun',
-            7 => 'Jul',
-            8 => 'Aug',
-            9 => 'Sep',
-            10 => 'Oct',
-            11 => 'Nov',
-            12 => 'Dec',
+            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
+            5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
+            9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'
         ];
 
         $result = [];
@@ -93,15 +107,26 @@ class MerchantDashboardContoller extends Controller
         return response()->json($result);
     }
 
-    public function weeklyPaymentrevenue()
+
+    public function weeklyPaymentrevenue(Request $request)
     {
         $user = auth()->user();
         $merchantId = $user->id;
         $year = date('Y');
         $month = date('m');
 
+        // --- Change: Retrieve from Header ---
+        $branchId = $request->header('X-Branch-Id');
+
+        if (!$branchId) {
+            return response()->json([
+                'message' => 'X-Branch-Id header is required'
+            ], 400);
+        }
+
         $revenues = MerchantPayment::where('payment_status', 'paid')
             ->where('user_id', $merchantId)
+            ->where('branch_id', $branchId) // Applied header value
             ->whereHas('booking', function ($query) {
                 $query->where('status', 'complete');
             })
@@ -136,15 +161,26 @@ class MerchantDashboardContoller extends Controller
         return response()->json($result);
     }
 
-    public function todayAppointment()
+
+    public function todayAppointment(Request $request)
     {
         $user = auth()->user();
         $merchantId = $user->id;
+
+        $branchId = $request->header('X-Branch-Id');
+
+        if (!$branchId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'X-Branch-Id header is required'
+            ], 400);
+        }
 
         $today = Carbon::today()->toDateString();
 
         $bookings = Booking::with(['user', 'staff', 'service'])
             ->where('user_id', $merchantId)
+            ->where('branch_id', $branchId) // Applied header value
             ->whereIn('status', ['confirm', 'rescheduled'])
             ->whereDate('date_time', $today)
             ->latest()
@@ -152,22 +188,22 @@ class MerchantDashboardContoller extends Controller
 
         $bookings->transform(function ($booking) {
             $booking->date_time = Carbon::parse($booking->date_time)
-                ->format('M  d Y, h:i A');
+                ->format('M d Y, h:i A');
             return $booking;
         });
 
         if ($bookings->isEmpty()) {
             return response()->json([
                 'success' => true,
-                'message' => 'No bookings created today',
+                'message' => 'No bookings for this branch today',
                 'data' => [],
             ], 200);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Bookings created today',
+            'message' => 'Bookings for this branch today',
             'data' => $bookings,
         ], 200);
     }
-}
+ }

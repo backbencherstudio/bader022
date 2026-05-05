@@ -31,11 +31,13 @@ class Branch extends Model
 
 public function services()
 {
-    return $this->hasMany(\App\Models\Service::class);
+    return $this->hasMany(Service::class, 'branch_id');
 }
 
 public function bookings()
 {
     return $this->hasMany(\App\Models\Booking::class);
 }
+
+
 }

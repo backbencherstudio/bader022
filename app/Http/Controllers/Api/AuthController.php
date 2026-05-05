@@ -330,7 +330,7 @@ class AuthController extends Controller
         $user->update([
             'otp' => null,
             'otp_expires_at' => null,
-            // 'jwt_token' => $token, 
+            // 'jwt_token' => $token,
             'remember_token' => $rememberToken,
         ]);
 
@@ -836,7 +836,7 @@ class AuthController extends Controller
                     'user_id' => $merchant->id,
                     'name' => 'Main Branch',
                     'status' => 1,
-                    'is_main' => 1,
+                    'is_main' => 0,
                 ]);
 
                 $subscription = Subscription::create([
@@ -982,7 +982,7 @@ class AuthController extends Controller
                     'user_id' => $merchant->id,
                     'name' => 'Main Branch',
                     'status' => 1,
-                    'is_main' => 1,
+                    'is_main' => 0,
                 ]);
 
                 $endDate = ($meta['plan_id'] == 2) ? now()->addMonth() : now()->addYear();
