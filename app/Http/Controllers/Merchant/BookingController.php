@@ -16,20 +16,23 @@ class BookingController extends Controller
 {
 
 
+
     public function index(Request $request)
     {
         $userId = auth()->id();
 
-        if (!$request->filled('x_branch_id')) {
+        $branchId = $request->header('X-Branch-Id');
+
+        if (empty($branchId)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Branch ID is required to see bookings.',
+                'message' => 'Branch ID is required in the headers (X-Branch-Id) to see bookings.',
             ], 422);
         }
 
         $bookings = Booking::with(['user', 'staff', 'service'])
             ->where('user_id', $userId)
-            ->where('branch_id', $request->x_branch_id)
+            ->where('branch_id', $branchId)
             ->latest()
             ->get();
 

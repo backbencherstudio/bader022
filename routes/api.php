@@ -217,7 +217,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('index', [BranchController::class, 'index'])->name('branch.index');
         Route::post('store', [BranchController::class, 'store'])->name('branch.store');
         Route::get('show/{id}', [BranchController::class, 'show'])->name('branch.show');
-        Route::put('update/{id}', [BranchController::class, 'update'])->name('branch.update');
+        Route::post('update/{id}', [BranchController::class, 'update'])->name('branch.update');
         Route::delete('delete/{id}', [BranchController::class, 'destroy'])->name('branch.destroy');
         Route::post('set-branch/{id}', [BranchController::class, 'setMainBranch'])->name('branch.setMainBranch');
     });

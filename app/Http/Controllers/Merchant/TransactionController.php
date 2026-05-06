@@ -35,20 +35,21 @@ class TransactionController extends Controller
     {
         $userId = auth()->id();
 
+        // ১. হেডার থেকে X-Branch-Id নেওয়া
+        $branchId = $request->header('X-Branch-Id');
 
-        $branchId = $request->query('x_branch_id');
-
-        if (!$branchId) {
+        // ২. হেডার না থাকলে এরর রিটার্ন
+        if (empty($branchId)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Branch ID is required',
-            ], 400);
+                'message' => 'Branch ID is required in the headers (X-Branch-Id) to see transactions.',
+            ], 422);
         }
 
-
+        // ৩. নির্দিষ্ট ব্রাঞ্চ অনুযায়ী পেমেন্ট লিস্ট নিয়ে আসা
         $payments = MerchantPayment::with(['user', 'booking.service'])
             ->where('user_id', $userId)
-            ->where('branch_id', $branchId)
+            ->where('branch_id', $branchId) // ব্রাঞ্চ ফিল্টার
             ->latest()
             ->get();
 
