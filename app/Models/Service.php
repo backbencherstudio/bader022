@@ -8,6 +8,7 @@ class Service extends Model
 {
     protected $fillable = [
         'user_id',
+        'branch_id',
         'service_name',
         'duration',
         'price',
@@ -34,4 +35,10 @@ class Service extends Model
     {
         return $this->hasMany(MiniSite::class, 'user_id', 'user_id');
     }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
 }

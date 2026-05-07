@@ -11,6 +11,7 @@ class Staff extends Model
     protected $fillable = [
         'name',
         'user_id',
+        'branch_id',
         'role',
         'service_id',
         'image',
@@ -21,7 +22,10 @@ class Staff extends Model
     {
         return $this->belongsToMany(Service::class, 'service_id');
     }
-
+    // public function services()
+    // {
+    //     return $this->belongsTo(\App\Models\Service::class);
+    // }
     public function user(): BelongsTo
     {
 

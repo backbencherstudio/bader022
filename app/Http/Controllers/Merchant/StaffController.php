@@ -3,38 +3,57 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
+use App\Models\Service;
 use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class StaffController extends Controller
 {
-    public function index(Request $request)
-{
-    $query = Staff::where('user_id', auth()->id())->orderBy('id', 'desc');
 
-    if ($request->filled('name')) {
-        $query->where('name', 'like', '%' . $request->name . '%');
+    public function index(Request $request)
+    {
+
+        if (!$request->hasHeader('X-Branch-Id')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch ID header is required to see staff list.',
+            ], 422);
+        }
+
+        $branchId = $request->header('X-Branch-Id');
+
+
+        $query = Staff::where('user_id', auth()->id())
+            ->where('branch_id', $branchId)
+            ->orderBy('id', 'desc');
+
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        $staffs = $query->get();
+
+
+        $staffs->map(function ($staff) {
+            if (is_array($staff->service_id) && !empty($staff->service_id)) {
+                $staff->service_names = Service::whereIn('id', $staff->service_id)
+                    ->pluck('service_name')
+                    ->toArray();
+            } else {
+                $staff->service_names = [];
+            }
+            return $staff;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $staffs,
+        ], 200);
     }
 
-    $staffs = $query->get();
-
-    $staffs->map(function ($staff) {
-        if (is_array($staff->service_id) && !empty($staff->service_id)) {
-            $staff->service_names = \App\Models\Service::whereIn('id', $staff->service_id)
-                ->pluck('service_name')
-                ->toArray();
-        } else {
-            $staff->service_names = [];
-        }
-        return $staff;
-    });
-
-    return response()->json([
-        'success' => true,
-        'data' => $staffs,
-    ], 200);
-}
 
     public function store(Request $request)
     {
@@ -48,23 +67,23 @@ class StaffController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $userServices = auth()->user()
-            ->services()
-            ->whereIn('id', $request->service_id)
-            ->pluck('id')
-            ->toArray();
 
-        if (count($userServices) !== count($request->service_id)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'One or more selected services do not belong to the authenticated user.'
-            ], 400);
+        $selectedBranchId = $request->header('X-Branch-Id') ?? $request->branch_id;
+
+        if (!$selectedBranchId) {
+            return response()->json(['success' => false, 'message' => 'No branch selected for this device.'], 400);
+        }
+
+
+        $branchExists = \App\Models\Branch::where('user_id', auth()->id())
+            ->where('id', $selectedBranchId)
+            ->exists();
+
+        if (!$branchExists) {
+            return response()->json(['success' => false, 'message' => 'Invalid branch selection.'], 403);
         }
 
         $imagePath = null;
@@ -72,12 +91,12 @@ class StaffController extends Controller
             $image = $request->file('image');
             $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('staffs'), $imageName);
-
             $imagePath = 'staffs/' . $imageName;
         }
 
         $staff = Staff::create([
             'user_id' => auth()->id(),
+            'branch_id' => $selectedBranchId,
             'name' => $request->name,
             'service_id' => $request->service_id,
             'role' => $request->role,
@@ -87,7 +106,7 @@ class StaffController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Staff created successfully',
+            'message' => 'Staff created successfully for the selected branch.',
             'data' => $staff
         ], 201);
     }
@@ -110,144 +129,80 @@ class StaffController extends Controller
         ], 200);
     }
 
-    // public function update(Request $request, $id)
-    // {
-    //     $staff = Staff::where('id', $id)->where('user_id', auth()->id())->first();
-
-    //     if (! $staff) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Staff not found',
-    //         ], 404);
-    //     }
-
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'sometimes|required|string|max:255',
-    //         'role' => 'sometimes|required|string|in:staff,admin',
-    //         'service_id' => 'sometimes|required|string',
-    //         'image' => 'sometimes|nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-    //         'status' => 'nullable|boolean',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'errors' => $validator->errors(),
-    //         ], 422);
-    //     }
-
-    //     if ($request->has('service_id')) {
-    //         $userService = auth()->user()->services()->where('id', $request->service_id)->first();
-
-    //         if (! $userService) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'The selected service does not belong to the authenticated user.',
-    //             ], 404);
-    //         }
-    //     }
-
-    //     if ($request->hasFile('image')) {
-    //         if ($staff->image && file_exists(public_path($staff->image))) {
-    //             unlink(public_path($staff->image));
-    //         }
-
-    //         $image = $request->file('image');
-    //         $imageName = time() . '_' . $image->getClientOriginalName();
-    //         $image->move(public_path('staffs'), $imageName);
-
-    //         $staff->image = 'staffs/' . $imageName;
-    //     }
-
-    //     $staff->fill($request->only([
-    //         'name',
-    //         'role',
-    //         'service_id',
-    //         'status',
-    //     ]));
-
-    //     $staff->save();
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Staff updated successfully',
-    //         'data' => $staff,
-    //     ], 200);
-    // }
 
     public function update(Request $request, $id)
     {
 
-    $staff = Staff::where('user_id', auth()->id())->find($id);
+        $staff = Staff::where('user_id', auth()->id())->find($id);
 
-    if (!$staff) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Staff not found or unauthorized.'
-        ], 404);
-    }
-
-
-    $validator = Validator::make($request->all(), [
-        'name' => 'sometimes|required|string|max:255',
-        'role' => 'sometimes|required|in:staff,admin',
-        'service_id' => 'sometimes|required|array',
-        'service_id.*' => 'exists:services,id',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        'status' => 'nullable|boolean',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'success' => false,
-            'errors' => $validator->errors()
-        ], 422);
-    }
-
-
-    if ($request->has('service_id')) {
-        $userServices = auth()->user()
-            ->services()
-            ->whereIn('id', $request->service_id)
-            ->pluck('id')
-            ->toArray();
-
-        if (count($userServices) !== count($request->service_id)) {
+        if (!$staff) {
             return response()->json([
                 'success' => false,
-                'message' => 'One or more selected services do not belong to you.'
-            ], 400);
-        }
-    }
-
-
-    if ($request->hasFile('image')) {
-
-        if ($staff->image && file_exists(public_path($staff->image))) {
-            @unlink(public_path($staff->image));
+                'message' => 'Staff not found or unauthorized.'
+            ], 404);
         }
 
-        $image = $request->file('image');
-        $imageName = time() . '_' . $image->getClientOriginalName();
-        $image->move(public_path('staffs'), $imageName);
-        $staff->image = 'staffs/' . $imageName;
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|required|string|max:255',
+            'role' => 'sometimes|required|in:staff,admin',
+            'service_id' => 'sometimes|required|array',
+            'service_id.*' => 'exists:services,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'status' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+
+        if ($request->has('service_id')) {
+            $userServices = auth()->user()
+                ->services()
+                ->whereIn('id', $request->service_id)
+                ->pluck('id')
+                ->toArray();
+
+            if (count($userServices) !== count($request->service_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'One or more selected services do not belong to you.'
+                ], 400);
+            }
+        }
+
+
+        if ($request->hasFile('image')) {
+
+            if ($staff->image && file_exists(public_path($staff->image))) {
+                @unlink(public_path($staff->image));
+            }
+
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('staffs'), $imageName);
+            $staff->image = 'staffs/' . $imageName;
+        }
+
+
+        $staff->update([
+            'name' => $request->name ?? $staff->name,
+            'role' => $request->role ?? $staff->role,
+            'service_id' => $request->service_id ?? $staff->service_id,
+            'status' => $request->status ?? $staff->status,
+            'image' => $staff->image,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Staff updated successfully',
+            'data' => $staff
+        ], 200);
     }
-
-
-    $staff->update([
-        'name' => $request->name ?? $staff->name,
-        'role' => $request->role ?? $staff->role,
-        'service_id' => $request->service_id ?? $staff->service_id,
-        'status' => $request->status ?? $staff->status,
-        'image' => $staff->image,
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Staff updated successfully',
-        'data' => $staff
-    ], 200);
-}
 
     public function destroy($id)
     {
@@ -273,39 +228,26 @@ class StaffController extends Controller
     }
 
 
-    // public function staffIndex($website_domain)
-    // {
-    //     $staffs = Staff::with('user') // User data shaho load korbe
-    //         ->whereHas('user', function ($query) use ($website_domain) {
-    //             $query->where('website_domain', $website_domain);
-    //         })
-    //         ->get();
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'data' => $staffs,
-    //     ], 200);
-    // }
 
     public function staffIndex($website_domain)
-{
-    $staffs = Staff::whereHas('user', function ($query) use ($website_domain) {
+    {
+        $staffs = Staff::whereHas('user', function ($query) use ($website_domain) {
             $query->where('website_domain', $website_domain);
         })
-        ->get();
+            ->get();
 
-    // Map kore shudhu proyojoniyo data nawa
-    $formattedStaffs = $staffs->map(function ($staff) {
-        return [
-            'id'   => $staff->id,
-            'name' => $staff->name, // Staff table-e jodi 'name' thake
-            // 'user_name' => $staff->user->name ?? null, // Jodi user table theke name nite chan
-        ];
-    });
+        // Map kore shudhu proyojoniyo data nawa
+        $formattedStaffs = $staffs->map(function ($staff) {
+            return [
+                'id'   => $staff->id,
+                'name' => $staff->name, // Staff table-e jodi 'name' thake
+                // 'user_name' => $staff->user->name ?? null, // Jodi user table theke name nite chan
+            ];
+        });
 
-    return response()->json([
-        'success' => true,
-        'data' => $formattedStaffs,
-    ], 200);
-}
+        return response()->json([
+            'success' => true,
+            'data' => $formattedStaffs,
+        ], 200);
+    }
 }

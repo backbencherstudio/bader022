@@ -12,6 +12,7 @@ return [
         'http://127.0.0.1:5174',
         'http://127.0.0.1:5173',
         'http://localhost:3000',
+        'http://192.168.7.66:3000',
         'https://bader022-front-end.vercel.app',
         'https://bokli.io',
         'https://www.bokli.io',
