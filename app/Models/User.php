@@ -113,4 +113,10 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(GlobalSetting::class);
     }
+
+    public function branches()
+{
+   
+    return $this->hasMany(Branch::class, 'user_id');
+}
 }

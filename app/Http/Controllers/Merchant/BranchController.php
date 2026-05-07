@@ -187,20 +187,17 @@ class BranchController extends Controller
     public function setMainBranch(Request $request, $id)
     {
 
-        Branch::where('user_id', auth()->id())
-            ->where('is_main', 1)
-            ->update(['is_main' => 0]);
-
         $branch = Branch::where('user_id', auth()->id())
             ->where('id', $id)
             ->first();
 
         if ($branch) {
-            $branch->update(['is_main' => 1]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Branch ' . $branch->name . ' is now set as the main branch.'
+                'branch_id' => $branch->id,
+                'branch_name' => $branch->name,
+                'message' => 'Branch ' . $branch->name . ' selected on this device.'
             ]);
         }
 

@@ -41,10 +41,110 @@ class AuthController extends Controller
     }
 
 
+    // public function login(Request $request)
+    // {
+    //     $credentials = $request->only('email', 'password');
+
+    //     if (!$token = Auth::guard('api')->attempt($credentials)) {
+    //         return response()->json(['error' => 'Invalid credentials'], 401);
+    //     }
+
+    //     $user = Auth::guard('api')->user();
+
+    //     if ($user->type == 2) {
+    //         $subscription = $user->subscription;
+    //         if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Your subscription has expired. Please renew to login.',
+    //                 'data' => null,
+    //             ], 403);
+    //         }
+    //     }
+
+    //     $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
+    //     $role = $roles[$user->type] ?? null;
+
+    //     if (!$role) {
+    //         return response()->json(['success' => false, 'message' => 'Invalid user type'], 403);
+    //     }
+
+
+    //     $needsOtp = false;
+    //     $clientRememberToken = $request->header('Remember-Token');
+
+    //     if ($user->type == 1) {
+
+    //         $needsOtp = true;
+    //     } else {
+
+    //         if (!$user->remember_token || $user->remember_token !== $clientRememberToken || $user->updated_at < now()->subDays(30)) {
+    //             $needsOtp = true;
+    //         }
+    //     }
+
+    //     if ($needsOtp) {
+    //         $otp = rand(100000, 999999);
+    //         $user->update([
+    //             'otp' => $otp,
+    //             'otp_expires_at' => now()->addMinutes(5),
+    //         ]);
+
+    //         try {
+    //             Mail::send('emails.login_otp', ['otp' => $otp], function ($message) use ($user) {
+    //                 $message->to($user->email)->subject('Login OTP Verification');
+    //             });
+    //         } catch (\Exception $e) {
+    //             return response()->json(['success' => false, 'message' => 'Could not send OTP.'], 500);
+    //         }
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'otp_required' => true,
+    //             'message' => 'OTP sent to your email successfully.',
+    //             'email' => $user->email,
+    //         ]);
+    //     }
+
+    //     $hasMiniSiteMenu = false;
+    //     if ($user->type == 2) {
+    //         $plan = Subscription::where('user_id', $user->id)->latest()->first();
+    //         $hasMiniSiteMenu = !($plan && $plan->plan_id == 1);
+    //     }
+
+    //     if ($user->jwt_token) {
+    //         try {
+    //             \JWTAuth::setToken($user->jwt_token)->invalidate();
+    //         } catch (\Exception $e) {
+    //         }
+    //     }
+
+    //     if (!$user->remember_token) {
+    //         $user->remember_token = \Str::random(60);
+    //     }
+
+    //     $user->jwt_token = $token;
+
+
+    //     $user->timestamps = false;
+    //     $user->save();
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => $role . ' login successfully',
+    //         'data' => [
+    //             'user' => $user,
+    //             'user_type' => $role,
+    //             'has_mini_site_menu' => $hasMiniSiteMenu,
+    //             'remember_token' => $user->remember_token,
+    //         ],
+    //         'token' => $token,
+    //     ]);
+    // }
+
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-
         if (!$token = Auth::guard('api')->attempt($credentials)) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
@@ -68,16 +168,12 @@ class AuthController extends Controller
         if (!$role) {
             return response()->json(['success' => false, 'message' => 'Invalid user type'], 403);
         }
-
-
         $needsOtp = false;
         $clientRememberToken = $request->header('Remember-Token');
 
         if ($user->type == 1) {
-
             $needsOtp = true;
         } else {
-
             if (!$user->remember_token || $user->remember_token !== $clientRememberToken || $user->updated_at < now()->subDays(30)) {
                 $needsOtp = true;
             }
@@ -112,19 +208,9 @@ class AuthController extends Controller
             $hasMiniSiteMenu = !($plan && $plan->plan_id == 1);
         }
 
-        if ($user->jwt_token) {
-            try {
-                \JWTAuth::setToken($user->jwt_token)->invalidate();
-            } catch (\Exception $e) {
-            }
-        }
-
         if (!$user->remember_token) {
             $user->remember_token = \Str::random(60);
         }
-
-        $user->jwt_token = $token;
-
 
         $user->timestamps = false;
         $user->save();
@@ -142,12 +228,69 @@ class AuthController extends Controller
         ]);
     }
 
+    // public function loginOtp(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|email',
+    //         'otp'   => 'required|numeric',
+    //     ]);
+    //     $user = User::where('email', $request->email)->first();
+
+    //     if (!$user) {
+    //         return response()->json(['success' => false, 'message' => 'User not found'], 404);
+    //     }
+
+    //     if (!$user->otp || (int)$user->otp !== (int)$request->otp) {
+    //         return response()->json(['success' => false, 'message' => 'Invalid OTP'], 401);
+    //     }
+    //     if ($user->otp_expires_at < now()) {
+    //         return response()->json(['success' => false, 'message' => 'OTP has expired'], 401);
+    //     }
+    //     $token = Auth::guard('api')->fromUser($user);
+
+    //     if ($user->jwt_token) {
+    //         try {
+    //             \JWTAuth::setToken($user->jwt_token)->invalidate();
+    //         } catch (\Exception $e) {
+    //         }
+    //     }
+
+    //     $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
+    //     $role = $roles[$user->type] ?? 'User';
+    //     $hasMiniSiteMenu = false;
+    //     if ($user->type == 2) {
+    //         $plan = Subscription::where('user_id', $user->id)->latest()->first();
+    //         $hasMiniSiteMenu = !($plan && $plan->plan_id == 1);
+    //     }
+    //     $newRememberToken = \Str::random(60);
+
+    //     $user->update([
+    //         'otp' => null,
+    //         'otp_expires_at' => null,
+    //         'jwt_token' => $token,
+    //         'remember_token' => $newRememberToken,
+    //     ]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => $role . ' verified and logged in successfully',
+    //         'data' => [
+    //             'user' => $user,
+    //             'user_type' => $role,
+    //             'has_mini_site_menu' => $hasMiniSiteMenu,
+    //             'remember_token' => $newRememberToken,
+    //         ],
+    //         'token' => $token,
+    //     ]);
+    // }
+
     public function loginOtp(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
             'otp'   => 'required|numeric',
         ]);
+
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
@@ -157,32 +300,38 @@ class AuthController extends Controller
         if (!$user->otp || (int)$user->otp !== (int)$request->otp) {
             return response()->json(['success' => false, 'message' => 'Invalid OTP'], 401);
         }
+
         if ($user->otp_expires_at < now()) {
             return response()->json(['success' => false, 'message' => 'OTP has expired'], 401);
         }
+
         $token = Auth::guard('api')->fromUser($user);
 
+
+        /*
         if ($user->jwt_token) {
             try {
                 \JWTAuth::setToken($user->jwt_token)->invalidate();
-            } catch (\Exception $e) {
-            }
+            } catch (\Exception $e) {}
         }
+        */
 
         $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
         $role = $roles[$user->type] ?? 'User';
+
         $hasMiniSiteMenu = false;
         if ($user->type == 2) {
             $plan = Subscription::where('user_id', $user->id)->latest()->first();
             $hasMiniSiteMenu = !($plan && $plan->plan_id == 1);
         }
-        $newRememberToken = \Str::random(60);
 
+
+        $rememberToken = $user->remember_token ?? \Str::random(60);
         $user->update([
             'otp' => null,
             'otp_expires_at' => null,
-            'jwt_token' => $token,
-            'remember_token' => $newRememberToken,
+            // 'jwt_token' => $token,
+            'remember_token' => $rememberToken,
         ]);
 
         return response()->json([
@@ -192,7 +341,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'user_type' => $role,
                 'has_mini_site_menu' => $hasMiniSiteMenu,
-                'remember_token' => $newRememberToken,
+                'remember_token' => $rememberToken,
             ],
             'token' => $token,
         ]);
@@ -687,7 +836,7 @@ class AuthController extends Controller
                     'user_id' => $merchant->id,
                     'name' => 'Main Branch',
                     'status' => 1,
-                    'is_main' => 1,
+                    'is_main' => 0,
                 ]);
 
                 $subscription = Subscription::create([
@@ -833,7 +982,7 @@ class AuthController extends Controller
                     'user_id' => $merchant->id,
                     'name' => 'Main Branch',
                     'status' => 1,
-                    'is_main' => 1,
+                    'is_main' => 0,
                 ]);
 
                 $endDate = ($meta['plan_id'] == 2) ? now()->addMonth() : now()->addYear();

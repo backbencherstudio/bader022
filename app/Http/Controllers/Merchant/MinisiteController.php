@@ -332,13 +332,50 @@ class MinisiteController extends Controller
     //     ], 200);
     // }
 
-    public function userView($website_domain)
+    // public function userView($website_domain)
+    // {
+    //     $user = User::with([
+    //         'minisite',
+    //         'services',
+    //         'whyChooseUs',
+    //         'globalSetting'
+    //     ])
+    //     ->where('website_domain', $website_domain)
+    //     ->first();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'message' => 'User not found'
+    //         ], 404);
+    //     }
+
+    //     if ($user->type != 2) {
+    //         return response()->json([
+    //             'message' => 'Unauthorized access',
+    //         ], 403);
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'data' => $user
+    //     ], 200, [], JSON_PRETTY_PRINT);
+    // }
+    public function userView(Request $request, $website_domain)
     {
+
+        $branch_id = $request->query('branch_id');
+
         $user = User::with([
             'minisite',
-            'services',
             'whyChooseUs',
-            'globalSetting'
+            'globalSetting',
+            'branches',
+            'services' => function ($query) use ($branch_id) {
+                if ($branch_id) {
+
+                    $query->where('branch_id', $branch_id);
+                }
+            }
         ])
         ->where('website_domain', $website_domain)
         ->first();
@@ -357,7 +394,27 @@ class MinisiteController extends Controller
 
         return response()->json([
             'status' => true,
-            'data' => $user
+
+            'data' => [
+                'id'             => $user->id,
+                'name'           => $user->name,
+                'website_domain' => $user->website_domain,
+                'minisite'       => $user->minisite,
+                'services'       => $user->services,
+                'whyChooseUs'    => $user->whyChooseUs,
+                'globalSetting'  => $user->globalSetting,
+                'branches'       => $user->branches->map(function ($branch) {
+                    return [
+                        'id'          => $branch->id,
+                        'branch_name' => $branch->branch_name ?? $branch->name ?? 'N/A',
+                        'address'     => $branch->address,
+                        'phone'       => $branch->phone,
+                        'status'      => $branch->status,
+                    ];
+                }),
+            ]
         ], 200, [], JSON_PRETTY_PRINT);
     }
+
+
 }
