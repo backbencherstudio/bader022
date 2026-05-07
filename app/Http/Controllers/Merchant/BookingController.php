@@ -1561,6 +1561,8 @@ class BookingController extends Controller
             'message' => 'Booking confirmed!',
             'data' => [
                 'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                'branch_id' => $booking->branch_id,
+                'branch_name' => $booking->branch->name,
                 'service' => $booking->service->service_name,
                 'staff' => $booking->staff->name,
                 'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
