@@ -360,61 +360,134 @@ class MinisiteController extends Controller
     //         'data' => $user
     //     ], 200, [], JSON_PRETTY_PRINT);
     // }
+    // public function userView(Request $request, $website_domain)
+    // {
+
+    //     $branch_id = $request->query('branch_id');
+
+    //     $user = User::with([
+    //         'minisite',
+    //         'whyChooseUs',
+    //         'globalSetting',
+    //         'branches',
+    //         'services' => function ($query) use ($branch_id) {
+    //             if ($branch_id) {
+
+    //                 $query->where('branch_id', $branch_id);
+    //             }
+    //         }
+    //     ])
+    //     ->where('website_domain', $website_domain)
+    //     ->first();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'message' => 'User not found'
+    //         ], 404);
+    //     }
+
+    //     if ($user->type != 2) {
+    //         return response()->json([
+    //             'message' => 'Unauthorized access',
+    //         ], 403);
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+
+    //         'data' => [
+    //             'id'             => $user->id,
+    //             'name'           => $user->name,
+    //             'website_domain' => $user->website_domain,
+    //             'minisite'       => $user->minisite,
+    //             'services'       => $user->services,
+    //             'whyChooseUs'    => $user->whyChooseUs,
+    //             'globalSetting'  => $user->globalSetting,
+    //             'branches'       => $user->branches->map(function ($branch) {
+    //                 return [
+    //                     'id'          => $branch->id,
+    //                     'branch_name' => $branch->branch_name ?? $branch->name ?? 'N/A',
+    //                     'address'     => $branch->address,
+    //                     'phone'       => $branch->phone,
+    //                     'status'      => $branch->status,
+    //                 ];
+    //             }),
+    //         ]
+    //     ], 200, [], JSON_PRETTY_PRINT);
+    // }
+
     public function userView(Request $request, $website_domain)
-    {
+{
+    $branch_id = $request->query('branch_id');
 
-        $branch_id = $request->query('branch_id');
+    $user = User::with([
+        'minisite',
+        'whyChooseUs',
+        'globalSetting',
+        'branches',
+        'services' => function ($query) use ($branch_id) {
 
-        $user = User::with([
-            'minisite',
-            'whyChooseUs',
-            'globalSetting',
-            'branches',
-            'services' => function ($query) use ($branch_id) {
-                if ($branch_id) {
+            // branch relation load
+            $query->with('branch');
 
-                    $query->where('branch_id', $branch_id);
-                }
+            if ($branch_id) {
+                $query->where('branch_id', $branch_id);
             }
-        ])
-        ->where('website_domain', $website_domain)
-        ->first();
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'User not found'
-            ], 404);
         }
+    ])
+    ->where('website_domain', $website_domain)
+    ->first();
 
-        if ($user->type != 2) {
-            return response()->json([
-                'message' => 'Unauthorized access',
-            ], 403);
-        }
-
+    if (!$user) {
         return response()->json([
-            'status' => true,
-
-            'data' => [
-                'id'             => $user->id,
-                'name'           => $user->name,
-                'website_domain' => $user->website_domain,
-                'minisite'       => $user->minisite,
-                'services'       => $user->services,
-                'whyChooseUs'    => $user->whyChooseUs,
-                'globalSetting'  => $user->globalSetting,
-                'branches'       => $user->branches->map(function ($branch) {
-                    return [
-                        'id'          => $branch->id,
-                        'branch_name' => $branch->branch_name ?? $branch->name ?? 'N/A',
-                        'address'     => $branch->address,
-                        'phone'       => $branch->phone,
-                        'status'      => $branch->status,
-                    ];
-                }),
-            ]
-        ], 200, [], JSON_PRETTY_PRINT);
+            'message' => 'User not found'
+        ], 404);
     }
+
+    if ($user->type != 2) {
+        return response()->json([
+            'message' => 'Unauthorized access',
+        ], 403);
+    }
+
+    // services output same rekhe branch_name add
+    $services = $user->services->map(function ($service) {
+
+        $service->branch_name =
+            $service->branch->branch_name
+            ?? $service->branch->name
+            ?? 'N/A';
+
+        return $service;
+    });
+
+    return response()->json([
+        'status' => true,
+
+        'data' => [
+            'id'             => $user->id,
+            'name'           => $user->name,
+            'website_domain' => $user->website_domain,
+            'minisite'       => $user->minisite,
+
+            // same output + branch_name
+            'services'       => $services,
+
+            'whyChooseUs'    => $user->whyChooseUs,
+            'globalSetting'  => $user->globalSetting,
+
+            'branches'       => $user->branches->map(function ($branch) {
+                return [
+                    'id'          => $branch->id,
+                    'branch_name' => $branch->branch_name ?? $branch->name ?? 'N/A',
+                    'address'     => $branch->address,
+                    'phone'       => $branch->phone,
+                    'status'      => $branch->status,
+                ];
+            }),
+        ]
+    ], 200, [], JSON_PRETTY_PRINT);
+}
 
 
 }
