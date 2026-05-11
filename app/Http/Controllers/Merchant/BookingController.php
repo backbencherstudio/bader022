@@ -1246,6 +1246,7 @@ class BookingController extends Controller
                 'special_note' => $request->special_note,
                 // 'booking_by' => auth()->id(),
                 'booking_by' => auth()->check() ? auth()->id() : 'guest',
+                // 'booking_by' => auth()->check() ? auth()->id() : 'guest',
             ]);
 
             $payment = MerchantPayment::create([
