@@ -570,10 +570,6 @@ class BookingController extends Controller
             'service_id' => 'required|exists:services,id',
             'date' => 'required|date',
             'staff_id' => 'nullable|integer',
-<<<<<<<HEAD
-            'branch_id' => 'nullable|exists:branches,id', //new
-=======
->>>>>>> habib
         ]);
 
         $service = Service::find($request->service_id);
@@ -641,19 +637,11 @@ class BookingController extends Controller
 
         if ($request->staff_id) {
             $bookings = Booking::where('staff_id', $request->staff_id)
-<<<<<<< HEAD
-                ->where('branch_id', $branchId) // new
-=======
->>>>>>> habib
                 ->whereDate('date_time', $date)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
         } else {
             $bookings = Booking::whereIn('staff_id', $staffIds)
-<<<<<<< HEAD
-                ->where('branch_id', $branchId) // new
-=======
->>>>>>> habib
                 ->whereDate('date_time', $date)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
