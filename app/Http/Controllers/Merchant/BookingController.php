@@ -570,6 +570,10 @@ class BookingController extends Controller
             'service_id' => 'required|exists:services,id',
             'date' => 'required|date',
             'staff_id' => 'nullable|integer',
+<<<<<<<HEAD
+            'branch_id' => 'nullable|exists:branches,id', //new
+=======
+>>>>>>> habib
         ]);
 
         $service = Service::find($request->service_id);
@@ -637,11 +641,19 @@ class BookingController extends Controller
 
         if ($request->staff_id) {
             $bookings = Booking::where('staff_id', $request->staff_id)
+<<<<<<< HEAD
+                ->where('branch_id', $branchId) // new
+=======
+>>>>>>> habib
                 ->whereDate('date_time', $date)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
         } else {
             $bookings = Booking::whereIn('staff_id', $staffIds)
+<<<<<<< HEAD
+                ->where('branch_id', $branchId) // new
+=======
+>>>>>>> habib
                 ->whereDate('date_time', $date)
                 ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                 ->get();
@@ -1245,8 +1257,7 @@ class BookingController extends Controller
                 'status' => 'pending',
                 'special_note' => $request->special_note,
                 // 'booking_by' => auth()->id(),
-                'booking_by' => auth()->check() ? auth()->id() : 'guest',
-                // 'booking_by' => auth()->check() ? auth()->id() : 'guest',
+                'booking_by'    => auth('api')->check() ? auth('api')->id() : 'guest',
             ]);
 
             $payment = MerchantPayment::create([
@@ -1563,8 +1574,6 @@ class BookingController extends Controller
             'message' => 'Booking confirmed!',
             'data' => [
                 'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
-                'branch_id' => $booking->branch_id,
-                'branch_name' => $booking->branch->name,
                 'service' => $booking->service->service_name,
                 'staff' => $booking->staff->name,
                 'date_time' => Carbon::parse($booking->date_time)->format('Y-m-d h:i A'),
