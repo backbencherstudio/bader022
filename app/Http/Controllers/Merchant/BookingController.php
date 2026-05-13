@@ -11,6 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingConfirmationMail;
 use App\Mail\BookingCreateMail;
+use App\Mail\MerchantBookingNotificationMail;
 
 class BookingController extends Controller
 {
@@ -1540,6 +1541,15 @@ class BookingController extends Controller
 
             Mail::to($booking->email)
                 ->send(new BookingConfirmationMail($booking));
+
+            // Merchant Mail
+            $merchant = User::find($booking->user_id);
+
+            if ($merchant && $merchant->email) {
+
+                Mail::to($merchant->email)
+                    ->send(new MerchantBookingNotificationMail($booking));
+            }
         }
 
         $frontendBaseUrl = env('FRONTEND_URL', 'http://localhost:3000');
