@@ -62,7 +62,7 @@
                                         {{ \Carbon\Carbon::parse($booking->date_time)->format('Y-m-d h:i A') }}</td>
                                 </tr>
                                 <tr>
-                                    <td style="padding:6px 0;"><strong>كمية:</strong></td>
+                                    <td style="padding:6px 0;"><strong>المبلغ:</strong></td>
                                     <td dir="ltr">{{ $booking->merchantPayment->amount }} SAR</td>
                                 </tr>
                                 <tr>

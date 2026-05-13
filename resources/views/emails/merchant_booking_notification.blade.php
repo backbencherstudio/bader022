@@ -5,12 +5,8 @@
     <title></title>
 </head>
 
-<body style="
-      margin: 0;
-      padding: 0;
-      background: #f4f6f8;
-      font-family: Arial, sans-serif;
-    ">
+<body dir="rtl"
+    style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif; direction:rtl; text-align:right;">
     <table width="100%" cellpadding="0" cellspacing="0" style="padding: 20px">
         <tr>
             <td align="center">
@@ -33,72 +29,73 @@
                     <tr>
                         <td style="padding: 30px">
                             <h2 style="margin: 0; color: #333; text-align: center">
-                                New Booking Received
+                                تم استلام حجز جديد
                             </h2>
 
                             <!-- Details Box -->
                             <table width="100%" cellpadding="0" cellspacing="0"
-                                style="margin-top: 20px; font-size: 14px; color: #555">
+                                style="margin-top:20px; font-size:14px; color:#555; direction:rtl; text-align:right;">
+                                
                                 <tr>
-                                    <td style="padding: 6px 0"><strong>Booking ID:</strong></td>
-                                    <td>
+                                    <td style="padding: 6px 0"><strong>رقم الحجز:</strong></td>
+                                    <td dir="ltr">
                                         BOK{{ str_pad($booking->id, 5, '0', STR_PAD_LEFT) }}
                                     </td>
                                 </tr>
 
                                 <tr>
                                     <td style="padding: 6px 0">
-                                        <strong>Customer Name:</strong>
+                                        <strong>اسم العميل:</strong>
                                     </td>
-                                    <td>{{ $booking->customer_name }}</td>
+                                    <td dir="ltr">{{ $booking->customer_name }}</td>
                                 </tr>
 
                                 <tr>
-                                    <td style="padding: 6px 0"><strong>Branch:</strong></td>
-                                    <td>{{ $booking->branch->name ?? 'N/A' }}</td>
+                                    <td style="padding: 6px 0"><strong>فرع:</strong></td>
+                                    <td dir="ltr">{{ $booking->branch->name ?? 'N/A' }}</td>
                                 </tr>
 
                                 <tr>
-                                    <td style="padding: 6px 0"><strong>Service:</strong></td>
-                                    <td>{{ $booking->service->service_name }}</td>
+                                    <td style="padding: 6px 0"><strong>خدمة:</strong></td>
+                                    <td dir="ltr">{{ $booking->service->service_name }}</td>
                                 </tr>
 
                                 <tr>
                                     <td style="padding: 6px 0">
-                                        <strong>Date & Time:</strong>
+                                        <strong>التاريخ والوقت:</strong>
                                     </td>
-                                    <td>
+                                    <td dir="ltr">
                                         {{ \Carbon\Carbon::parse($booking->date_time)->format('Y-m-d
-                                                                                                      h:i A') }}
+                                                              h:i A') }}
                                     </td>
                                 </tr>
 
                                 <tr>
-                                    <td style="padding: 6px 0"><strong>Amount:</strong></td>
-                                    <td>{{ $booking->merchantPayment->amount ?? '0' }} SAR</td>
+                                    <td style="padding: 6px 0"><strong>المبلغ:</strong></td>
+                                    <td dir="ltr">{{ $booking->merchantPayment->amount ?? '0' }} SAR</td>
                                 </tr>
 
                                 <tr>
                                     <td style="padding: 6px 0">
-                                        <strong>Payment Method:</strong>
+                                        <strong>طريقة الدفع:</strong>
                                     </td>
-                                    <td>
+                                    <td dir="ltr">
                                         {{ ucfirst($booking->merchantPayment->payment_method ?? 'N/A') }}
                                     </td>
                                 </tr>
 
                                 <tr>
                                     <td style="padding: 6px 0">
-                                        <strong>Payment Status:</strong>
+                                        <strong>حالة الدفع:</strong>
                                     </td>
-                                    <td>
+                                    <td dir="ltr">
                                         {{ ucfirst($booking->merchantPayment->payment_status ?? 'Pending') }}
                                     </td>
                                 </tr>
                             </table>
 
                             <p style="color: #666; text-align: center; margin-top: 25px">
-                                Please check your dashboard for more details.
+                                يرجى مراجعة لوحة التحكم الخاصة بك لمزيد من التفاصيل.
                             </p>
                         </td>
                     </tr>
@@ -115,7 +112,7 @@
                 ">
                             © {{ date('Y') }}
                             <a href="https://bokli.io" style="color: #2d89ef; text-decoration: none">
-                                Bokli.io </a>. All rights reserved.
+                                Bokli.io</a>. جميع الحقوق محفوظة.
                         </td>
                     </tr>
                 </table>
