@@ -1523,7 +1523,7 @@ class BookingController extends Controller
                     'status' => 'confirm',
                 ]);
 
-                $booking = Booking::with(['service', 'staff', 'merchantPayment'])
+                $booking = Booking::with(['service', 'staff', 'merchantPayment', 'branch'])
                     ->find($bookingId);
             } else {
 
