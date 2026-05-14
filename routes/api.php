@@ -243,9 +243,9 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     });
 
     // ----- Merchant/Bookings
-    // Route::prefix('booking')->group(function () {
-    //     Route::get('index', [BookingController::class, 'index'])->name('booking.index');
-    //     Route::post('store', [BookingController::class, 'store'])->name('booking.store');
+    Route::prefix('booking')->group(function () {
+        Route::get('index', [BookingController::class, 'index'])->name('booking.index');
+        Route::post('store', [BookingController::class, 'store'])->name('booking.store');
     //     Route::get('booking-invoice/{id}', [BookingController::class, 'bookingInvoice'])->name('booking.bookingInvoice');
     //     Route::get('invoice-by-merchant/{id}', [InvoiceController::class, 'invoiceBymerchant'])->name('booking.invoiceBymerchant');
     //     Route::get('show/{id}', [BookingController::class, 'show'])->name('booking.show');
@@ -257,7 +257,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
     //     // invoice generate route
     //     Route::get('invoice/{id}', [InvoiceController::class, 'generate']);
-    // });
+    });
 
     // -----Admin/Merchants
     Route::prefix('merchant')->group(function () {
@@ -335,8 +335,8 @@ Route::get('admin/booking/staff', [BookingController::class, 'getAvailableStaffB
 
 
 Route::prefix('admin/booking')->group(function () {
-    Route::get('index', [BookingController::class, 'index'])->name('booking.index');
-    Route::post('store', [BookingController::class, 'store'])->name('booking.store');
+    // Route::get('index', [BookingController::class, 'index'])->name('booking.index');
+    // Route::post('store', [BookingController::class, 'store'])->name('booking.store');
     Route::get('booking-invoice/{id}', [BookingController::class, 'bookingInvoice'])->name('booking.bookingInvoice');
     Route::get('invoice-by-merchant/{id}', [InvoiceController::class, 'invoiceBymerchant'])->name('booking.invoiceBymerchant');
     Route::get('show/{id}', [BookingController::class, 'show'])->name('booking.show');

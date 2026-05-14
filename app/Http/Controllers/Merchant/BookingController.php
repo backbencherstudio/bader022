@@ -125,6 +125,7 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $merchant = auth()->user();
+        $branchId = $request->header('X-Branch-Id');
 
         $request->validate([
             'service_id'    => 'required|exists:services,id',
@@ -139,7 +140,9 @@ class BookingController extends Controller
             'payment_method' => 'required|in:tap,cash',
         ]);
 
-        return DB::transaction(function () use ($request, $merchant) {
+        $activeBranchId = $branchId ?? $request->branch_id;
+        // return DB::transaction(function () use ($request, $merchant) {
+            return DB::transaction(function () use ($request, $merchant, $activeBranchId) {
 
             $service = Service::where('id', $request->service_id)
                 ->where('user_id', $merchant->id)
@@ -277,7 +280,7 @@ class BookingController extends Controller
                 'user_id'        => $merchant->id,
                 'staff_id'       => $staffId,
                 'service_id'     => $service->id,
-                'branch_id'      => $branchId,
+                'branch_id'      => $activeBranchId,
                 'customer_name'  => $request->customer_name,
                 'email'          => $request->email,
                 'phone'          => $request->phone,
@@ -290,7 +293,7 @@ class BookingController extends Controller
             $merchantPayment = MerchantPayment::create([
                 'booking_id'     => $booking->id,
                 'user_id'        => $merchant->id,
-                'branch_id'        => $branchId,
+                'branch_id'      => $activeBranchId,
                 'payment_method' => $request->payment_method,
                 'amount'         => $service->price,
                 'transaction_id' => $request->payment_method === 'cash'
