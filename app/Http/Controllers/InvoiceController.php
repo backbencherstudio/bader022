@@ -97,7 +97,8 @@ class InvoiceController extends Controller
             'staff:id,name',
             'merchant:id,name,email,phone',
             'merchantStore:id,user_id,store_name,business_address,business_logo',
-            'merchantPayment'
+            'merchantPayment',
+            'branch:id,user_id,name,phone,address',
         ])->findOrFail($id);
 
         $payment = $booking->merchantPayment;
@@ -113,10 +114,10 @@ class InvoiceController extends Controller
             'merchant_info' => [
                 'business_logo' => $booking->merchantStore->business_logo ?? null,
                 'business_name' => $booking->merchantStore->store_name ?? '',
-                'merchant_name' => $booking->merchant->name ?? '',
+                'merchant_name' => $booking->branch->name ?? '',
                 'email' => $booking->merchant->email ?? '',
-                'phone' => $booking->merchant->phone ?? '',
-                'address' => $booking->merchantStore->business_address ?? '',
+                'phone' => $booking->branch->phone ?? '',
+                'address' => $booking->branch->address ?? '',
             ],
 
             'customer_info' => [
