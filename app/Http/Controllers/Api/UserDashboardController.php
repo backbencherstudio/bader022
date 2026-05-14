@@ -368,6 +368,7 @@ class UserDashboardController extends Controller
             'merchant',
             'merchantStore',
             'merchantPayment',
+            'branch',
         ])
             ->where('id', $bookingId)
             ->where('booking_by', $userId)
@@ -408,9 +409,9 @@ class UserDashboardController extends Controller
 
         $data = [
             'merchant_info' => [
-                'merchant_name' => $booking->merchantStore->store_name ?? $booking->merchant->name ?? null,
-                'location' => $booking->merchantStore->business_address ?? null,
-                'phone' => $booking->merchant->phone ?? null,
+                'merchant_name' => $booking->branch->name ?? null,
+                'location' => $booking->branch->address ?? null,
+                'phone' => $booking->branch->phone ?? null,
             ],
             'booking_info' => [
                 'booking_id' => $booking->id,
