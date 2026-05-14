@@ -112,10 +112,10 @@
                     <h2>{{ data_get($invoice, 'merchant_info.business_name', '') }}</h2>
 
                     <p>
-                        Merchant: {{ data_get($invoice, 'merchant_info.merchant_name', '') }} <br>
-                        Email: {{ data_get($invoice, 'merchant_info.email', '') }} <br>
+                        Branch: {{ data_get($invoice, 'merchant_info.merchant_name', '') }} <br>
+                        Address: {{ data_get($invoice, 'merchant_info.address', '') }} <br>
                         Phone: {{ data_get($invoice, 'merchant_info.phone', '') }} <br>
-                        Address: {{ data_get($invoice, 'merchant_info.address', '') }}
+                        Email: {{ data_get($invoice, 'merchant_info.email', '') }} 
                     </p>
 
                 </td>
