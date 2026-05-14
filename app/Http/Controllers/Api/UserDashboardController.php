@@ -27,6 +27,7 @@ class UserDashboardController extends Controller
         $booking = Booking::with([
             'service:id,service_name,duration,price,user_id',
             'service.merchant:id,name,phone,address',
+            'branch:id,user_id,name,phone,address',
         ])
             ->where('booking_by', $userId)
             ->whereIn('status', ['confirm', 'rescheduled'])
@@ -72,13 +73,15 @@ class UserDashboardController extends Controller
             'service_name' => $booking->service->service_name ?? null,
             'staff' => $booking->staff->name ?? null,
             'status' => ucfirst($booking->status),
-            'address' => $booking->service->merchant->address ?? null,
+            'address' => $booking->branch->address ?? null,
 
             'booking_date' => $bookingDateTime->format('M d, Y'),
             'booking_time' => $bookingDateTime->format('h:i A'),
 
             'service_price' => $booking->service->price . ' SAR' ?? null,
-            'merchant_phone' => $booking->service->merchant->phone ?? null,
+            'merchant_phone' => $booking->branch->phone ?? null,
+
+            'branch' => $booking->branch ?? [],
         ];
 
         return response()->json([
