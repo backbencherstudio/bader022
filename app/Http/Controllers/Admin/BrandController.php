@@ -19,6 +19,8 @@ class BrandController extends Controller
         ], 200);
     }
 
+    
+
     public function store(Request $request)
     {
 

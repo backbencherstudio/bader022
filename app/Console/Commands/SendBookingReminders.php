@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Carbon\Carbon;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
 
 class SendBookingReminders extends Command
 {
@@ -14,12 +15,12 @@ class SendBookingReminders extends Command
 
     public function handle()
     {
-        $now = Carbon::now('Asia/Riyadh');
 
-        $this->info("System Time (Riyadh): " . $now->toDateTimeString());
+        $now = Carbon::now('Asia/Riyadh')->setTimezone(config('app.timezone'));
+
+        $this->info("System Time (Aligned with DB): " . $now->toDateTimeString());
 
         $this->processReminder($now, 24, '24 hours');
-
         $this->processReminder($now, 1, '1 hour');
 
         $this->info("All reminders processed successfully.");
@@ -46,6 +47,11 @@ class SendBookingReminders extends Command
 
         foreach ($bookings as $booking) {
 
+            $cacheKey = "booking_reminder_{$booking->id}_{$label}";
+            if (Cache::has($cacheKey)) {
+                $this->line("Booking ID: {$booking->id} already received {$label} reminder. Skipping...");
+                continue;
+            }
             $email = optional($booking->user)->email;
 
             if (!$email) {
@@ -57,10 +63,12 @@ class SendBookingReminders extends Command
                 Mail::send('emails.booking_reminder', [
                     'booking' => $booking,
                     'type' => $label
-                ], function ($message) use ($email, $label, $booking) {
+                ], function ($message) use ($email, $label) {
                     $message->to($email)
                         ->subject("Booking Reminder - {$label}");
                 });
+
+                Cache::put($cacheKey, true, now()->addMinutes(1440));
 
                 $this->info("Sent {$label} reminder for Booking ID: {$booking->id}");
             } catch (\Exception $e) {
@@ -68,4 +76,6 @@ class SendBookingReminders extends Command
             }
         }
     }
+
+
 }

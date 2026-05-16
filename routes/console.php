@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('subscription:update-status')->everyMinute();
 Schedule::command('booking:update-status')->everyMinute();
+Schedule::command('booking:reminders')->everyMinute();

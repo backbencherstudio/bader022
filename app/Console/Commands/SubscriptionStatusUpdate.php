@@ -13,13 +13,32 @@ class SubscriptionStatusUpdate extends Command
 
     public function handle()
     {
-        $today = Carbon::now('Asia/Riyadh');
+
+        $today = Carbon::now('Asia/Riyadh')->setTimezone(config('app.timezone'));
+
+        $this->info('Current System Time (Riyadh Target): ' . Carbon::now('Asia/Riyadh')->toDateTimeString());
+
+        $count = Subscription::where('status', 'active')
+                            ->where('ends_at', '<', $today)
+                            ->count();
+
+        if ($count === 0) {
+            $this->warn('No active subscriptions found to expire.');
+            return;
+        }
+
+        $this->info("Found {$count} subscriptions to expire.");
 
         Subscription::where('status', 'active')
             ->where('ends_at', '<', $today)
-            ->update([
-                'status' => 'expired'
-            ]);
+            ->chunkById(100, function ($subscriptions) {
+                foreach ($subscriptions as $subscription) {
+                    $subscription->update([
+                        'status' => 'expired'
+                    ]);
+                    $this->line("Subscription ID: {$subscription->id} -> Status changed to expired.");
+                }
+            });
 
         $this->info('Subscription status updated successfully');
     }

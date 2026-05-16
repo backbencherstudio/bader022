@@ -20,6 +20,16 @@ class BranchController extends Controller
         ]);
     }
 
+
+    public function branchindex()
+    {
+        $brand = Branch::latest()->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $brand,
+        ], 200);
+    }
     // public function store(Request $request)
     // {
     //     $data = $request->validate([
