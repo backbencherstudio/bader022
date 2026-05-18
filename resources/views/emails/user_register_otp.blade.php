@@ -135,15 +135,8 @@
         </div>
 
         <div class="expiry">
-            ⏳ سينتهي صلاحية هذا الرمز في <strong>5 دقائق</strong>
+             سينتهي صلاحية هذا الرمز في <strong>5 دقائق</strong>
         </div>
-
-        <!-- Optional Button (if you add link verification later) -->
-        <!--
-        <div class="button">
-            <a href="#">Verify Now</a>
-        </div>
-        -->
 
         <p class="warning">
             إذا لم تطلب ذلك، يمكنك تجاهل هذه الرسالة الإلكترونية بأمان.
