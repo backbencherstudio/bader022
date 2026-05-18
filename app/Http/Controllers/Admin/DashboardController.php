@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use App\Models\{Payment, User};
+use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -42,10 +46,52 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function monthlypaymentCount()
-    {
-        $year = date('Y');
+    // public function monthlypaymentCount()
+    // {
+    //     $year = date('Y');
 
+    //     $revenues = Payment::where('status', 'paid')
+    //         ->whereYear('created_at', $year)
+    //         ->select(
+    //             DB::raw('MONTH(created_at) as month'),
+    //             DB::raw('SUM(amount) as total_revenue')
+    //         )
+    //         ->groupBy('month')
+    //         ->pluck('total_revenue', 'month');
+
+    //     $months = [
+    //         1 => 'Jan',
+    //         2 => 'Feb',
+    //         3 => 'Mar',
+    //         4 => 'Apr',
+    //         5 => 'May',
+    //         6 => 'Jun',
+    //         7 => 'Jul',
+    //         8 => 'Aug',
+    //         9 => 'Sep',
+    //         10 => 'Oct',
+    //         11 => 'Nov',
+    //         12 => 'Dec',
+    //     ];
+
+    //     $result = [];
+
+    //     foreach ($months as $monthNumber => $monthName) {
+    //         $result[] = [
+    //             'month' => $monthName,
+    //             'revenue' => (float) ($revenues[$monthNumber] ?? 0),
+    //         ];
+    //     }
+
+    //     return response()->json($result);
+    // }
+
+    public function monthlypaymentCount(Request $request)
+    {
+        // 1. Get the year from the request, default to the current year if not provided
+        $year = $request->input('year', date('Y'));
+
+        // 2. Fetch revenues for the specified year
         $revenues = Payment::where('status', 'paid')
             ->whereYear('created_at', $year)
             ->select(
@@ -56,18 +102,9 @@ class DashboardController extends Controller
             ->pluck('total_revenue', 'month');
 
         $months = [
-            1 => 'Jan',
-            2 => 'Feb',
-            3 => 'Mar',
-            4 => 'Apr',
-            5 => 'May',
-            6 => 'Jun',
-            7 => 'Jul',
-            8 => 'Aug',
-            9 => 'Sep',
-            10 => 'Oct',
-            11 => 'Nov',
-            12 => 'Dec',
+            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
+            5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
+            9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec',
         ];
 
         $result = [];
@@ -79,14 +116,59 @@ class DashboardController extends Controller
             ];
         }
 
-        return response()->json($result);
+        // 3. Optional: Include the target year in the response meta-data if needed
+        return response()->json([
+            'year' => $year,
+            'data' => $result
+        ]);
     }
 
-    public function weeklyPaymentCount()
-    {
-        $year = date('Y');
-        $month = date('m');
 
+
+    // public function weeklyPaymentCount()
+    // {
+    //     $year = date('Y');
+    //     $month = date('m');
+
+    //     $revenues = Payment::where('status', 'paid')
+    //         ->whereYear('created_at', $year)
+    //         ->whereMonth('created_at', $month)
+    //         ->select(
+    //             DB::raw('DAYOFWEEK(created_at) as weekday'),
+    //             DB::raw('SUM(amount) as total_revenue')
+    //         )
+    //         ->groupBy('weekday')
+    //         ->pluck('total_revenue', 'weekday');
+
+    //     $weekDays = [
+    //         1 => 'Saturday',
+    //         2 => 'Sunday',
+    //         3 => 'Monday',
+    //         4 => 'Tuesday',
+    //         5 => 'Wednesday',
+    //         6 => 'Thursday',
+    //         7 => 'Friday',
+    //     ];
+
+    //     $result = [];
+
+    //     foreach ($weekDays as $dayNumber => $dayName) {
+    //         $result[] = [
+    //             'day' => $dayName,
+    //             'revenue' => (float) ($revenues[$dayNumber] ?? 0),
+    //         ];
+    //     }
+
+    //     return response()->json($result);
+    // }
+
+    public function weeklyPaymentCount(Request $request)
+    {
+        // 1. Get year and month from request, fallback to current values if missing
+        $year = $request->input('year', date('Y'));
+        $month = $request->input('month', date('m'));
+
+        // 2. Fetch revenues for the specified year and month
         $revenues = Payment::where('status', 'paid')
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
@@ -97,14 +179,17 @@ class DashboardController extends Controller
             ->groupBy('weekday')
             ->pluck('total_revenue', 'weekday');
 
+        // Note: In MySQL, DAYOFWEEK() returns 1 = Sunday, 2 = Monday, ..., 7 = Saturday.
+        // If your DB configuration maps 1 to Saturday, keep your array as is.
+        // Standard MySQL mapping is provided below just in case:
         $weekDays = [
-            1 => 'Saturday',
-            2 => 'Sunday',
-            3 => 'Monday',
-            4 => 'Tuesday',
-            5 => 'Wednesday',
-            6 => 'Thursday',
-            7 => 'Friday',
+            1 => 'Sunday',
+            2 => 'Monday',
+            3 => 'Tuesday',
+            4 => 'Wednesday',
+            5 => 'Thursday',
+            6 => 'Friday',
+            7 => 'Saturday',
         ];
 
         $result = [];
@@ -116,7 +201,12 @@ class DashboardController extends Controller
             ];
         }
 
-        return response()->json($result);
+        // 3. Return response with context metadata
+        return response()->json([
+            'year' => $year,
+            'month' => $month,
+            'data' => $result
+        ]);
     }
 
     //     public function paymentCounts()
@@ -194,7 +284,75 @@ class DashboardController extends Controller
 
         return response()->json([
             'total_merchants' => $totalMerchants,
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
+
+
+
+    public function adminNotifications()
+    {
+        $authUser = auth()->user();
+        $notifications = collect();
+
+        // TYPE 1 = Admin
+        if ($authUser->type == 1) {
+
+            $users = User::where('type', 2)
+                ->whereDate('created_at', today())
+                ->latest()
+                ->take(10)
+                ->get(['id', 'name', 'created_at'])
+                ->map(function ($user) {
+                    return [
+                        'message' => $user->name . ' your subscription is confirmed',
+                        'date' => $user->created_at->format('d M Y h:i A'),
+                    ];
+                });
+
+            $notifications = $notifications->merge($users);
+        }
+
+        // TYPE 2 = Merchant / Customer view
+        if ($authUser->type == 2) {
+
+            $bookings = Booking::where('user_id', $authUser->id)
+                ->whereDate('created_at', today())
+                ->latest()
+                ->take(10)
+                ->get(['id', 'customer_name', 'created_at'])
+                ->map(function ($booking) {
+                    return [
+                        'message' => $booking->customer_name . ' your service is confirmed',
+                        'date' => $booking->created_at->format('d M Y h:i A'),
+                    ];
+                });
+
+            $notifications = $notifications->merge($bookings);
+        }
+
+        // TYPE 0 = Customer / simple message
+        if ($authUser->type == 0) {
+
+            $bookings = Booking::where('booking_by', $authUser->id)
+                ->whereDate('created_at', today())
+                ->latest()
+                ->take(10)
+                ->get(['id', 'customer_name', 'created_at'])
+                ->map(function ($booking) {
+                    return [
+                        'message' => 'Your service is confirmed',
+                        'date' => $booking->created_at->format('d M Y h:i A'),
+                    ];
+                });
+
+            $notifications = $notifications->merge($bookings);
+        }
+
+        return response()->json([
+            'data' => $notifications->values(),
+        ]);
+    }
+
+
 }
