@@ -416,18 +416,124 @@ class MinisiteController extends Controller
     //     ], 200, [], JSON_PRETTY_PRINT);
     // }
 
+    // public function userView(Request $request, $website_domain)
+    // {
+    //     $branch_id = $request->query('branch_id');
+
+    //     $user = User::with([
+    //         'minisite',
+    //         'whyChooseUs',
+    //         'globalSetting',
+    //         'branches',
+    //         'services' => function ($query) use ($branch_id) {
+
+    //             // branch relation load
+    //             $query->with('branch');
+
+    //             if ($branch_id) {
+    //                 $query->where('branch_id', $branch_id);
+    //             }
+    //         }
+    //     ])
+    //     ->where('website_domain', $website_domain)
+    //     ->first();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'message' => 'User not found'
+    //         ], 404);
+    //     }
+
+    //     if ($user->type != 2) {
+    //         return response()->json([
+    //             'message' => 'Unauthorized access',
+    //         ], 403);
+    //     }
+
+    //     // services output same rekhe branch_name add
+    //     $services = $user->services->map(function ($service) {
+
+    //         $service->branch_name =
+    //             $service->branch->branch_name
+    //             ?? $service->branch->name
+    //             ?? 'N/A';
+
+    //         return $service;
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+
+    //         'data' => [
+    //             'id'             => $user->id,
+    //             'name'           => $user->name,
+    //             'website_domain' => $user->website_domain,
+    //             'minisite'       => $user->minisite,
+
+    //             // same output + branch_name
+    //             'services'       => $services,
+
+    //             'whyChooseUs'    => $user->whyChooseUs,
+    //             'globalSetting'  => $user->globalSetting,
+
+    //             'branches'       => $user->branches->map(function ($branch) {
+    //                 return [
+    //                     'id'          => $branch->id,
+    //                     'branch_name' => $branch->branch_name ?? $branch->name ?? 'N/A',
+    //                     'address'     => $branch->address,
+    //                     'phone'       => $branch->phone,
+    //                     'status'      => $branch->status,
+    //                 ];
+    //             }),
+    //         ]
+    //     ], 200, [], JSON_PRETTY_PRINT);
+    // }
+
+
+    // public function userViewlanding(Request $request, $website_domain)
+    // {
+    //     $user = User::where('website_domain', $website_domain)
+    //         ->with('subscription')
+    //         ->first();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'User not found',
+    //         ], 404);
+    //     }
+
+    //     // Default false
+    //     $is_premium = false;
+
+    //     // plan_id 2 or 3 = true
+    //     if (
+    //         $user->subscription &&
+    //         in_array($user->subscription->plan_id, [2, 3])
+    //     ) {
+    //         $is_premium = true;
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'website_domain' => $user->website_domain,
+    //         'plan_id' => optional($user->subscription)->plan_id,
+    //         'is_premium' => $is_premium,
+    //     ]);
+    // }
+
     public function userView(Request $request, $website_domain)
 {
     $branch_id = $request->query('branch_id');
 
     $user = User::with([
+        'subscription',
         'minisite',
         'whyChooseUs',
         'globalSetting',
         'branches',
         'services' => function ($query) use ($branch_id) {
 
-            // branch relation load
             $query->with('branch');
 
             if ($branch_id) {
@@ -450,6 +556,16 @@ class MinisiteController extends Controller
         ], 403);
     }
 
+    // Premium Check
+    $is_premium = false;
+
+    if (
+        $user->subscription &&
+        in_array($user->subscription->plan_id, [2, 3])
+    ) {
+        $is_premium = true;
+    }
+
     // services output same rekhe branch_name add
     $services = $user->services->map(function ($service) {
 
@@ -468,9 +584,13 @@ class MinisiteController extends Controller
             'id'             => $user->id,
             'name'           => $user->name,
             'website_domain' => $user->website_domain,
+
+            // Premium Data
+            'plan_id'        => optional($user->subscription)->plan_id,
+            'is_premium'     => $is_premium,
+
             'minisite'       => $user->minisite,
 
-            // same output + branch_name
             'services'       => $services,
 
             'whyChooseUs'    => $user->whyChooseUs,
@@ -488,6 +608,5 @@ class MinisiteController extends Controller
         ]
     ], 200, [], JSON_PRETTY_PRINT);
 }
-
 
 }

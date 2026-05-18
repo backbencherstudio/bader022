@@ -329,6 +329,7 @@ Route::get('/create-account', [AuthController::class, 'tapSuccessregister']);
 Route::get('/payment-status/{user_id}', [AuthController::class, 'getPaymentStatus']);
 Route::get('plan', [PlanController::class, 'index'])->name('plan.index');
 Route::get('bokli/{website_domain}', [MinisiteController::class, 'userView'])->name('mini-site.userView');
+Route::get('bokli-landing/{website_domain}', [MinisiteController::class, 'userViewlanding'])->name('mini-site.userViewlanding');
 Route::get('bokli/staff/{website_domain}', [StaffController::class, 'staffIndex'])->name('staffIndex.index');
 Route::get('bokli/schedule/{website_domain}', [BookingController::class, 'booklischedule'])->name('booking.booklischedule');
 Route::get('admin/booking/staff', [BookingController::class, 'getAvailableStaffByTime'])->name('booking.getAvailableStaffByTime');

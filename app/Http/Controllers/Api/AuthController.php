@@ -151,16 +151,38 @@ class AuthController extends Controller
 
         $user = Auth::guard('api')->user();
 
+        // if ($user->type == 2) {
+        //     $subscription = $user->subscription;
+        //     if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
+        //         return response()->json([
+        //             'success' => false,
+        //             'message' => 'Your subscription has expired. Please renew to login.',
+        //             'data' => null,
+        //         ], 403);
+        //     }
+        // }
         if ($user->type == 2) {
-            $subscription = $user->subscription;
-            if (!$subscription || $subscription->status == 'expired' || $subscription->ends_at < now()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Your subscription has expired. Please renew to login.',
-                    'data' => null,
-                ], 403);
-            }
-        }
+
+    $subscription = $user->subscription;
+
+    // Plan ID 1 = Unlimited
+    if (
+        !$subscription ||
+        (
+            $subscription->plan_id != 1 &&
+            (
+                $subscription->status == 'expired' ||
+                $subscription->ends_at < now()
+            )
+        )
+    ) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Your subscription has expired. Please renew to login.',
+            'data' => null,
+        ], 403);
+    }
+}
 
         $roles = [0 => 'User', 1 => 'Admin', 2 => 'Merchant'];
         $role = $roles[$user->type] ?? null;
@@ -843,7 +865,8 @@ class AuthController extends Controller
                     'user_id' => $merchant->id,
                     'plan_id' => $plan->id,
                     'starts_at' => now(),
-                    'ends_at' => now()->addDays(7),
+                    // 'ends_at' => now()->addDays(7),
+                    'ends_at' => null,
                     'status' => 'active',
                     'auto_renew' => 0,
                 ]);
@@ -1542,7 +1565,8 @@ class AuthController extends Controller
                     [
                         'plan_id' => $plan->id,
                         'starts_at' => now(),
-                        'ends_at' => now()->addDays(7),
+                        // 'ends_at' => now()->addDays(7),
+                        'ends_at' => null,
                         'status' => 'active',
                         'auto_renew' => 0,
                     ]

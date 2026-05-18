@@ -139,7 +139,7 @@ class PlanController extends Controller
 
         if ($request->has('package')) {
             if ($request->package === 'Free') {
-                $plan->day = 7;
+                $plan->day = 0;
             } elseif ($request->package === 'Monthly') {
                 $plan->day = 30;
             } elseif ($request->package === 'Annual') {
