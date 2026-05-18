@@ -1,73 +1,169 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>تم إلغاء الحجز</title>
+
+    <style>
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #f4f6f8;
+            font-family: Arial, sans-serif;
+        }
+
+        table {
+            border-spacing: 0;
+            border-collapse: collapse;
+        }
+
+        img {
+            border: 0;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .content {
+            padding: 30px;
+            text-align: center;
+        }
+
+        h2 {
+            margin: 0;
+            color: #333;
+            font-size: 26px;
+            line-height: 36px;
+        }
+
+        p {
+            color: #666;
+            font-size: 16px;
+            line-height: 26px;
+            margin-top: 15px;
+        }
+
+        .detail {
+            color: #333;
+            margin-top: 15px;
+            font-size: 15px;
+            line-height: 24px;
+        }
+
+        .message-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff4f4;
+            border-radius: 8px;
+            color: #c0392b;
+            font-size: 14px;
+            line-height: 22px;
+        }
+
+        .footer {
+            background: #f9f9f9;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+
+            .content {
+                padding: 20px !important;
+            }
+
+            h2 {
+                font-size: 22px !important;
+                line-height: 30px !important;
+            }
+
+            p,
+            .detail,
+            .message-box {
+                font-size: 14px !important;
+                line-height: 22px !important;
+            }
+        }
+    </style>
 </head>
-<body dir="rtl" style="margin:0; padding:0; background:#f4f6f8; font-family: Arial, sans-serif;">
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
+<body dir="rtl">
+    <table width="100%" bgcolor="#f4f6f8" cellpadding="0" cellspacing="0">
         <tr>
-            <td align="center">
-
+            <td align="center" style="padding: 20px">
                 <!-- Main Container -->
-                <table width="500" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
-
+                <table class="container" width="100%" cellpadding="0" cellspacing="0">
                     <!-- Header / Logo -->
                     <tr>
-                        <td align="center" style="padding:20px;">
-                            <img src="{{ $message->embed(public_path('logo.png')) }}" style="max-height:50px;">
+                        <td align="center" style="padding: 20px">
+                            <img src="{{ $message->embed(public_path('logo.png')) }}" width="140"
+                                style="width: 140px; max-width: 140px" alt="Logo" />
                         </td>
                     </tr>
 
                     <!-- Content -->
                     <tr>
-                        <td style="padding:30px; text-align:center;">
+                        <td class="content">
+                            <h2>تم إلغاء الحجز ❌</h2>
 
-                            <h2 style="margin:0; color:#333;">
-                                تم إلغاء الحجز ❌
-                            </h2>
+                            <p>مرحبًا <strong>{{ $booking->customer_name }}</strong>،</p>
 
-                            <p style="color:#666; margin-top:15px;">
-                                مرحبًا {{ $booking->customer_name }},
-                            </p>
+                            <p>تم إلغاء حجزك بنجاح.</p>
 
-                            <p style="color:#666;">
-                                تم إلغاء حجزك بنجاح.
-                            </p>
+                            <div class="detail">
+                                <strong>الخدمة:</strong>
+                                <br />
+                                {{ $booking->service->service_name }}
+                            </div>
 
-                            <p style="color:#333; margin-top:15px;">
-                                خدمة: <br>
-                                <b>{{ $booking->service->service_name }}</b>
-                            </p>
+                            <div class="detail">
+                                <strong>تاريخ الحجز:</strong>
+                                <br />
 
-                            <p style="color:#333; margin-top:15px;">
-                                تاريخ الحجز: <br>
-                                <b>{{ \Carbon\Carbon::parse($booking->date_time)->format('Y-m-d h:i A') }}</b>
-                            </p>
+                                <span dir="ltr" style="direction: ltr; unicode-bidi: embed">
+                                    {{ \Carbon\Carbon::parse($booking->date_time)->format('Y-m-d
+                                                        h:i A') }}
+                                </span>
+                            </div>
 
-                            <p style="color:#666; margin-top:15px;">
-                                {{ $messageText }}
-                            </p>
 
-                            <p style="color:#666; margin-top:20px;">
-                                شكرًا لك.
-                            </p>
 
+                            <p style="margin-top: 25px">شكرًا لك.</p>
                         </td>
                     </tr>
 
                     <!-- Footer -->
                     <tr>
-                        <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
-                            © {{ date('Y') }} <a href="https://bokli.io" style="color:#2d89ef; text-decoration:none;">Bokli.io</a>. جميع الحقوق محفوظة.
+                        <td class="footer">
+                            © {{ date('Y') }}
+
+                            <a href="https://bokli.io" style="color: #2d89ef; text-decoration: none">
+                                Bokli.io
+                            </a>
+
+                            . جميع الحقوق محفوظة.
                         </td>
                     </tr>
-
                 </table>
-
             </td>
         </tr>
     </table>
-
 </body>
+
 </html>
