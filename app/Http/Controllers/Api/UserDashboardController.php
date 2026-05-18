@@ -500,7 +500,7 @@ class UserDashboardController extends Controller
 
         $booking = Booking::with('merchantPayment')
             ->where('id', $bookingId)
-            ->where('booking_by', $userId)
+            // ->where('booking_by', $userId)
             ->first();
 
         if (! $booking) {

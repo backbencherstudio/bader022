@@ -78,6 +78,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
     Route::get('monthlypaymentCount', [DashboardController::class, 'monthlypaymentCount'])->name('monthlypaymentCount');
     Route::get('weeklyPaymentCount', [DashboardController::class, 'weeklyPaymentCount'])->name('weeklyPaymentCount');
     Route::get('businessTypeAnalytics', [DashboardController::class, 'businessTypeAnalytics'])->name('businessTypeAnalytics');
+    Route::get('admin-notifications', [DashboardController::class, 'adminNotifications'])->name('admin-notifications');
 
     // Role $ Role
     Route::prefix('role')->group(function () {

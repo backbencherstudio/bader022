@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Merchant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Http, Log};
 use App\Http\Controllers\Controller;
-use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff, User};
+use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff, User,Subscription};
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
@@ -122,270 +122,542 @@ class BookingController extends Controller
         ], 200);
     }
 
+    // public function store(Request $request)
+    // {
+    //     $merchant = auth()->user();
+    //     $branchId = $request->header('X-Branch-Id');
+
+    //     $request->validate([
+    //         'service_id'    => 'required|exists:services,id',
+    //         'staff_id'      => 'nullable|integer',
+    //         'branch_id'      => 'nullable|integer',
+    //         'date'          => 'required|date',
+    //         'time'          => 'required',
+    //         'customer_name' => 'required|string',
+    //         'email'         => 'nullable|email',
+    //         'phone'         => 'nullable|string',
+    //         'special_note'  => 'nullable|string',
+    //         'payment_method' => 'required|in:tap,cash',
+    //     ]);
+
+    //     $activeBranchId = $branchId ?? $request->branch_id;
+    //     // return DB::transaction(function () use ($request, $merchant) {
+    //         return DB::transaction(function () use ($request, $merchant, $activeBranchId) {
+
+    //         $userSubscription = Subscription::where('user_id', $merchant->id)->first();
+
+    //     if ($userSubscription && $userSubscription->plan_id == 1) {
+    //         $bookingCount = Booking::where('user_id', $merchant->id)->count();
+
+    //         if ($bookingCount >= 25) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Your current plan only allows a maximum of 25 bookings.'
+    //             ], 403);
+    //         }
+    //     }
+
+    //         $service = Service::where('id', $request->service_id)
+    //             ->where('user_id', $merchant->id)
+    //             ->first();
+
+    //         if (!$service) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Invalid service selection'
+    //             ], 422);
+    //         }
+
+    //         $storeSetting = DB::table('merchant_store_settings')
+    //             ->where('user_id', $merchant->id)
+    //             ->first();
+
+    //         if (! $storeSetting || ! $storeSetting->time_zone) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Store timezone not set'
+    //             ], 422);
+    //         }
+
+    //         $merchantTimeZone = $storeSetting->time_zone;
+
+    //         $duration = (int) $service->duration;
+
+    //         $date = Carbon::parse($request->date, $merchantTimeZone)->startOfDay();
+    //         $today = Carbon::now($merchantTimeZone)->startOfDay();
+
+    //         if ($date->lt($today)) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Selected date is in the past'
+    //             ], 422);
+    //         }
+
+    //         $day = strtolower($date->format('l'));
+
+    //         $businessHour = BusinessHour::where('merchant_store_setting_id', $storeSetting->id)
+    //             ->where('day', $day)
+    //             ->where('is_closed', 0)
+    //             ->first();
+
+    //         if (! $businessHour || ! $businessHour->open_time || ! $businessHour->close_time) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Invalid slot selected'
+    //             ], 422);
+    //         }
+
+    //         $validSlots = [];
+
+    //         $start = Carbon::createFromTimeString($businessHour->open_time, $merchantTimeZone);
+    //         $end = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
+
+    //         while ($start->copy()->addMinutes($duration)->lte($end)) {
+    //             $validSlots[] = $start->format('H:i');
+    //             $start->addMinutes($duration);
+    //         }
+
+    //         $selectedTime = Carbon::parse($request->time)->format('H:i');
+
+    //         if (! in_array($selectedTime, $validSlots)) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Invalid slot selected'
+    //             ], 422);
+    //         }
+
+    //         $slotStart = Carbon::parse($request->date . ' ' . $request->time, $merchantTimeZone);
+    //         $slotEnd = $slotStart->copy()->addMinutes($duration);
+
+    //         $now = Carbon::now($merchantTimeZone);
+    //         if ($slotStart->lt($now)) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Selected time is in the past'
+    //             ], 422);
+    //         }
+
+
+    //         $staffQuery = Staff::where('user_id', $merchant->id)
+    //             ->whereJsonContains('service_id', (string)$service->id)
+    //             ->where('status', 1);
+
+    //         $staffCount = $staffQuery->count();
+
+    //         if ($staffCount == 0) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'No staff available for this service'
+    //             ], 404);
+    //         }
+
+    //         $existingBookings = Booking::whereIn('staff_id', function ($q) use ($merchant, $service) {
+    //             $q->select('id')
+    //                 ->from('staffs')
+    //                 ->where('user_id', $merchant->id)
+    //                 ->whereJsonContains('service_id', (string)$service->id)
+    //                 ->where('status', 1);
+    //         })
+    //             ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
+    //             ->where(function ($q) use ($slotStart, $slotEnd) {
+    //                 $q->where('date_time', '<', $slotEnd)
+    //                     ->whereRaw(
+    //                         "DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?",
+    //                         [$slotStart]
+    //                     );
+    //             })
+    //             ->lockForUpdate()
+    //             ->count();
+
+    //         if ($existingBookings >= $staffCount) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'This slot is fully booked.'
+    //             ], 409);
+    //         }
+
+
+    //         $staff = $staffQuery->inRandomOrder()->first();
+
+    //         if (!$staff) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'No staff available'
+    //             ], 404);
+    //         }
+
+    //         $staffId = $staff->id;
+    //         $branchId = $request->branch_id;
+
+    //         $booking = Booking::create([
+    //             'user_id'        => $merchant->id,
+    //             'staff_id'       => $staffId,
+    //             'service_id'     => $service->id,
+    //             'branch_id'      => $activeBranchId,
+    //             'customer_name'  => $request->customer_name,
+    //             'email'          => $request->email,
+    //             'phone'          => $request->phone,
+    //             'date_time'      => $slotStart,
+    //             'status'         => 'confirm',
+    //             'special_note'   => $request->special_note,
+    //             'booking_by'     => 'merchant',
+    //         ]);
+
+    //         $merchantPayment = MerchantPayment::create([
+    //             'booking_id'     => $booking->id,
+    //             'user_id'        => $merchant->id,
+    //             'branch_id'      => $activeBranchId,
+    //             'payment_method' => $request->payment_method,
+    //             'amount'         => $service->price,
+    //             'transaction_id' => $request->payment_method === 'cash'
+    //                 ? 'cash-' . uniqid()
+    //                 : null,
+    //             'payment_status' => 'paid',
+    //             'paid_at' => Carbon::now($merchantTimeZone),
+    //         ]);
+
+    //         try {
+    //             if ($request->email) {
+    //                 Mail::to($request->email)->send(new BookingCreateMail($booking));
+    //             }
+    //         } catch (\Exception $e) {
+    //             Log::error('Booking email failed: ' . $e->getMessage(), [
+    //                 'booking_id' => $booking->id,
+    //                 'email' => $request->email,
+    //             ]);
+    //         }
+
+    //         if ($request->payment_method === 'tap') {
+
+    //             $tapSetting = DB::table('tap_payments')
+    //                 ->where('user_id', $merchant->id)
+    //                 ->latest('updated_at')
+    //                 ->first();
+
+    //             if (! $tapSetting || ! $tapSetting->tap_secret_key) {
+    //                 return response()->json([
+    //                     'success' => false,
+    //                     'message' => 'Tap Payment details not found for this merchant.',
+    //                 ], 422);
+    //             }
+
+    //             $response = \Illuminate\Support\Facades\Http::withHeaders([
+    //                 'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+    //                 'accept' => 'application/json',
+    //                 'content-type' => 'application/json',
+    //             ])->post('https://api.tap.company/v2/charges', [
+    //                 'amount' => $service->price,
+    //                 'currency' => 'SAR',
+    //                 'customer' => [
+    //                     'first_name' => $request->customer_name,
+    //                     'email' => $request->email,
+    //                     'phone' => [
+    //                         'country_code' => '966',
+    //                         'number' => $request->phone,
+    //                     ],
+    //                 ],
+    //                 'source' => ['id' => 'src_all'],
+    //                 'redirect' => ['url' => url('/api/payment/callback')],
+    //                 'metadata' => [
+    //                     'booking_id' => $booking->id,
+    //                 ],
+    //             ]);
+
+    //             $resData = $response->json();
+
+    //             if ($response->successful() && isset($resData['transaction']['url'])) {
+
+    //                 $merchantPayment->update([
+    //                     'transaction_id' => $resData['id'] ?? null,
+    //                 ]);
+
+    //                 return response()->json([
+    //                     'success' => true,
+    //                     'payment_url' => $resData['transaction']['url'],
+    //                     'booking_id' => $booking->id,
+    //                 ], 200);
+    //             }
+
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Tap API Error: ' . ($resData['errors'][0]['description'] ?? 'Transaction failed'),
+    //             ], 400);
+    //         }
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Booking confirmed!',
+    //             'booking' => [
+    //                 'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+    //                 'service' => $booking->service->service_name,
+    //                 'date_time' => $booking->date_time->format('Y-m-d h:i A'),
+    //                 'staff_name' => $booking->staff->name,
+    //                 'duration' => $booking->service->duration . ' min',
+    //                 'amount' => $booking->service->price . ' SAR',
+    //                 'payment_method' => $booking->merchantPayment->payment_method,
+    //                 'transaction_id' => $booking->merchantPayment->transaction_id,
+    //             ]
+    //         ], 201);
+    //     });
+    // }
+
     public function store(Request $request)
     {
         $merchant = auth()->user();
-        $branchId = $request->header('X-Branch-Id');
 
+        // 1. Validate incoming data
         $request->validate([
-            'service_id'    => 'required|exists:services,id',
-            'staff_id'      => 'nullable|integer',
+            'service_id'     => 'required|exists:services,id',
+            'staff_id'       => 'nullable|integer',
             'branch_id'      => 'nullable|integer',
-            'date'          => 'required|date',
-            'time'          => 'required',
-            'customer_name' => 'required|string',
-            'email'         => 'nullable|email',
-            'phone'         => 'nullable|string',
-            'special_note'  => 'nullable|string',
+            'date'           => 'required|date',
+            'time'           => 'required',
+            'customer_name'  => 'required|string',
+            'email'          => 'nullable|email',
+            'phone'          => 'nullable|string',
+            'special_note'   => 'nullable|string',
             'payment_method' => 'required|in:tap,cash',
         ]);
 
-        $activeBranchId = $branchId ?? $request->branch_id;
-        // return DB::transaction(function () use ($request, $merchant) {
-            return DB::transaction(function () use ($request, $merchant, $activeBranchId) {
+        // Fallback chain for branch logic
+        $activeBranchId = $request->header('X-Branch-Id') ?? $request->branch_id;
 
-            $service = Service::where('id', $request->service_id)
-                ->where('user_id', $merchant->id)
-                ->first();
-
-            if (!$service) {
+        // 2. Pre-database checks (Subscription Plan limits)
+        $userSubscription = Subscription::where('user_id', $merchant->id)->first();
+        if ($userSubscription && $userSubscription->plan_id == 1) {
+            $bookingCount = Booking::where('user_id', $merchant->id)->count();
+            if ($bookingCount >= 25) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid service selection'
-                ], 422);
+                    'message' => 'Your current plan only allows a maximum of 25 bookings.'
+                ], 403);
             }
+        }
 
-            $storeSetting = DB::table('merchant_store_settings')
-                ->where('user_id', $merchant->id)
-                ->first();
+        // 3. Database Validation & Reservation Phase
+        // Wrap ONLY the DB mutations and row-locks here. Keep HTTP requests OUTSIDE.
+        try {
+            $bookingData = DB::transaction(function () use ($request, $merchant, $activeBranchId) {
 
-            if (! $storeSetting || ! $storeSetting->time_zone) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Store timezone not set'
-                ], 422);
-            }
-
-            $merchantTimeZone = $storeSetting->time_zone;
-
-            $duration = (int) $service->duration;
-
-            $date = Carbon::parse($request->date, $merchantTimeZone)->startOfDay();
-            $today = Carbon::now($merchantTimeZone)->startOfDay();
-
-            if ($date->lt($today)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Selected date is in the past'
-                ], 422);
-            }
-
-            $day = strtolower($date->format('l'));
-
-            $businessHour = BusinessHour::where('merchant_store_setting_id', $storeSetting->id)
-                ->where('day', $day)
-                ->where('is_closed', 0)
-                ->first();
-
-            if (! $businessHour || ! $businessHour->open_time || ! $businessHour->close_time) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid slot selected'
-                ], 422);
-            }
-
-            $validSlots = [];
-
-            $start = Carbon::createFromTimeString($businessHour->open_time, $merchantTimeZone);
-            $end = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
-
-            while ($start->copy()->addMinutes($duration)->lte($end)) {
-                $validSlots[] = $start->format('H:i');
-                $start->addMinutes($duration);
-            }
-
-            $selectedTime = Carbon::parse($request->time)->format('H:i');
-
-            if (! in_array($selectedTime, $validSlots)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid slot selected'
-                ], 422);
-            }
-
-            $slotStart = Carbon::parse($request->date . ' ' . $request->time, $merchantTimeZone);
-            $slotEnd = $slotStart->copy()->addMinutes($duration);
-
-            $now = Carbon::now($merchantTimeZone);
-            if ($slotStart->lt($now)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Selected time is in the past'
-                ], 422);
-            }
-
-
-            $staffQuery = Staff::where('user_id', $merchant->id)
-                ->whereJsonContains('service_id', (string)$service->id)
-                ->where('status', 1);
-
-            $staffCount = $staffQuery->count();
-
-            if ($staffCount == 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No staff available for this service'
-                ], 404);
-            }
-
-            $existingBookings = Booking::whereIn('staff_id', function ($q) use ($merchant, $service) {
-                $q->select('id')
-                    ->from('staffs')
+                $service = Service::where('id', $request->service_id)
                     ->where('user_id', $merchant->id)
-                    ->whereJsonContains('service_id', (string)$service->id)
-                    ->where('status', 1);
-            })
-                ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
-                ->where(function ($q) use ($slotStart, $slotEnd) {
-                    $q->where('date_time', '<', $slotEnd)
-                        ->whereRaw(
-                            "DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?",
-                            [$slotStart]
-                        );
-                })
-                ->lockForUpdate()
-                ->count();
-
-            if ($existingBookings >= $staffCount) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'This slot is fully booked.'
-                ], 409);
-            }
-
-
-            $staff = $staffQuery->inRandomOrder()->first();
-
-            if (!$staff) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No staff available'
-                ], 404);
-            }
-
-            $staffId = $staff->id;
-            $branchId = $request->branch_id;
-
-            $booking = Booking::create([
-                'user_id'        => $merchant->id,
-                'staff_id'       => $staffId,
-                'service_id'     => $service->id,
-                'branch_id'      => $activeBranchId,
-                'customer_name'  => $request->customer_name,
-                'email'          => $request->email,
-                'phone'          => $request->phone,
-                'date_time'      => $slotStart,
-                'status'         => 'confirm',
-                'special_note'   => $request->special_note,
-                'booking_by'     => 'merchant',
-            ]);
-
-            $merchantPayment = MerchantPayment::create([
-                'booking_id'     => $booking->id,
-                'user_id'        => $merchant->id,
-                'branch_id'      => $activeBranchId,
-                'payment_method' => $request->payment_method,
-                'amount'         => $service->price,
-                'transaction_id' => $request->payment_method === 'cash'
-                    ? 'cash-' . uniqid()
-                    : null,
-                'payment_status' => 'paid',
-                'paid_at' => Carbon::now($merchantTimeZone),
-            ]);
-
-            try {
-                if ($request->email) {
-                    Mail::to($request->email)->send(new BookingCreateMail($booking));
-                }
-            } catch (\Exception $e) {
-                Log::error('Booking email failed: ' . $e->getMessage(), [
-                    'booking_id' => $booking->id,
-                    'email' => $request->email,
-                ]);
-            }
-
-            if ($request->payment_method === 'tap') {
-
-                $tapSetting = DB::table('tap_payments')
-                    ->where('user_id', $merchant->id)
-                    ->latest('updated_at')
                     ->first();
 
-                if (! $tapSetting || ! $tapSetting->tap_secret_key) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Tap Payment details not found for this merchant.',
-                    ], 422);
+                if (!$service) {
+                    throw new \Exception('Invalid service selection', 422);
                 }
 
-                $response = \Illuminate\Support\Facades\Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
-                    'accept' => 'application/json',
-                    'content-type' => 'application/json',
-                ])->post('https://api.tap.company/v2/charges', [
-                    'amount' => $service->price,
-                    'currency' => 'SAR',
-                    'customer' => [
-                        'first_name' => $request->customer_name,
-                        'email' => $request->email,
-                        'phone' => [
-                            'country_code' => '966',
-                            'number' => $request->phone,
-                        ],
-                    ],
-                    'source' => ['id' => 'src_all'],
-                    'redirect' => ['url' => url('/api/payment/callback')],
-                    'metadata' => [
-                        'booking_id' => $booking->id,
-                    ],
+                $storeSetting = DB::table('merchant_store_settings')
+                    ->where('user_id', $merchant->id)
+                    ->first();
+
+                if (!$storeSetting || !$storeSetting->time_zone) {
+                    throw new \Exception('Store timezone not set', 422);
+                }
+
+                $merchantTimeZone = $storeSetting->time_zone;
+                $duration = (int) $service->duration;
+
+                $date = Carbon::parse($request->date, $merchantTimeZone)->startOfDay();
+                $today = Carbon::now($merchantTimeZone)->startOfDay();
+
+                if ($date->lt($today)) {
+                    throw new \Exception('Selected date is in the past', 422);
+                }
+
+                $day = strtolower($date->format('l'));
+                $businessHour = DB::table('business_hours')
+                    ->where('merchant_store_setting_id', $storeSetting->id)
+                    ->where('day', $day)
+                    ->where('is_closed', 0)
+                    ->first();
+
+                if (!$businessHour || !$businessHour->open_time || !$businessHour->close_time) {
+                    throw new \Exception('Invalid slot selected', 422);
+                }
+
+                // Slot availability parsing
+                $validSlots = [];
+                $start = Carbon::createFromTimeString($businessHour->open_time, $merchantTimeZone);
+                $end = Carbon::createFromTimeString($businessHour->close_time, $merchantTimeZone);
+
+                while ($start->copy()->addMinutes($duration)->lte($end)) {
+                    $validSlots[] = $start->format('H:i');
+                    $start->addMinutes($duration);
+                }
+
+                $selectedTime = Carbon::parse($request->time)->format('H:i');
+                if (!in_array($selectedTime, $validSlots)) {
+                    throw new \Exception('Invalid slot selected', 422);
+                }
+
+                $slotStart = Carbon::parse($request->date . ' ' . $request->time, $merchantTimeZone);
+                $slotEnd = $slotStart->copy()->addMinutes($duration);
+
+                if ($slotStart->lt(Carbon::now($merchantTimeZone))) {
+                    throw new \Exception('Selected time is in the past', 422);
+                }
+
+                // Staff & Slot Booking validation with Pessimistic Locking
+                $staffQuery = Staff::where('user_id', $merchant->id)
+                    ->whereJsonContains('service_id', (string)$service->id)
+                    ->where('status', 1);
+
+                $staffCount = $staffQuery->count();
+                if ($staffCount == 0) {
+                    throw new \Exception('No staff available for this service', 404);
+                }
+
+                $existingBookings = Booking::whereIn('staff_id', function ($q) use ($merchant, $service) {
+                        $q->select('id')
+                            ->from('staffs')
+                            ->where('user_id', $merchant->id)
+                            ->whereJsonContains('service_id', (string)$service->id)
+                            ->where('status', 1);
+                    })
+                    ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
+                    ->where(function ($q) use ($slotStart, $slotEnd) {
+                        $q->where('date_time', '<', $slotEnd)
+                        ->whereRaw("DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?", [$slotStart]);
+                    })
+                    ->lockForUpdate()
+                    ->count();
+
+                if ($existingBookings >= $staffCount) {
+                    throw new \Exception('This slot is fully booked.', 409);
+                }
+
+                $staff = $staffQuery->inRandomOrder()->first();
+                if (!$staff) {
+                    throw new \Exception('No staff available', 404);
+                }
+
+                // Create Booking
+                $booking = Booking::create([
+                    'user_id'       => $merchant->id,
+                    'staff_id'      => $staff->id,
+                    'service_id'    => $service->id,
+                    'branch_id'     => $activeBranchId,
+                    'customer_name' => $request->customer_name,
+                    'email'         => $request->email,
+                    'phone'         => $request->phone,
+                    'date_time'     => $slotStart,
+                    'status'        => $request->payment_method === 'cash' ? 'confirm' : 'pending',
+                    'special_note'  => $request->special_note,
+                    'booking_by'    => 'merchant',
                 ]);
 
-                $resData = $response->json();
+                // Create Payment Log
+                $merchantPayment = MerchantPayment::create([
+                    'booking_id'     => $booking->id,
+                    'user_id'        => $merchant->id,
+                    'branch_id'      => $activeBranchId,
+                    'payment_method' => $request->payment_method,
+                    'amount'         => $service->price,
+                    'transaction_id' => $request->payment_method === 'cash' ? 'cash-' . uniqid() : null,
+                    'payment_status' => $request->payment_method === 'cash' ? 'paid' : 'pending',
+                    'paid_at'        => $request->payment_method === 'cash' ? Carbon::now($merchantTimeZone) : null,
+                ]);
 
-                if ($response->successful() && isset($resData['transaction']['url'])) {
+                // Pass everything needed outside the transaction closure
+                return compact('booking', 'merchantPayment', 'service', 'staff', 'merchantTimeZone');
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], is_numeric($e->getCode()) && $e->getCode() >= 400 ? $e->getCode() : 422);
+        }
 
-                    $merchantPayment->update([
-                        'transaction_id' => $resData['id'] ?? null,
-                    ]);
+        // Extract transaction items back into local scope
+        extract($bookingData);
 
-                    return response()->json([
-                        'success' => true,
-                        'payment_url' => $resData['transaction']['url'],
-                        'booking_id' => $booking->id,
-                    ], 200);
-                }
+        // 4. Post-Transaction Phase: Send Emails (Safe from rollbacks)
+        try {
+            if ($booking->email) {
+                Mail::to($booking->email)->send(new BookingCreateMail($booking));
+            }
+        } catch (\Exception $e) {
+            Log::error('Booking email failed: ' . $e->getMessage(), ['booking_id' => $booking->id]);
+        }
 
+        // 5. Post-Transaction Phase: External Gateway API Communication
+        if ($request->payment_method === 'tap') {
+
+            $tapSetting = DB::table('tap_payments')
+                ->where('user_id', $merchant->id)
+                ->latest('updated_at')
+                ->first();
+
+            if (!$tapSetting || !$tapSetting->tap_secret_key) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tap API Error: ' . ($resData['errors'][0]['description'] ?? 'Transaction failed'),
-                ], 400);
+                    'message' => 'Tap Payment details not found for this merchant.',
+                ], 422);
             }
 
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+                'accept'        => 'application/json',
+                'content-type'  => 'application/json',
+            ])->post('https://api.tap.company/v2/charges', [
+                'amount'   => $service->price,
+                'currency' => 'SAR',
+                'customer' => [
+                    'first_name' => $request->customer_name,
+                    'email'      => $request->email,
+                    'phone'      => [
+                        'country_code' => '966',
+                        'number'       => $request->phone,
+                    ],
+                ],
+                'source'   => ['id' => 'src_all'],
+                'redirect' => ['url' => url('/api/payment/callback')],
+                'metadata' => [
+                    'booking_id' => $booking->id,
+                ],
+            ]);
+
+            $resData = $response->json();
+
+            if ($response->successful() && isset($resData['transaction']['url'])) {
+                $merchantPayment->update([
+                    'transaction_id' => $resData['id'] ?? null,
+                ]);
+
+                return response()->json([
+                    'success'     => true,
+                    'payment_url' => $resData['transaction']['url'],
+                    'booking_id'  => $booking->id,
+                ], 200);
+            }
+
+            // If Tap fails, update booking status to failed so slot releases up
+            $booking->update(['status' => 'cancelled']);
+
             return response()->json([
-                'success' => true,
-                'message' => 'Booking confirmed!',
-                'booking' => [
-                    'booking_id' => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
-                    'service' => $booking->service->service_name,
-                    'date_time' => $booking->date_time->format('Y-m-d h:i A'),
-                    'staff_name' => $booking->staff->name,
-                    'duration' => $booking->service->duration . ' min',
-                    'amount' => $booking->service->price . ' SAR',
-                    'payment_method' => $booking->merchantPayment->payment_method,
-                    'transaction_id' => $booking->merchantPayment->transaction_id,
-                ]
-            ], 201);
-        });
+                'success' => false,
+                'message' => 'Tap API Error: ' . ($resData['errors'][0]['description'] ?? 'Transaction failed'),
+            ], 400);
+        }
+
+        // 6. Return response for standard 'Cash' checkout
+        $formattedDateTime = Carbon::parse($booking->date_time, $merchantTimeZone)->format('Y-m-d h:i A');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking confirmed!',
+            'booking' => [
+                'booking_id'     => 'BOK' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+                'service'        => $service->service_name,
+                'date_time'      => $formattedDateTime,
+                'staff_name'     => $staff->name,
+                'duration'       => $service->duration . ' min',
+                'amount'         => $service->price . ' SAR',
+                'payment_method' => $merchantPayment->payment_method,
+                'transaction_id' => $merchantPayment->transaction_id,
+            ]
+        ], 201);
     }
 
 
@@ -852,6 +1124,26 @@ class BookingController extends Controller
                     'message' => 'Selected time is in the past.'
                 ], 400);
             }
+
+    // start
+    $subscription = DB::table('subscriptions')
+        ->where('user_id', $merchantId)
+        ->first();
+
+    if ($subscription && $subscription->plan_id == 1) {
+        $totalBookingsCount = Booking::where('user_id', $merchantId)
+            ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
+            ->count();
+
+        if ($totalBookingsCount >= 25) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The merchant has reached the total maximum booking limit of 25 for this plan.'
+            ], 403);
+        }
+    }
+    // end
+
 
             $day = strtolower($slotStart->format('l'));
 
