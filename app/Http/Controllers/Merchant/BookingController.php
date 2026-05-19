@@ -1470,7 +1470,7 @@ class BookingController extends Controller
             }
         }
 
-        $frontendBaseUrl = env('FRONTEND_URL', 'http://localhost:3000');
+        $frontendBaseUrl = env('FRONTEND_URL', 'http://bokli.io');
 
         if ($tapData['status'] == 'CAPTURED') {
             $frontendUrl = $frontendBaseUrl . "/booking-success?booking_id=" . $bookingId;
