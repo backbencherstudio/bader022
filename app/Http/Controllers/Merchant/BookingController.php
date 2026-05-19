@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Merchant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Http, Log};
 use App\Http\Controllers\Controller;
-use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff, User,Subscription};
+use App\Models\{Booking, BusinessHour, MerchantPayment, Service, Staff, User, Subscription};
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
@@ -509,16 +509,16 @@ class BookingController extends Controller
                 }
 
                 $existingBookings = Booking::whereIn('staff_id', function ($q) use ($merchant, $service) {
-                        $q->select('id')
-                            ->from('staffs')
-                            ->where('user_id', $merchant->id)
-                            ->whereJsonContains('service_id', (string)$service->id)
-                            ->where('status', 1);
-                    })
+                    $q->select('id')
+                        ->from('staffs')
+                        ->where('user_id', $merchant->id)
+                        ->whereJsonContains('service_id', (string)$service->id)
+                        ->where('status', 1);
+                })
                     ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
                     ->where(function ($q) use ($slotStart, $slotEnd) {
                         $q->where('date_time', '<', $slotEnd)
-                        ->whereRaw("DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?", [$slotStart]);
+                            ->whereRaw("DATE_ADD(date_time, INTERVAL (SELECT duration FROM services WHERE services.id = bookings.service_id) MINUTE) > ?", [$slotStart]);
                     })
                     ->lockForUpdate()
                     ->count();
@@ -1125,24 +1125,23 @@ class BookingController extends Controller
                 ], 400);
             }
 
-    // start
-    $subscription = DB::table('subscriptions')
-        ->where('user_id', $merchantId)
-        ->first();
 
-    if ($subscription && $subscription->plan_id == 1) {
-        $totalBookingsCount = Booking::where('user_id', $merchantId)
-            ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
-            ->count();
+            $subscription = DB::table('subscriptions')
+                ->where('user_id', $merchantId)
+                ->first();
 
-        if ($totalBookingsCount >= 25) {
-            return response()->json([
-                'success' => false,
-                'message' => 'The merchant has reached the total maximum booking limit of 25 for this plan.'
-            ], 403);
-        }
-    }
-    // end
+            if ($subscription && $subscription->plan_id == 1) {
+                $totalBookingsCount = Booking::where('user_id', $merchantId)
+                    ->whereIn('status', ['pending', 'confirm', 'rescheduled'])
+                    ->count();
+
+                if ($totalBookingsCount >= 25) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'The merchant has reached the total maximum booking limit of 25 for this plan.'
+                    ], 403);
+                }
+            }
 
 
             $day = strtolower($slotStart->format('l'));
@@ -1460,7 +1459,7 @@ class BookingController extends Controller
             Mail::to($booking->email)
                 ->send(new BookingConfirmationMail($booking));
 
-            // Merchant Mail
+
             $merchant = User::find($booking->user_id);
 
             if ($merchant && $merchant->email) {
