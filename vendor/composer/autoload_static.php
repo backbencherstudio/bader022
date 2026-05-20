@@ -729,6 +729,7 @@ class ComposerStaticInit8466945e1a9c18c5c4fbe7c39e1c93cf
     );
 
     public static $classMap = array (
+        'App\\Console\\Commands\\RenewSubscriptions' => __DIR__ . '/../..' . '/app/Console/Commands/RenewSubscriptions.php',
         'App\\Console\\Commands\\SendBookingReminders' => __DIR__ . '/../..' . '/app/Console/Commands/SendBookingReminders.php',
         'App\\Console\\Commands\\SubscriptionStatusUpdate' => __DIR__ . '/../..' . '/app/Console/Commands/SubscriptionStatusUpdate.php',
         'App\\Console\\Commands\\UpdateBookingStatus' => __DIR__ . '/../..' . '/app/Console/Commands/UpdateBookingStatus.php',
@@ -783,8 +784,10 @@ class ComposerStaticInit8466945e1a9c18c5c4fbe7c39e1c93cf
         'App\\Mail\\BookingConfirmationMail' => __DIR__ . '/../..' . '/app/Mail/BookingConfirmationMail.php',
         'App\\Mail\\BookingCreateMail' => __DIR__ . '/../..' . '/app/Mail/BookingCreateMail.php',
         'App\\Mail\\BookingRescheduledMail' => __DIR__ . '/../..' . '/app/Mail/BookingRescheduledMail.php',
+        'App\\Mail\\MerchantBookingNotificationMail' => __DIR__ . '/../..' . '/app/Mail/MerchantBookingNotificationMail.php',
         'App\\Mail\\MerchantRegFree' => __DIR__ . '/../..' . '/app/Mail/MerchantRegFree.php',
         'App\\Mail\\PaymentCompletedMail' => __DIR__ . '/../..' . '/app/Mail/PaymentCompletedMail.php',
+        'App\\Mail\\SubscriptionExpiredMail' => __DIR__ . '/../..' . '/app/Mail/SubscriptionExpiredMail.php',
         'App\\Mail\\TestMail' => __DIR__ . '/../..' . '/app/Mail/TestMail.php',
         'App\\Mail\\UserRegiMail' => __DIR__ . '/../..' . '/app/Mail/UserRegiMail.php',
         'App\\Models\\BookDemo' => __DIR__ . '/../..' . '/app/Models/BookDemo.php',

@@ -540,14 +540,14 @@ class UserDashboardController extends Controller
             ], 400);
         }
 
-        $minutesDifference = $merchantNow->diffInMinutes($bookingDateTime, false);
+        // $minutesDifference = $merchantNow->diffInMinutes($bookingDateTime, false);
 
-        if ($minutesDifference < 120) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You cannot cancel this booking within 2 hours of the scheduled time.',
-            ], 403);
-        }
+        // if ($minutesDifference < 120) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'You cannot cancel this booking within 2 hours of the scheduled time.',
+        //     ], 403);
+        // }
 
         $message = 'Your booking has been cancelled successfully.';
 
@@ -796,12 +796,12 @@ class UserDashboardController extends Controller
                 ], 422);
             }
 
-            if ($merchantNow->diffInMinutes($bookingDateTime, false) <= 120) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You cannot reschedule within 2 hours of the booked time.',
-                ], 403);
-            }
+            // if ($merchantNow->diffInMinutes($bookingDateTime, false) <= 120) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'You cannot reschedule within 2 hours of the booked time.',
+            //     ], 403);
+            // }
 
             $staff = null;
 

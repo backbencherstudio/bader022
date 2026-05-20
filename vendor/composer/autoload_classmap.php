@@ -6,6 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'App\\Console\\Commands\\RenewSubscriptions' => $baseDir . '/app/Console/Commands/RenewSubscriptions.php',
     'App\\Console\\Commands\\SendBookingReminders' => $baseDir . '/app/Console/Commands/SendBookingReminders.php',
     'App\\Console\\Commands\\SubscriptionStatusUpdate' => $baseDir . '/app/Console/Commands/SubscriptionStatusUpdate.php',
     'App\\Console\\Commands\\UpdateBookingStatus' => $baseDir . '/app/Console/Commands/UpdateBookingStatus.php',
@@ -60,8 +61,10 @@ return array(
     'App\\Mail\\BookingConfirmationMail' => $baseDir . '/app/Mail/BookingConfirmationMail.php',
     'App\\Mail\\BookingCreateMail' => $baseDir . '/app/Mail/BookingCreateMail.php',
     'App\\Mail\\BookingRescheduledMail' => $baseDir . '/app/Mail/BookingRescheduledMail.php',
+    'App\\Mail\\MerchantBookingNotificationMail' => $baseDir . '/app/Mail/MerchantBookingNotificationMail.php',
     'App\\Mail\\MerchantRegFree' => $baseDir . '/app/Mail/MerchantRegFree.php',
     'App\\Mail\\PaymentCompletedMail' => $baseDir . '/app/Mail/PaymentCompletedMail.php',
+    'App\\Mail\\SubscriptionExpiredMail' => $baseDir . '/app/Mail/SubscriptionExpiredMail.php',
     'App\\Mail\\TestMail' => $baseDir . '/app/Mail/TestMail.php',
     'App\\Mail\\UserRegiMail' => $baseDir . '/app/Mail/UserRegiMail.php',
     'App\\Models\\BookDemo' => $baseDir . '/app/Models/BookDemo.php',

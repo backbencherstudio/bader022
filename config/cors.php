@@ -17,6 +17,7 @@ return [
         'https://bokli.io',
         'https://www.bokli.io',
         'https://bader022.apphero.agency',
+        'http://192.168.7.47:3000',
     ],
 
     'allowed_origins_patterns' => [],

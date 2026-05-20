@@ -964,6 +964,124 @@ class AuthController extends Controller
         ]);
     }
 
+    // public function tapSuccessregister(Request $request)
+    // {
+    //     $chargeId = $request->tap_id;
+    //     $tapSetting = DB::table('settings')->latest()->first();
+
+    //     $response = Http::withHeaders([
+    //         'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
+    //     ])->get("https://api.tap.company/v2/charges/$chargeId");
+
+    //     $data = $response->json();
+
+    //     if ($data['status'] === 'CAPTURED') {
+    //         $meta = $data['metadata'];
+
+    //         DB::beginTransaction();
+    //         try {
+
+    //             $merchant = User::create([
+    //                 'name' => $meta['udf1'],
+    //                 'email' => $meta['udf2'],
+    //                 'phone' => $meta['udf3'],
+    //                 'type' => 2,
+    //                 'password' => Hash::make($meta['udf4']),
+    //                 'business_name' => $meta['business_name'],
+    //                 'business_category' => $meta['business_category'],
+    //                 'website_domain' => $meta['subdomain'],
+    //                 'address' => $meta['address'] ?? null,
+    //                 'number_of_branches' => $meta['branches'] ?? null,
+    //             ]);
+
+    //             TapPayment::create([
+    //                 'user_id' => $merchant->id,
+    //                 'tap_mode' => 'test',
+    //                 'tap_secret_key' => 'sk_test_XKokBfNWv6FIYuTMg5sLPjhJ',
+    //                 'tap_public_key' => 'pk_test_EtHFV4BuPQokJT6jiROls87Y',
+    //             ]);
+
+    //             Branch::create([
+    //                 'user_id' => $merchant->id,
+    //                 'name' => 'Main Branch',
+    //                 'status' => 1,
+    //                 'is_main' => 0,
+    //             ]);
+
+    //             $endDate = ($meta['plan_id'] == 2) ? now()->addMonth() : now()->addYear();
+
+    //             $subscription = Subscription::create([
+    //                 'user_id' => $merchant->id,
+    //                 'plan_id' => $meta['plan_id'],
+    //                 'starts_at' => now(),
+    //                 'ends_at' => $endDate,
+    //                 'status' => 'active',
+    //                 'auto_renew' => 0,
+    //             ]);
+
+    //             Payment::create([
+    //                 'user_id' => $merchant->id,
+    //                 'subscription_id' => $subscription->id,
+    //                 'amount' => $data['amount'],
+    //                 'currency' => 'SAR',
+    //                 'payment_method' => 'tap',
+    //                 'transaction_id' => $chargeId,
+    //                 'status' => 'paid',
+    //             ]);
+
+    //             $storeSetting = MerchantSetting::create([
+    //                 'user_id' => $merchant->id,
+    //                 'store_name' => $merchant->business_name,
+    //                 'business_category' => $merchant->business_category,
+    //                 'business_address' => $merchant->address ?? null,
+    //                 'country' => 'Saudi Arabia',
+    //                 'city' => 'Riyadh',
+    //                 'time_zone' => 'Asia/Riyadh',
+    //                 'currency' => 'SAR',
+    //             ]);
+
+    //             $defaultHours = [
+    //                 'monday' => ['open' => '09:00', 'close' => '24:00'],
+    //                 'tuesday' => ['open' => '09:00', 'close' => '24:00'],
+    //                 'wednesday' => ['open' => '09:00', 'close' => '24:00'],
+    //                 'thursday' => ['open' => '09:00', 'close' => '24:00'],
+    //                 'friday' => ['open' => '13:00', 'close' => '24:00'],
+    //                 'saturday' => ['open' => '09:00', 'close' => '24:00'],
+    //                 'sunday' => ['open' => '09:00', 'close' => '24:00'],
+    //             ];
+
+    //             foreach ($defaultHours as $day => $time) {
+    //                 BusinessHour::create([
+    //                     'merchant_store_setting_id' => $storeSetting->id,
+    //                     'day' => $day,
+    //                     'open_time' => $time['open'],
+    //                     'close_time' => $time['close'],
+    //                     'is_closed' => 0,
+    //                 ]);
+    //             }
+
+    //             DB::commit();
+
+    //             Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
+
+
+    //             $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/create-account?user_id=' . $merchant->id . '&website=' . $merchant->website_domain;
+
+    //             return redirect()->away($frontendUrl);
+    //         } catch (\Exception $e) {
+    //             DB::rollBack();
+
+    //             $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
+
+    //             return redirect()->away($frontendUrl);
+    //         }
+    //     }
+
+    //     $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/booking-failed';
+
+    //     return redirect()->away($frontendUrl);
+    // }
+
     public function tapSuccessregister(Request $request)
     {
         $chargeId = $request->tap_id;
@@ -1010,13 +1128,15 @@ class AuthController extends Controller
 
                 $endDate = ($meta['plan_id'] == 2) ? now()->addMonth() : now()->addYear();
 
+                $autoRenew = isset($meta['auto_renew']) ? (int)$meta['auto_renew'] : 1;
+
                 $subscription = Subscription::create([
                     'user_id' => $merchant->id,
                     'plan_id' => $meta['plan_id'],
                     'starts_at' => now(),
                     'ends_at' => $endDate,
                     'status' => 'active',
-                    'auto_renew' => 0,
+                    'auto_renew' => $autoRenew,
                 ]);
 
                 Payment::create([
@@ -1063,7 +1183,6 @@ class AuthController extends Controller
                 DB::commit();
 
                 Mail::to($merchant->email)->send(new PaymentCompletedMail($merchant));
-
 
                 $frontendUrl = env('FRONTEND_URL', 'https://bokli.io') . '/create-account?user_id=' . $merchant->id . '&website=' . $merchant->website_domain;
 

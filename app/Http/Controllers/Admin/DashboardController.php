@@ -7,9 +7,8 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -119,11 +118,9 @@ class DashboardController extends Controller
         // 3. Optional: Include the target year in the response meta-data if needed
         return response()->json([
             'year' => $year,
-            'data' => $result
+            'data' => $result,
         ]);
     }
-
-
 
     // public function weeklyPaymentCount()
     // {
@@ -205,12 +202,13 @@ class DashboardController extends Controller
         return response()->json([
             'year' => $year,
             'month' => $month,
-            'data' => $result
+            'data' => $result,
         ]);
     }
 
     //     public function paymentCounts()
     // {
+    
     //     $year = date('Y');
     //     $month = date('m');
 
@@ -288,9 +286,7 @@ class DashboardController extends Controller
         ]);
     }
 
-
-
-    public function adminNotifications()
+    public function adminNotifications(Request $request)
     {
         $authUser = auth()->user();
         $notifications = collect();
@@ -305,7 +301,7 @@ class DashboardController extends Controller
                 ->get(['id', 'name', 'created_at'])
                 ->map(function ($user) {
                     return [
-                        'message' => $user->name . ' your subscription is confirmed',
+                        'message' => $user->name.' your subscription is confirmed',
                         'date' => $user->created_at->format('d M Y h:i A'),
                     ];
                 });
@@ -314,16 +310,40 @@ class DashboardController extends Controller
         }
 
         // TYPE 2 = Merchant / Customer view
+        // if ($authUser->type == 2) {
+
+        //     $bookings = Booking::where('user_id', $authUser->id)
+        //         ->whereDate('created_at', today())
+        //         ->latest()
+        //         ->take(10)
+        //         ->get(['id', 'customer_name', 'created_at'])
+        //         ->map(function ($booking) {
+        //             return [
+        //                 'message' => $booking->customer_name . ' your service is confirmed',
+        //                 'date' => $booking->created_at->format('d M Y h:i A'),
+        //             ];
+        //         });
+
+        //     $notifications = $notifications->merge($bookings);
+        // }
+
         if ($authUser->type == 2) {
 
-            $bookings = Booking::where('user_id', $authUser->id)
-                ->whereDate('created_at', today())
-                ->latest()
+            $branchId = $request->header('X-Branch-Id');
+
+            $bookingsQuery = Booking::where('user_id', $authUser->id)
+                ->whereDate('created_at', today());
+
+            if (! empty($branchId)) {
+                $bookingsQuery->where('branch_id', $branchId);
+            }
+
+            $bookings = $bookingsQuery->latest()
                 ->take(10)
                 ->get(['id', 'customer_name', 'created_at'])
                 ->map(function ($booking) {
                     return [
-                        'message' => $booking->customer_name . ' your service is confirmed',
+                        'message' => $booking->customer_name.' your service is confirmed',
                         'date' => $booking->created_at->format('d M Y h:i A'),
                     ];
                 });
@@ -353,6 +373,4 @@ class DashboardController extends Controller
             'data' => $notifications->values(),
         ]);
     }
-
-
 }
