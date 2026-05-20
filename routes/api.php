@@ -305,6 +305,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
 
         //subscription auto-renew
         Route::patch('/update-auto-renew', [MerchantDashboardContoller::class, 'updateAutoRenew']);
+        Route::get('/auto-renew-status', [MerchantDashboardContoller::class, 'autoRenewStatus']);
     });
     // merchantdashboard
     Route::prefix('analytics')->group(function () {

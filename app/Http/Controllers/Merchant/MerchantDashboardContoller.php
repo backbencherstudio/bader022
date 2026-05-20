@@ -247,4 +247,30 @@ class MerchantDashboardContoller extends Controller
             'auto_renew' => $subscription->auto_renew
         ]);
     }
+
+    public function autoRenewStatus()
+    {
+        $user = auth()->user();
+
+        $subscription = Subscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->latest()
+            ->first();
+
+        if (!$subscription) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subscription not found',
+                'data' => null
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Auto renew status fetched successfully',
+            'data' => [
+                'auto_renew' => (int) $subscription->auto_renew   
+            ]
+        ]);
+    }
 }
