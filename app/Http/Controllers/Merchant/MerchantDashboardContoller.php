@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Merchant;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\MerchantPayment;
+use App\Models\Subscription;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -90,9 +91,18 @@ class MerchantDashboardContoller extends Controller
             ->pluck('total_revenue', 'month');
 
         $months = [
-            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
-            5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug',
-            9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
+            5 => 'May',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Aug',
+            9 => 'Sep',
+            10 => 'Oct',
+            11 => 'Nov',
+            12 => 'Dec'
         ];
 
         $result = [];
@@ -206,4 +216,35 @@ class MerchantDashboardContoller extends Controller
             'data' => $bookings,
         ], 200);
     }
- }
+
+    public function updateAutoRenew(Request $request)
+    {
+        $user = auth()->user();
+
+        $subscription = Subscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->latest()
+            ->first();
+
+        if (!$subscription) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subscription not found'
+            ], 404);
+        }
+
+        $request->validate([
+            'auto_renew' => 'required|boolean'
+        ]);
+
+        $subscription->update([
+            'auto_renew' => $request->auto_renew
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Auto renew updated successfully',
+            'auto_renew' => $subscription->auto_renew
+        ]);
+    }
+}

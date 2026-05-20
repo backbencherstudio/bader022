@@ -302,6 +302,9 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('revenue', [MerchantDashboardContoller::class, 'monthlypaymentrevenue'])->name('merchantdashboard.monthlypaymentrevenue');
         Route::get('weeklyrevenue', [MerchantDashboardContoller::class, 'weeklyPaymentrevenue'])->name('merchantdashboard.weeklyPaymentrevenue');
         Route::get('today', [MerchantDashboardContoller::class, 'todayAppointment'])->name('merchantdashboard.todayAppointment');
+
+        //subscription auto-renew
+        Route::patch('/update-auto-renew', [MerchantDashboardContoller::class, 'updateAutoRenew']);
     });
     // merchantdashboard
     Route::prefix('analytics')->group(function () {
@@ -311,6 +314,7 @@ Route::middleware(['auth:api'])->prefix('admin')->name('admin.')->group(function
         Route::get('weeklyrevenue', [AnalyticesController::class, 'weeklyPaymentrevenue'])->name('merchantdashboard.weeklyPaymentRevenue');
         Route::get('newreturn', [AnalyticesController::class, 'newreturn'])->name('merchantdashboard.newreturn');
         Route::get('staffPerformance', [AnalyticesController::class, 'staffPerformance'])->name('merchantdashboard.staffPerformance');
+
     });
 
     Route::prefix('tap-payment')->group(function () {
