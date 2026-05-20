@@ -6,98 +6,78 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 use App\Models\Subscription;
 use App\Models\User;
-use App\Models\TapPayment;
 use App\Models\Payment;
-use App\Mail\SubscriptionExpiredMail;
 
 class RenewSubscriptions extends Command
 {
     protected $signature = 'subscription:renew';
-    protected $description = 'Automatically renew active subscriptions that are expiring today and have auto-renew enabled.';
+    protected $description = 'Auto renew subscriptions using payments table only';
 
     public function handle()
     {
-        Log::info('Subscription auto-renewal cron started...');
+        Log::info('Subscription auto-renew started');
 
-        $expiringSubscriptions = Subscription::where('status', 'active')
+        $subscriptions = Subscription::where('status', 'active')
             ->where('auto_renew', 1)
-            ->whereDate('ends_at', '<=', now()->toDateString())
+            ->where('ends_at', '<=', now())
             ->get();
 
-        if ($expiringSubscriptions->isEmpty()) {
-            Log::info('No subscriptions found for renewal today.');
+        if ($subscriptions->isEmpty()) {
+            Log::info('No subscriptions to renew');
             return Command::SUCCESS;
         }
 
         $tapSetting = DB::table('settings')->latest()->first();
 
-        foreach ($expiringSubscriptions as $subscription) {
+        if (!$tapSetting) {
+            Log::error('TAP settings not found');
+            return Command::FAILURE;
+        }
+
+        foreach ($subscriptions as $subscription) {
 
             $user = User::find($subscription->user_id);
 
             if (!$user) {
-                Log::error("Subscription ID {$subscription->id}: user not found.");
+                Log::error("User not found for subscription {$subscription->id}");
                 continue;
             }
 
-            $tapPayment = TapPayment::where('user_id', $user->id)->latest()->first();
+            // Get last successful payment
+            $lastPayment = Payment::where('subscription_id', $subscription->id)
+                ->where('status', 'paid')
+                ->latest()
+                ->first();
 
-            $lastPayment = Payment::where('subscription_id', $subscription->id)->latest()->first();
-
-            $amount = $lastPayment ? (float) $lastPayment->amount : 100.00;
-
-
-            if (
-                !$tapPayment ||
-                !$tapPayment->tap_customer_id ||
-                !$tapPayment->tap_card_token
-            ) {
-                Log::warning("User ID {$user->id} missing TAP credentials. Expiring subscription.");
-
-                $subscription->update(['status' => 'expired']);
-
-                try {
-                    Mail::to($user->email)->send(new SubscriptionExpiredMail($user));
-                } catch (\Exception $e) {
-                    Log::error("Email failed for User ID {$user->id}: " . $e->getMessage());
-                }
-
-                continue;
-            }
+            $amount = $lastPayment?->amount ?? 100;
 
             try {
+
                 $response = Http::withHeaders([
                     'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
                 ])->post('https://api.tap.company/v2/charges', [
                     'amount' => $amount,
                     'currency' => 'SAR',
                     'customer' => [
-                        'id' => $tapPayment->tap_customer_id,
+                        'id' => $user->tap_customer_id ?? null,
                     ],
                     'source' => [
-                        'id' => $tapPayment->tap_card_token,
-                    ],
-                    'redirect' => [
-                        'url' => 'https://bokli.io/payment-status',
+                        'id' => $user->tap_card_token ?? null,
                     ],
                 ]);
 
                 $data = $response->json();
 
+                // SUCCESS
                 if (($data['status'] ?? null) === 'CAPTURED') {
 
                     DB::transaction(function () use ($subscription, $user, $amount, $data) {
 
-                        $newEndDate = $subscription->plan_id == 2
-                            ? now()->addMonth()
-                            : now()->addYear();
-
                         $subscription->update([
                             'starts_at' => now(),
-                            'ends_at' => $newEndDate,
+                            'ends_at' => now()->addYear(),
                             'status' => 'active',
                         ]);
 
@@ -112,23 +92,17 @@ class RenewSubscriptions extends Command
                         ]);
                     });
 
-                    Log::info("Subscription {$subscription->id} renewed for User {$user->id}");
+                    Log::info("Renewed subscription {$subscription->id}");
 
                 } else {
 
-                    $subscription->update(['status' => 'expired']);
+                    Log::warning("Payment failed for subscription {$subscription->id}");
 
-                    try {
-                        Mail::to($user->email)->send(new SubscriptionExpiredMail($user));
-                    } catch (\Exception $e) {
-                        Log::error("Email failed: " . $e->getMessage());
-                    }
 
-                    Log::warning("Payment failed for Subscription {$subscription->id}");
                 }
 
             } catch (\Exception $e) {
-                Log::error("Renewal error Subscription {$subscription->id}: " . $e->getMessage());
+                Log::error("Renew error {$subscription->id}: " . $e->getMessage());
             }
         }
 
