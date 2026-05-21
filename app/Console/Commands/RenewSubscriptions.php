@@ -18,7 +18,7 @@ class RenewSubscriptions extends Command
 
     public function handle()
     {
-       
+
         $expiredSubscriptions = Subscription::with('plan')
             ->where('status', 'active')
             ->where('auto_renew', 1)
@@ -119,6 +119,7 @@ class RenewSubscriptions extends Command
         }
 
         return 0;
+        // return 0;
     }
 
     private function sendNotificationEmail($subscription, $isSuccess)
