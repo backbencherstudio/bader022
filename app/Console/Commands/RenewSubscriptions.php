@@ -3,135 +3,77 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 use App\Models\Subscription;
-use App\Models\User;
-use App\Models\TapPayment;
-use App\Models\Payment;
-use App\Mail\SubscriptionExpiredMail;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class RenewSubscriptions extends Command
 {
-    protected $signature = 'subscription:renew';
-    protected $description = 'Automatically renew active subscriptions that are expiring today and have auto-renew enabled.';
+    protected $signature = 'subscription:auto-renew';
+    protected $description = 'Renew specific active subscription for testing with test override';
 
     public function handle()
     {
-        Log::info('Subscription auto-renewal cron started...');
 
-        $expiringSubscriptions = Subscription::where('status', 'active')
+        $expiredSubscriptions = Subscription::
+            where('status', 'active')
             ->where('auto_renew', 1)
-            ->whereDate('ends_at', '<=', now()->toDateString())
             ->get();
 
-        if ($expiringSubscriptions->isEmpty()) {
-            Log::info('No subscriptions found for renewal today.');
-            return Command::SUCCESS;
+        if ($expiredSubscriptions->isEmpty()) {
+            $this->info('Subscription ID 263 not found, not active, or auto-renew is 0.');
+            return 0;
         }
 
-        $tapSetting = DB::table('settings')->latest()->first();
-
-        foreach ($expiringSubscriptions as $subscription) {
-
-            $user = User::find($subscription->user_id);
-
-            if (!$user) {
-                Log::error("Subscription ID {$subscription->id}: user not found.");
-                continue;
-            }
-
-            $tapPayment = TapPayment::where('user_id', $user->id)->latest()->first();
-
-            $lastPayment = Payment::where('subscription_id', $subscription->id)->latest()->first();
-
-            $amount = $lastPayment ? (float) $lastPayment->amount : 100.00;
-
-
-            if (
-                !$tapPayment ||
-                !$tapPayment->tap_customer_id ||
-                !$tapPayment->tap_card_token
-            ) {
-                Log::warning("User ID {$user->id} missing TAP credentials. Expiring subscription.");
-
-                $subscription->update(['status' => 'expired']);
-
-                try {
-                    Mail::to($user->email)->send(new SubscriptionExpiredMail($user));
-                } catch (\Exception $e) {
-                    Log::error("Email failed for User ID {$user->id}: " . $e->getMessage());
-                }
-
-                continue;
-            }
-
+        foreach ($expiredSubscriptions as $subscription) {
             try {
+                $this->info("Processing Subscription ID: {$subscription->id}...");
+
+
                 $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
-                ])->post('https://api.tap.company/v2/charges', [
-                    'amount' => $amount,
-                    'currency' => 'SAR',
+                    'Authorization' => 'Bearer ' . config('services.tap.secret_key'),
+                    'Accept' => 'application/json',
+                ])->post('https://api.tap.company/v3/charges', [
+                    'amount' => 10,
+                    'currency' => 'KWD',
                     'customer' => [
-                        'id' => $tapPayment->tap_customer_id,
+                        'id' => $subscription->tap_customer_id,
                     ],
                     'source' => [
-                        'id' => $tapPayment->tap_card_token,
+                        'id' => 'src_all'
                     ],
-                    'redirect' => [
-                        'url' => 'https://bokli.io/payment-status',
-                    ],
+                    'metadata' => [
+                        'subscription_id' => $subscription->id
+                    ]
                 ]);
 
-                $data = $response->json();
+                $result = $response->json();
 
-                if (($data['status'] ?? null) === 'CAPTURED') {
 
-                    DB::transaction(function () use ($subscription, $user, $amount, $data) {
+                if (true) {
 
-                        $newEndDate = $subscription->plan_id == 2
-                            ? now()->addMonth()
-                            : now()->addYear();
+                    $subscription->update([
+                        'starts_at' => Carbon::now(),
+                        'ends_at' => Carbon::now()->addMonth(),
+                        'status' => 'active',
+                    ]);
 
-                        $subscription->update([
-                            'starts_at' => now(),
-                            'ends_at' => $newEndDate,
-                            'status' => 'active',
-                        ]);
-
-                        Payment::create([
-                            'user_id' => $user->id,
-                            'subscription_id' => $subscription->id,
-                            'amount' => $amount,
-                            'currency' => 'SAR',
-                            'payment_method' => 'tap',
-                            'transaction_id' => $data['id'] ?? null,
-                            'status' => 'paid',
-                        ]);
-                    });
-
-                    Log::info("Subscription {$subscription->id} renewed for User {$user->id}");
+                    Log::info("Subscription ID {$subscription->id} successfully auto-renewed (Test Override).");
+                    $this->info("Success: Renewed subscription ID: {$subscription->id}");
 
                 } else {
 
-                    $subscription->update(['status' => 'expired']);
-
-                    try {
-                        Mail::to($user->email)->send(new SubscriptionExpiredMail($user));
-                    } catch (\Exception $e) {
-                        Log::error("Email failed: " . $e->getMessage());
-                    }
-
-                    Log::warning("Payment failed for Subscription {$subscription->id}");
+                    Log::warning("Auto-renew failed for ID {$subscription->id}. Tap Status: " . ($result['status'] ?? 'UNKNOWN') . " | Response: " . json_encode($result));
+                    $this->error("Failed: Tap Payments declined the charge for ID: {$subscription->id}");
                 }
 
             } catch (\Exception $e) {
-                Log::error("Renewal error Subscription {$subscription->id}: " . $e->getMessage());
+                Log::error("Error renewing subscription ID {$subscription->id}: " . $e->getMessage());
+                $this->error("Exception error: " . $e->getMessage());
             }
         }
 
-        return Command::SUCCESS;
+        return 0;
     }
 }

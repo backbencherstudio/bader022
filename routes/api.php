@@ -363,3 +363,4 @@ Route::get('/booking-details/{id}', [BookingController::class, 'bookingDetails']
 Route::get('confirm-invoice/{id}', [InvoiceController::class, 'confirmationInvoice']);
 Route::get('admin/brand/public', [BranchController::class, 'branchindex'])->name('brand.branchindex');
 
+
