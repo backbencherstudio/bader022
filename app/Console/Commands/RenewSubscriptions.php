@@ -4,26 +4,29 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Subscription;
+use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail; // <-- ১. মেইল ফাসাদ ইমপোর্ট করুন
-use App\Mail\SubscriptionRenewedMail; // <-- ২. নতুন মেইল ক্লাস ইমপোর্ট করুন
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SubscriptionRenewedMail;
 
 class RenewSubscriptions extends Command
 {
     protected $signature = 'subscription:auto-renew';
-    protected $description = 'Renew specific active subscription for testing with test override';
+    protected $description = 'Production ready auto-renew subscriptions via Tap Payments';
 
     public function handle()
     {
-        $expiredSubscriptions = Subscription::
-            where('status', 'active')
+       
+        $expiredSubscriptions = Subscription::with('plan')
+            ->where('status', 'active')
             ->where('auto_renew', 1)
+            ->where('ends_at', '<=', Carbon::now())
             ->get();
 
         if ($expiredSubscriptions->isEmpty()) {
-            $this->info('Subscription ID not found, not active, or auto-renew is 0.');
+            $this->info('No expired active subscriptions found for auto-renew.');
             return 0;
         }
 
@@ -31,12 +34,23 @@ class RenewSubscriptions extends Command
             try {
                 $this->info("Processing Subscription ID: {$subscription->id}...");
 
+
+                $chargeAmount = $subscription->amount ?? $subscription->plan->amount ?? $subscription->plan->price ?? 0;
+                $chargeCurrency = $subscription->currency ?? $subscription->plan->currency ?? 'SAR';
+
+                if (!$chargeAmount || $chargeAmount <= 0) {
+                    Log::warning("Skipping Auto-Renew for Subscription ID: {$subscription->id} due to zero amount.");
+                    $this->error("Skipping Subscription ID: {$subscription->id} due to invalid amount.");
+                    continue;
+                }
+
+                // Tap Payments API Call
                 $response = Http::withHeaders([
                     'Authorization' => 'Bearer ' . config('services.tap.secret_key'),
                     'Accept' => 'application/json',
                 ])->post('https://api.tap.company/v3/charges', [
-                    'amount' => 10,
-                    'currency' => 'KWD',
+                    'amount'   => $chargeAmount,
+                    'currency' => $chargeCurrency,
                     'customer' => [
                         'id' => $subscription->tap_customer_id,
                     ],
@@ -50,44 +64,68 @@ class RenewSubscriptions extends Command
 
                 $result = $response->json();
 
-                if (true) { // আপনার টেস্ট ওভাররাইড কন্ডিশন
+                if ($response->successful() && isset($result['status']) && $result['status'] === 'CAPTURED') {
+
+
+                    $endsAt = Carbon::now();
+                    if ($subscription->plan_id == 3) {
+                        $endsAt = $endsAt->addYear();
+                    } else {
+                        $endsAt = $endsAt->addMonth();
+                    }
+
 
                     $subscription->update([
                         'starts_at' => Carbon::now(),
-                        'ends_at' => Carbon::now()->addMonth(),
-                        'status' => 'active',
+                        'ends_at'   => $endsAt,
+                        'status'    => 'active',
                     ]);
 
-                    Log::info("Subscription ID {$subscription->id} successfully auto-renewed (Test Override).");
+                    $finalAmount   = $result['amount'] ?? $chargeAmount;
+                    $finalCurrency = $result['currency'] ?? $chargeCurrency;
+                    $transactionId = $result['id'];
+
+
+                    Payment::create([
+                        'user_id'         => $subscription->user_id,
+                        'subscription_id' => $subscription->id,
+                        'amount'          => $finalAmount,
+                        'currency'        => $finalCurrency,
+                        'payment_method'  => 'tap',
+                        'transaction_id'  => $transactionId,
+                        'status'          => 'paid',
+                    ]);
+
+                    Log::info("Subscription ID {$subscription->id} successfully auto-renewed. Transaction ID: {$transactionId}");
                     $this->info("Success: Renewed subscription ID: {$subscription->id}");
 
-                    // <-- ৩. সফল হওয়ার মেইল পাঠান
-                    // (ধরে নিচ্ছি আপনার Subscription মডেলে ইউজার রিলেশন আছে অথবা সরাসরি ইমেল ফিল্ড আছে)
-                    if (isset($subscription->user->email)) {
-                        Mail::to($subscription->user->email)->send(new SubscriptionRenewedMail($subscription, true));
-                    } elseif (isset($subscription->email)) {
-                        Mail::to($subscription->email)->send(new SubscriptionRenewedMail($subscription, true));
-                    }
+
+                    $this->sendNotificationEmail($subscription, true);
 
                 } else {
 
-                    Log::warning("Auto-renew failed for ID {$subscription->id}. Tap Status: " . ($result['status'] ?? 'UNKNOWN') . " | Response: " . json_encode($result));
+                    $errorMessage = $result['errors'][0]['description'] ?? $result['status'] ?? 'UNKNOWN_ERROR';
+                    Log::warning("Auto-renew failed for Subscription ID {$subscription->id}. Reason: " . $errorMessage);
                     $this->error("Failed: Tap Payments declined the charge for ID: {$subscription->id}");
 
-                    // <-- ৪. ব্যর্থ হওয়ার মেইল পাঠান
-                    if (isset($subscription->user->email)) {
-                        Mail::to($subscription->user->email)->send(new SubscriptionRenewedMail($subscription, false));
-                    } elseif (isset($subscription->email)) {
-                        Mail::to($subscription->email)->send(new SubscriptionRenewedMail($subscription, false));
-                    }
+
+                    $this->sendNotificationEmail($subscription, false);
                 }
 
             } catch (\Exception $e) {
-                Log::error("Error renewing subscription ID {$subscription->id}: " . $e->getMessage());
+                Log::error("Critical error in auto-renew for Subscription ID {$subscription->id}: " . $e->getMessage());
                 $this->error("Exception error: " . $e->getMessage());
             }
         }
 
         return 0;
+    }
+
+    private function sendNotificationEmail($subscription, $isSuccess)
+    {
+        $email = $subscription->user->email ?? $subscription->email ?? null;
+        if ($email) {
+            Mail::to($email)->send(new SubscriptionRenewedMail($subscription, $isSuccess));
+        }
     }
 }
