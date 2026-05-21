@@ -8,7 +8,6 @@ use App\Mail\PaymentCompletedMail;
 use App\Mail\UserRegiMail;
 use App\Models\Branch;
 use App\Models\BusinessHour;
-use App\Models\CardPayment;
 use App\Models\MerchantSetting;
 use App\Models\Payment;
 use App\Models\Plan;
@@ -26,7 +25,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -851,10 +849,11 @@ class AuthController extends Controller
                     'user_id' => $merchant->id,
                     'plan_id' => $plan->id,
                     'starts_at' => now(),
-                    // 'ends_at' => now()->addDays(7),
                     'ends_at' => null,
                     'status' => 'active',
                     'auto_renew' => 0,
+                    'tap_customer_id' => null,
+                    'tap_subscription_id' => null,
                 ]);
 
                 Payment::create([
@@ -866,15 +865,6 @@ class AuthController extends Controller
                     'transaction_id' => Str::uuid(),
                     'status' => 'paid',
                 ]);
-
-                // CardPayment::create([
-                //     'user_id' => $merchant->id,
-                //     'tap_customer_id' => $data->customer['id'] ?? null,
-                //     'tap_card_token' => $data->card['id'] ?? null,
-                //     'card_brand' => $data->card['brand'] ?? null,
-                //     'card_last_four' => $data->card['last_four'] ?? null,
-                // ]);
-
 
                 $storeSetting = MerchantSetting::create([
                     'user_id' => $merchant->id,
@@ -932,6 +922,8 @@ class AuthController extends Controller
         ])->post('https://api.tap.company/v2/charges', [
             'amount' => $plan->price,
             'currency' => 'SAR',
+            'threeDSecure' => true,
+            'save_card' => true,
             'customer' => [
                 'first_name' => $data->name,
                 'email' => $data->email,
@@ -960,10 +952,6 @@ class AuthController extends Controller
             'tap_payment_url' => $tapResponse->json()['transaction']['url'],
         ]);
     }
-
-
-
-
 
     public function tapSuccessregister(Request $request)
     {
@@ -1002,14 +990,6 @@ class AuthController extends Controller
                     'tap_public_key' => 'pk_test_EtHFV4BuPQokJT6jiROls87Y',
                 ]);
 
-                CardPayment::create([
-                    'user_id'         => $merchant->id,
-                    'tap_customer_id' => is_object($data) ? ($data->customer->id ?? null) : ($data['customer']['id'] ?? null),
-                    'tap_card_token'  => is_object($data) ? ($data->card->id ?? null) : ($data['card']['id'] ?? null),
-                    'card_brand'      => is_object($data) ? ($data->card->brand ?? null) : ($data['card']['brand'] ?? null),
-                    'card_last_four'  => is_object($data) ? ($data->card->last_four ?? null) : ($data['card']['last_four'] ?? null),
-                ]);
-
                 Branch::create([
                     'user_id' => $merchant->id,
                     'name' => 'Main Branch',
@@ -1021,6 +1001,17 @@ class AuthController extends Controller
 
                 $autoRenew = isset($meta['auto_renew']) ? (int) $meta['auto_renew'] : 1;
 
+                // $subscription = Subscription::create([
+                //     'user_id' => $merchant->id,
+                //     'plan_id' => $meta['plan_id'],
+                //     'starts_at' => now(),
+                //     'ends_at' => $endDate,
+                //     'status' => 'active',
+                //     'auto_renew' => $autoRenew,
+                //     'tap_customer_id' => $data['customer']['id'] ?? null,
+                //     'tap_subscription_id' => $data['subscription_id'] ?? null,
+                // ]);
+
                 $subscription = Subscription::create([
                     'user_id' => $merchant->id,
                     'plan_id' => $meta['plan_id'],
@@ -1028,6 +1019,8 @@ class AuthController extends Controller
                     'ends_at' => $endDate,
                     'status' => 'active',
                     'auto_renew' => $autoRenew,
+                    'tap_customer_id' => $data['customer']['id'] ?? null,
+                    'tap_subscription_id' => $chargeId,
                 ]);
 
                 Payment::create([
@@ -1091,6 +1084,8 @@ class AuthController extends Controller
 
         return redirect()->away($frontendUrl);
     }
+
+    
 
 
     public function getPaymentStatus($user_id)

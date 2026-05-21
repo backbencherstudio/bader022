@@ -3,109 +3,77 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use App\Models\Subscription;
-use App\Models\User;
-use App\Models\Payment;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class RenewSubscriptions extends Command
 {
-    protected $signature = 'subscription:renew';
-    protected $description = 'Auto renew subscriptions using payments table only';
+    protected $signature = 'subscription:auto-renew';
+    protected $description = 'Renew specific active subscription for testing with test override';
 
     public function handle()
     {
-        Log::info('Subscription auto-renew started');
 
-        $subscriptions = Subscription::where('status', 'active')
+        $expiredSubscriptions = Subscription::
+            where('status', 'active')
             ->where('auto_renew', 1)
-            ->where('ends_at', '<=', now())
             ->get();
 
-        if ($subscriptions->isEmpty()) {
-            Log::info('No subscriptions to renew');
-            return Command::SUCCESS;
+        if ($expiredSubscriptions->isEmpty()) {
+            $this->info('Subscription ID 263 not found, not active, or auto-renew is 0.');
+            return 0;
         }
 
-        $tapSetting = DB::table('settings')->latest()->first();
-
-        if (!$tapSetting) {
-            Log::error('TAP settings not found');
-            return Command::FAILURE;
-        }
-
-        foreach ($subscriptions as $subscription) {
-
-            $user = User::find($subscription->user_id);
-
-            if (!$user) {
-                Log::error("User not found for subscription {$subscription->id}");
-                continue;
-            }
-
-            // Get last successful payment
-            $lastPayment = Payment::where('subscription_id', $subscription->id)
-                ->where('status', 'paid')
-                ->latest()
-                ->first();
-
-            $amount = $lastPayment?->amount ?? 100;
-
+        foreach ($expiredSubscriptions as $subscription) {
             try {
+                $this->info("Processing Subscription ID: {$subscription->id}...");
+
 
                 $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $tapSetting->tap_secret_key,
-                ])->post('https://api.tap.company/v2/charges', [
-                    'amount' => $amount,
-                    'currency' => 'SAR',
+                    'Authorization' => 'Bearer ' . config('services.tap.secret_key'),
+                    'Accept' => 'application/json',
+                ])->post('https://api.tap.company/v3/charges', [
+                    'amount' => 10,
+                    'currency' => 'KWD',
                     'customer' => [
-                        'id' => $user->tap_customer_id ?? null,
+                        'id' => $subscription->tap_customer_id,
                     ],
                     'source' => [
-                        'id' => $user->tap_card_token ?? null,
+                        'id' => 'src_all'
                     ],
+                    'metadata' => [
+                        'subscription_id' => $subscription->id
+                    ]
                 ]);
 
-                $data = $response->json();
+                $result = $response->json();
 
-                // SUCCESS
-                if (($data['status'] ?? null) === 'CAPTURED') {
 
-                    DB::transaction(function () use ($subscription, $user, $amount, $data) {
+                if (true) {
 
-                        $subscription->update([
-                            'starts_at' => now(),
-                            'ends_at' => now()->addYear(),
-                            'status' => 'active',
-                        ]);
+                    $subscription->update([
+                        'starts_at' => Carbon::now(),
+                        'ends_at' => Carbon::now()->addMonth(),
+                        'status' => 'active',
+                    ]);
 
-                        Payment::create([
-                            'user_id' => $user->id,
-                            'subscription_id' => $subscription->id,
-                            'amount' => $amount,
-                            'currency' => 'SAR',
-                            'payment_method' => 'tap',
-                            'transaction_id' => $data['id'] ?? null,
-                            'status' => 'paid',
-                        ]);
-                    });
-
-                    Log::info("Renewed subscription {$subscription->id}");
+                    Log::info("Subscription ID {$subscription->id} successfully auto-renewed (Test Override).");
+                    $this->info("Success: Renewed subscription ID: {$subscription->id}");
 
                 } else {
 
-                    Log::warning("Payment failed for subscription {$subscription->id}");
-
-
+                    Log::warning("Auto-renew failed for ID {$subscription->id}. Tap Status: " . ($result['status'] ?? 'UNKNOWN') . " | Response: " . json_encode($result));
+                    $this->error("Failed: Tap Payments declined the charge for ID: {$subscription->id}");
                 }
 
             } catch (\Exception $e) {
-                Log::error("Renew error {$subscription->id}: " . $e->getMessage());
+                Log::error("Error renewing subscription ID {$subscription->id}: " . $e->getMessage());
+                $this->error("Exception error: " . $e->getMessage());
             }
         }
 
-        return Command::SUCCESS;
+        return 0;
     }
 }

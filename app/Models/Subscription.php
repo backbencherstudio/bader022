@@ -12,7 +12,9 @@ class Subscription extends Model
         'starts_at',
         'ends_at',
         'status',
-        'auto_renew'
+        'auto_renew',
+        'tap_customer_id',
+        'tap_subscription_id',
     ];
 
     public function plan()
